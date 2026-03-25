@@ -8,7 +8,7 @@
 [![Relay](https://img.shields.io/badge/📡_Relay-onrender.com-0d9488?style=for-the-badge)](https://paramant-relay.onrender.com/health)
 [![ML-KEM-768](https://img.shields.io/badge/ML--KEM--768-NIST_FIPS_203-334155?style=for-the-badge)](#de-versleuteling)
 [![ECDH P-256](https://img.shields.io/badge/ECDH_P--256-NIST_SP_800--186-334155?style=for-the-badge)](#de-versleuteling)
-[![Doneer](https://img.shields.io/badge/☕_Doneer-buymeacoffee.com/mickbeer-FFDD00?style=for-the-badge)](https://buymeacoffee.com/mickbeer)
+[![Steun de relay](https://img.shields.io/badge/🔐_Steun_de_relay-buymeacoffee.com/mickbeer-14b8a6?style=for-the-badge)](https://buymeacoffee.com/mickbeer)
 
 ---
 
@@ -229,9 +229,11 @@ paramant-relay/
 
 ## Donaties
 
-PARAMANT is een **onafhankelijke privacytool** — geen bedrijf, geen investeerders, geen advertenties. Gebouwd en onderhouden door één persoon. Als je het nuttig vindt, kun je het voortbestaan steunen:
+PARAMANT is vrij, open-source en zonder bedrijf erachter. De relay, hosting en ontwikkeling worden uitsluitend betaald uit vrijwillige donaties van gebruikers die privacy het waard vinden.
 
-[![Doneer](https://img.shields.io/badge/☕_Koop_me_een_koffie-buymeacoffee.com/mickbeer-FFDD00?style=for-the-badge)](https://buymeacoffee.com/mickbeer)
+Geen donatie? Geen probleem — de tool blijft gratis. Vind je het de moeite waard? Dan houd je met een bijdrage de relay online.
+
+[![Steun de relay](https://img.shields.io/badge/🔐_Houd_de_relay_online-buymeacoffee.com/mickbeer-14b8a6?style=for-the-badge)](https://buymeacoffee.com/mickbeer)
 
 ---
 
