@@ -577,9 +577,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs mono text-slate-400 transition-all flex-shrink-0"
       title="Zet de relay aan voor automatisch verzenden. Zonder relay kun je ook berichten sturen via kopiëren en plakken.">
       <div id="rl-dot" class="w-2 h-2 rounded-full bg-slate-600 flex-shrink-0 transition-all"></div>
-      <span id="rl-lbl">Relay uit</span>
+      <span id="rl-lbl">Offline</span>
     </button>
-    <span id="relay-hint" class="text-xs text-slate-600 mono hidden lg:block flex-shrink-0">↑ relay aan</span>
+    <span id="relay-hint" class="text-xs text-slate-600 mono hidden lg:block flex-shrink-0">↑ klik om online te gaan</span>
 
     <!-- Online teller — alleen op grotere schermen -->
     <div id="online-badge" class="hidden items-center gap-1 px-2.5 py-1.5 bg-slate-800/60 border border-slate-700 rounded-xl text-xs mono text-slate-400 flex-shrink-0">
@@ -711,8 +711,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div id="relay-welcome-hint" class="w-full max-w-sm mb-4 p-3 bg-teal-500/8 border border-teal-500/20 rounded-xl flex items-start gap-2.5 text-left">
           <span class="text-teal-400 text-lg flex-shrink-0">💡</span>
           <div>
-            <div class="relay-hint-title text-teal-300 font-medium text-sm">Zet de relay aan voor automatisch verzenden</div>
-            <div class="relay-hint-sub text-teal-500 text-xs mt-0.5">→ Klik op "Relay uit" (rechtsboven) — wordt 🟢 Relay actief. Maximaal 30 sec.</div>
+            <div class="relay-hint-title text-teal-300 font-medium text-sm">Klik "Offline" (rechtsboven) om berichten automatisch te versturen</div>
+            <div class="relay-hint-sub text-teal-500 text-xs mt-0.5">→ Klik op "Offline" — wordt 🟢 Online. Duurt max. 30 sec.</div>
             <div class="text-slate-600 text-xs mt-1.5 leading-relaxed">ℹ️ De relay herverbindt automatisch als de verbinding wegvalt.</div>
           </div>
         </div>
@@ -1354,7 +1354,7 @@ function setRelayUI(s){
   if(s==='on'){
     stopRelayCountdown();
     d.classList.add(IS_ONION?'bg-purple-400':'bg-green-400');
-    l.textContent=IS_ONION?'🧅 Tor relay':'🟢 Relay actief';
+    l.textContent=IS_ONION?'🧅 Tor':'🟢 Online';
     if(hint)hint.style.display='none';
     if(wHint)wHint.style.display='none';
     if(wPres)wPres.classList.remove('hidden');
@@ -1389,15 +1389,15 @@ function setRelayUI(s){
   }else{
     stopRelayCountdown();
     d.classList.add('bg-slate-600');
-    l.textContent='Relay uit';
-    if(hint){hint.textContent='↑ zet relay aan voor automatisch verzenden';hint.style.display='';}
+    l.textContent='Offline';
+    if(hint){hint.textContent='↑ klik om online te gaan';hint.style.display='';}
     if(onlineBadge)onlineBadge.style.display='none';
     if(wHint){
       wHint.style.display='';
       const title=wHint.querySelector('.relay-hint-title');
       const sub=wHint.querySelector('.relay-hint-sub');
-      if(title)title.textContent='Zet de relay aan voor automatisch verzenden';
-      if(sub)sub.textContent='→ Klik op "Relay uit" (rechtsboven) — wordt 🟢 Relay actief. Maximaal 30 sec.';
+      if(title)title.textContent='Klik op "Offline" om online te gaan';
+      if(sub)sub.textContent='→ Wordt 🟢 Online. Maximaal 30 sec.';
     }
     if(wPres)wPres.classList.add('hidden');
   }
@@ -2198,74 +2198,89 @@ function addMsg(conv,dir,data){const t=data.t||now();conv.msgs.push({dir,data,t}
 function sysMsg(conv,text){const t=now();conv.msgs.push({dir:'sys',data:{text},t});if(conv.id===activeId){const _ss=$msgs();const _hs=$('msgs-host');if(_ss&&_hs){_ss.appendChild(buildMsg('sys',{text},t));_hs.scrollTop=_hs.scrollHeight;}}}
 function buildMsg(dir,data,t){
   const outer=document.createElement('div');
-  if(dir==='sys'){outer.className='flex justify-center my-1';const b=document.createElement('div');b.className='bbl-sys px-4 py-2 rounded-2xl text-xs text-teal-400/80 text-center max-w-sm leading-relaxed';b.textContent=data.text;outer.appendChild(b);return outer;}
-  outer.className=`flex flex-col ${dir==='sent'?'items-end':'items-start'} fade-up`;
+  if(dir==='sys'){
+    outer.className='flex justify-center my-2';
+    const b=document.createElement('div');
+    b.className='bbl-sys px-4 py-1.5 rounded-full text-xs text-slate-500 text-center leading-relaxed';
+    b.textContent=data.text;outer.appendChild(b);return outer;
+  }
+  outer.className=`flex ${dir==='sent'?'justify-end':'justify-start'} mb-1 fade-up`;
 
-  if(dir==='sent'){
-    const box=document.createElement('div');box.className='max-w-xs lg:max-w-sm';
+  const bubble=document.createElement('div');
+  bubble.className=`max-w-[75%] sm:max-w-xs lg:max-w-sm flex flex-col ${dir==='sent'?'items-end':'items-start'}`;
 
-    if(data.type==='file'){
-      // Bestand verstuurd — toon bestandsnaam prominent
-      const fb=document.createElement('div');fb.className='bbl-sent px-4 py-3 rounded-2xl flex items-center gap-2';
-      const ic=document.createElement('span');ic.textContent='📎';
-      const tx=document.createElement('span');tx.className='text-sm font-medium';tx.textContent=data.payload?.name||'bestand';
-      fb.appendChild(ic);fb.appendChild(tx);box.appendChild(fb);
-    }else{
-      // Tekst verstuurd — toon de plaintext bubble
-      const b=document.createElement('div');b.className='bbl-sent px-4 py-3 rounded-2xl text-sm leading-relaxed';b.textContent=data.payload||'';
-      box.appendChild(b);
-    }
+  if(data.type==='file'){
+    // Bestand — duidelijke file-bubble
+    const fb=document.createElement('div');
+    const isSent=dir==='sent';
+    fb.className=`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all ${
+      isSent?'bbl-sent hover:opacity-90':'bg-slate-700 hover:bg-slate-600 text-white'}`;
+    if(!isSent)fb.onclick=()=>downloadFile(data.meta);
 
-    // Uitklapbare technische details
-    const detailsToggle=document.createElement('div');
-    detailsToggle.className='mono text-xs text-slate-600 mt-1 px-1 cursor-pointer hover:text-slate-400 transition-colors select-none flex items-center gap-1';
-    const relayedText = data.relayed ? '✓ Relay · ' : '';
+    // File icon
+    const ico=document.createElement('div');
+    const mime=(isSent?data.payload?.mime:data.meta?.mime)||'';
+    const isImg=mime.startsWith('image/');
+    ico.className='w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl';
+    ico.style.background=isSent?'rgba(0,0,0,.15)':'rgba(255,255,255,.1)';
+    ico.textContent=isImg?'🖼️':'📄';
 
-    const toggleTxt=document.createElement('span');
-    toggleTxt.textContent=relayedText+'🔒 pakket tonen ›';
-    detailsToggle.appendChild(toggleTxt);
-
-    const detailsBox=document.createElement('div');
-    detailsBox.style.display='none'; // gebruik style, niet Tailwind hidden class
-    detailsBox.style.marginTop='4px';
-    const lbl2=document.createElement('div');lbl2.className='mono text-xs text-slate-500 mb-1 px-1';
-    lbl2.textContent=data.type==='file'?'📎 Versleuteld bestand — stuur naar je amice:':'📤 Versleuteld bericht — stuur naar je amice:';
-    const pktBox=document.createElement('div');pktBox.className='bg-slate-900 border border-slate-700 rounded-xl p-2.5';
-    const prev=document.createElement('div');prev.className='mono text-xs text-teal-400/50 mb-2 truncate';prev.textContent=(data.pkt||'').slice(0,60)+'…';
-    const cp=document.createElement('button');cp.className='w-full py-2 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-xs rounded-lg transition-all active:scale-95';cp.textContent='📋 Kopieer en stuur';
-    cp.onclick=()=>{navigator.clipboard.writeText(data.pkt).catch(()=>{});cp.textContent='✓ Gekopieerd!';setTimeout(()=>cp.textContent='📋 Kopieer en stuur',1800);};
-    pktBox.appendChild(prev);pktBox.appendChild(cp);
-    detailsBox.appendChild(lbl2);detailsBox.appendChild(pktBox);
-
-    detailsToggle.onclick=()=>{
-      const isOpen = detailsBox.style.display !== 'none';
-      detailsBox.style.display = isOpen ? 'none' : 'block';
-      toggleTxt.textContent = relayedText + (isOpen ? '🔒 pakket tonen ›' : '🔒 pakket verbergen ‹');
-    };
-    box.appendChild(detailsToggle);box.appendChild(detailsBox);
-    outer.appendChild(box);
-
-  }else if(dir==='recv'){
-    const box=document.createElement('div');box.className='max-w-xs lg:max-w-sm';
-    if(data.type==='file'){
-      const fb=document.createElement('div');fb.className='flex items-center gap-3 p-3 bg-slate-800 border border-slate-700 rounded-2xl cursor-pointer hover:border-teal-500/40 transition-all';fb.onclick=()=>downloadFile(data.meta);
-      const ico=document.createElement('div');ico.className='text-3xl flex-shrink-0';ico.textContent='📄';
-      const finf=document.createElement('div');finf.className='flex-1 min-w-0';
-      const fnm=document.createElement('div');fnm.className='font-medium text-white text-sm truncate';fnm.textContent=data.meta?.name||'bestand';
-      const fsz=document.createElement('div');fsz.className='text-slate-500 text-xs mt-0.5';fsz.textContent=fmtSize(data.meta?.size||0)+' · Tik om op te slaan';
-      finf.appendChild(fnm);finf.appendChild(fsz);fb.appendChild(ico);fb.appendChild(finf);box.appendChild(fb);
-    }else{
-      const b=document.createElement('div');b.className='bbl-recv px-4 py-3 rounded-2xl text-white text-base leading-relaxed';b.textContent=data.text;box.appendChild(b);
-    }
-    outer.appendChild(box);
+    const finf=document.createElement('div');finf.className='flex-1 min-w-0';
+    const fnm=document.createElement('div');fnm.className='font-semibold text-sm truncate';
+    fnm.textContent=(isSent?data.payload?.name:data.meta?.name)||'bestand';
+    const fsz=document.createElement('div');fsz.className='text-xs mt-0.5 opacity-70';
+    const size=isSent?data.payload?.size:data.meta?.size;
+    fsz.textContent=fmtSize(size||0)+(isSent?'':' · Tik om te openen');
+    finf.appendChild(fnm);finf.appendChild(fsz);
+    fb.appendChild(ico);fb.appendChild(finf);
+    bubble.appendChild(fb);
+  } else {
+    // Tekst bubble
+    const b=document.createElement('div');
+    b.className=dir==='sent'
+      ?'bbl-sent px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words'
+      :'bbl-recv px-4 py-2.5 rounded-2xl text-white text-sm leading-relaxed break-words';
+    b.textContent=dir==='sent'?data.payload||'':data.text||'';
+    bubble.appendChild(b);
   }
 
-  const meta=document.createElement('div');meta.className='mono text-xs text-slate-600 mt-0.5 px-1 flex items-center gap-2';
-  meta.appendChild(document.createTextNode(t));
-  if(dir==='sent'){const ck=document.createElement('span');ck.className='text-teal-600';ck.textContent='✓';meta.appendChild(ck);}
-  if(data.pq){const pq=document.createElement('span');pq.className='text-teal-700';pq.title='Post-quantum ratchet';pq.textContent='⚛';meta.appendChild(pq);}
-  outer.appendChild(meta);return outer;
+  // Timestamp + status
+  const foot=document.createElement('div');
+  foot.className='flex items-center gap-1 mt-0.5 px-1';
+  const ts=document.createElement('span');ts.className='text-xs text-slate-600';ts.textContent=t;
+  foot.appendChild(ts);
+  if(dir==='sent'){
+    const ck=document.createElement('span');ck.className='text-teal-600 text-xs';ck.textContent='✓';foot.appendChild(ck);
+  }
+  if(data.pq){const pq=document.createElement('span');pq.className='text-teal-800 text-xs';pq.title='Post-quantum';pq.textContent='⚛';foot.appendChild(pq);}
+  bubble.appendChild(foot);
+
+  // Uitklapbaar encrypted pakket — alleen voor sent
+  if(dir==='sent' && data.pkt){
+    const toggle=document.createElement('div');
+    toggle.className='text-xs text-slate-700 hover:text-slate-500 cursor-pointer px-1 select-none';
+    const relTxt=data.relayed?'✓ · ':'';
+    toggle.textContent=relTxt+'🔒 pakket tonen ›';
+    const detBox=document.createElement('div');detBox.style.display='none';detBox.style.marginTop='4px';
+    const pktBox=document.createElement('div');pktBox.className='bg-slate-900 border border-slate-700 rounded-xl p-2.5';
+    const prev=document.createElement('div');prev.className='mono text-xs text-teal-400/50 mb-2 truncate';
+    prev.textContent=(data.pkt||'').slice(0,55)+'…';
+    const cp=document.createElement('button');
+    cp.className='w-full py-1.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-xs rounded-lg transition-all';
+    cp.textContent='📋 Kopieer en stuur';
+    cp.onclick=()=>{navigator.clipboard.writeText(data.pkt).catch(()=>{});cp.textContent='✓ Gekopieerd!';setTimeout(()=>cp.textContent='📋 Kopieer en stuur',1800);};
+    pktBox.appendChild(prev);pktBox.appendChild(cp);detBox.appendChild(pktBox);
+    toggle.onclick=()=>{
+      const open=detBox.style.display!=='none';
+      detBox.style.display=open?'none':'block';
+      toggle.textContent=relTxt+(open?'🔒 pakket tonen ›':'🔒 pakket verbergen ‹');
+    };
+    bubble.appendChild(toggle);bubble.appendChild(detBox);
+  }
+
+  outer.appendChild(bubble);return outer;
 }
+
 function renderMsgs(conv){
   const sh=$msgs(),ho=$('msgs-host');if(!sh||!ho)return;
   // Wis alles behalve de style tag
@@ -2434,6 +2449,8 @@ function hidePaste(){$('paste-ov').style.display='none';}
 function openApp(){
   $('app').style.display='flex';
   document.body.style.overflow='hidden';
+  // Relay automatisch starten — gebruiker hoeft niets te doen
+  if(!relayWant){setTimeout(()=>{relayWant=true;wakeupRelay();connectRelay();},300);}
   // Incognito/extensie hint — eenmalig per sessie
   if(!sessionStorage.getItem('pm-ext-checked')){
     sessionStorage.setItem('pm-ext-checked','1');
