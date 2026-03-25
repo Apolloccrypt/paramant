@@ -1013,6 +1013,7 @@ function copyFallback(text, btn, successTxt, resetTxt){
 const b2h=a=>Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');
 const h2b=h=>{h=h.replace(/\s+/g,'');const m=h.match(/.{2}/g);return m?new Uint8Array(m.map(x=>parseInt(x,16))):null;};
 const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+const $=id=>document.getElementById(id);
 
 // ─── Security helpers ────────────────────────────────────────────
 function san(s,max=50){if(typeof s!=='string')return'';return s.replace(/[<>&"'`]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]||c)).slice(0,max);}
