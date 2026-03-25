@@ -226,8 +226,25 @@ nav a:hover{color:#2dd4bf}
 canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 </style>
 <script>
-  window._PARAMANT_RELAY       = 'wss://relay.paramant.app';
-  window._PARAMANT_RELAY_ONION = 'ws://6hz46anxzpwvzgzih23fm6p3lgx3e6p453um6wplw2vkjnpzyj747fqd.onion';
+// Relay configuratie — Tauri native of browser
+(async function() {
+  try {
+    if (window.__TAURI__) {
+      // Native app: relay URL komt uit Rust (veiliger, niet hardcoded in HTML)
+      const cfg = await window.__TAURI__.core.invoke('get_relay_config');
+      window._PARAMANT_RELAY       = cfg.relay_url;
+      window._PARAMANT_RELAY_ONION = cfg.relay_onion;
+    } else {
+      // Browser: directe config
+      window._PARAMANT_RELAY       = 'wss://relay.paramant.app';
+      window._PARAMANT_RELAY_ONION = 'ws://6hz46anxzpwvzgzih23fm6p3lgx3e6p453um6wplw2vkjnpzyj747fqd.onion';
+    }
+  } catch(e) {
+    // Fallback
+    window._PARAMANT_RELAY       = 'wss://relay.paramant.app';
+    window._PARAMANT_RELAY_ONION = 'ws://6hz46anxzpwvzgzih23fm6p3lgx3e6p453um6wplw2vkjnpzyj747fqd.onion';
+  }
+})();
 </script>
 </head>
 <body>
