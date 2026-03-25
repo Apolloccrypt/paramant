@@ -796,17 +796,16 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
 <script>
 'use strict';
-// ─── Security helpers ────────────────────────────────────────────
-// Sanitize user-supplied strings — strip HTML tags, limit length
-function san(s,max=50){if(typeof s!=='string')return'';return s.replace(/[<>&"'`]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]||c)).slice(0,max);}
-// Validate nick — only safe printable chars
-function validNick(s){return typeof s==='string'&&/^[\w\-._!~@#+ ]{1,20}$/.test(s);}
-// Validate hex string
-function isHex(s,len){return typeof s==='string'&&s.length===len&&/^[0-9a-f]+$/i.test(s);}
-
+// ─── Helpers ────────────────────────────────────────────────────────
+const $=id=>document.getElementById(id);
 const b2h=a=>Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');
 const h2b=h=>{h=h.replace(/\s+/g,'');const m=h.match(/.{2}/g);return m?new Uint8Array(m.map(x=>parseInt(x,16))):null;};
 const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+
+// ─── Security helpers ────────────────────────────────────────────
+function san(s,max=50){if(typeof s!=='string')return'';return s.replace(/[<>&"'`]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]||c)).slice(0,max);}
+function validNick(s){return typeof s==='string'&&/^[\w\-._!~@#+ ]{1,20}$/.test(s);}
+function isHex(s,len){return typeof s==='string'&&s.length===len&&/^[0-9a-f]+$/i.test(s);}
 
 // ─── CRYPTO ENGINE — volledig intact ────────────────────────────────
 async function hkdf(s,info,l=32){const k=await crypto.subtle.importKey('raw',s,'HKDF',false,['deriveBits']);const b=await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt:new Uint8Array(32),info:new TextEncoder().encode(info)},k,l*8);return new Uint8Array(b);}
