@@ -1968,12 +1968,15 @@ async function doConnect(){
       sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
       sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
       if(relayOn){
-        relayJoinOnce(conv.chatId); // relayJoinOnce voorkomt dubbele replay
+        // Altijd opnieuw joinen na doConnect — ook als pre-join al gedaan was
+        // Relay stuurt dan opnieuw buffered pakketten → eerste bericht gegarandeerd
+        joinedRooms.delete(conv.chatId); // reset zodat relayJoin echt stuurt
+        relayJoin(conv.chatId);
         broadcastConnRequest(bundle);
       }
       renderList();showChat(id);
-      // Speel eventueel gebufferde pakketten af die vóór verbinding aankwamen
-      setTimeout(()=>replayBuffered(conv), 100);
+      // Speel eventueel gebufferde pakketten af (voor relay-pakketten die voor conv aankwamen)
+      setTimeout(()=>replayBuffered(conv), 200);
       $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
     }finally{
       shared.fill(0);
@@ -2121,12 +2124,14 @@ function buildMsg(dir,data,t){
     const detailsToggle=document.createElement('div');
     detailsToggle.className='mono text-xs text-slate-600 mt-1 px-1 cursor-pointer hover:text-slate-400 transition-colors select-none flex items-center gap-1';
     const relayedText = data.relayed ? '✓ Relay · ' : '';
-    detailsToggle.innerHTML=''; // clear before building
-    const toggleTxt=document.createTextNode(relayedText+'🔒 bekijk versleuteld pakket ›');
+
+    const toggleTxt=document.createElement('span');
+    toggleTxt.textContent=relayedText+'🔒 pakket tonen ›';
     detailsToggle.appendChild(toggleTxt);
 
     const detailsBox=document.createElement('div');
-    detailsBox.className='hidden mt-1';
+    detailsBox.style.display='none'; // gebruik style, niet Tailwind hidden class
+    detailsBox.style.marginTop='4px';
     const lbl2=document.createElement('div');lbl2.className='mono text-xs text-slate-500 mb-1 px-1';
     lbl2.textContent=data.type==='file'?'📎 Versleuteld bestand — stuur naar je amice:':'📤 Versleuteld bericht — stuur naar je amice:';
     const pktBox=document.createElement('div');pktBox.className='bg-slate-900 border border-slate-700 rounded-xl p-2.5';
@@ -2137,8 +2142,9 @@ function buildMsg(dir,data,t){
     detailsBox.appendChild(lbl2);detailsBox.appendChild(pktBox);
 
     detailsToggle.onclick=()=>{
-      const open=detailsBox.classList.toggle('hidden');
-      toggleTxt.textContent=relayedText+(open?'🔒 bekijk versleuteld pakket ›':'🔒 verberg pakket ‹');
+      const isOpen = detailsBox.style.display !== 'none';
+      detailsBox.style.display = isOpen ? 'none' : 'block';
+      toggleTxt.textContent = relayedText + (isOpen ? '🔒 pakket tonen ›' : '🔒 pakket verbergen ‹');
     };
     box.appendChild(detailsToggle);box.appendChild(detailsBox);
     outer.appendChild(box);
