@@ -555,44 +555,58 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 <div id="app">
 
   <!-- Top bar -->
-  <div class="flex items-center gap-2 px-3 h-14 bg-slate-900 border-b border-slate-800 flex-shrink-0">
+  <div class="flex items-center gap-1.5 px-3 h-14 bg-slate-900 border-b border-slate-800 flex-shrink-0 min-w-0">
     <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 flex-shrink-0">☰</button>
-    <!-- Logo + breadcrumb navigation -->
-    <div class="flex items-center gap-1 flex-shrink-0">
-      <button onclick="closeApp()" class="flex items-center gap-2 hover:opacity-80 transition-opacity" title="Terug naar de landingspagina">
-        <div class="w-7 h-7 rounded-lg overflow-hidden border border-teal-500/40"><canvas id="app-logo-cv" width="28" height="28"></canvas></div>
+
+    <!-- Logo + breadcrumb -->
+    <div class="flex items-center gap-1 flex-shrink-0 min-w-0">
+      <button onclick="closeApp()" class="flex items-center gap-1.5 hover:opacity-80 transition-opacity flex-shrink-0" title="Terug naar de landingspagina">
+        <div class="w-7 h-7 rounded-lg overflow-hidden border border-teal-500/40 flex-shrink-0"><canvas id="app-logo-cv" width="28" height="28"></canvas></div>
         <span class="font-bold text-white text-sm tracking-tight hidden sm:block">PARAMANT</span>
       </button>
-      <span id="nav-sep" class="text-slate-700 text-sm mx-1 hidden">/</span>
-      <button id="nav-home" onclick="showWelcome()" class="hidden text-xs text-slate-500 hover:text-teal-400 transition-colors px-1" title="Welkomscherm">Home</button>
-      <span id="nav-sep2" class="text-slate-700 text-sm mx-0.5 hidden">/</span>
-      <span id="nav-current" class="hidden text-xs text-slate-400 max-w-24 truncate"></span>
+      <span id="nav-sep" class="text-slate-700 text-sm mx-0.5 hidden flex-shrink-0">/</span>
+      <button id="nav-home" onclick="showWelcome()" class="hidden text-xs text-slate-500 hover:text-teal-400 transition-colors px-1 flex-shrink-0" title="Welkomscherm">Home</button>
+      <span id="nav-sep2" class="text-slate-700 text-sm mx-0.5 hidden flex-shrink-0">/</span>
+      <span id="nav-current" class="hidden text-xs text-slate-400 truncate max-w-[80px] sm:max-w-[140px]"></span>
     </div>
-    <div class="flex-1"></div>
-    <!-- Relay toggle — gebruiker hint -->
-    <div class="flex flex-col items-end gap-0.5">
-      <button onclick="toggleRelay()" id="relay-btn"
-        class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs mono text-slate-400 transition-all"
-        title="Zet de relay aan voor automatisch verzenden. Zonder relay kun je ook berichten sturen via kopiëren en plakken.">
-        <div id="rl-dot" class="w-2 h-2 rounded-full bg-slate-600 flex-shrink-0 transition-all"></div>
-        <span id="rl-lbl">Relay uit</span>
-      </button>
-      <span id="relay-hint" class="text-xs text-slate-600 mono hidden md:block">↑ zet relay aan voor automatisch verzenden</span>
-    </div>
-    <!-- Online teller — gevoed via WebSocket, altijd zichtbaar als relay aan is -->
-    <div id="online-badge" class="hidden items-center gap-1.5 px-3 py-1.5 bg-slate-800/60 border border-slate-700 rounded-xl text-xs mono text-slate-400">
+
+    <div class="flex-1 min-w-0"></div>
+
+    <!-- Relay knop — altijd zichtbaar, compact op mobiel -->
+    <button onclick="toggleRelay()" id="relay-btn"
+      class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs mono text-slate-400 transition-all flex-shrink-0"
+      title="Zet de relay aan voor automatisch verzenden. Zonder relay kun je ook berichten sturen via kopiëren en plakken.">
+      <div id="rl-dot" class="w-2 h-2 rounded-full bg-slate-600 flex-shrink-0 transition-all"></div>
+      <span id="rl-lbl">Relay uit</span>
+    </button>
+
+    <!-- Online teller — alleen op grotere schermen -->
+    <div id="online-badge" class="hidden items-center gap-1 px-2.5 py-1.5 bg-slate-800/60 border border-slate-700 rounded-xl text-xs mono text-slate-400 flex-shrink-0">
       <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
       <span id="counter">—</span>
-      <span class="text-slate-600">online</span>
     </div>
-    <!-- Countdown — alleen zichtbaar tijdens verbinden -->
-    <div id="relay-countdown-badge" class="hidden items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-xs mono text-yellow-400">
+
+    <!-- Countdown badge -->
+    <div id="relay-countdown-badge" class="hidden items-center gap-1 px-2.5 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-xs mono text-yellow-400 flex-shrink-0">
       <span id="relay-countdown-lbl">⏳ 30s</span>
     </div>
-    <button onclick="toggleLedger()" id="ledger-btn" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs text-slate-400 transition-all">
+
+    <!-- Ledger knop — alleen desktop -->
+    <button onclick="toggleLedger()" id="ledger-btn" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs text-slate-400 transition-all flex-shrink-0">
       📊 Ledger
     </button>
-    <button onclick="closeApp()" class="hidden md:flex px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-400 hover:text-white transition-all" title="Terug naar landingspagina">← Site</button>
+
+    <!-- ← Site knop — alleen desktop -->
+    <button onclick="closeApp()" class="hidden lg:flex px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-400 hover:text-white transition-all flex-shrink-0" title="Terug naar landingspagina">← Site</button>
+
+    <!-- Mobile menu knop voor ledger/site -->
+    <div class="relative lg:hidden flex-shrink-0">
+      <button onclick="toggleAppMenu()" class="w-8 h-8 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 text-sm">⋯</button>
+      <div id="app-menu" class="hidden absolute right-0 top-10 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 min-w-max overflow-hidden">
+        <button onclick="toggleLedger();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">📊 Ledger</button>
+        <button onclick="closeApp();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">← Terug naar site</button>
+      </div>
+    </div>
   </div>
 
   <!-- App body -->
@@ -2401,6 +2415,13 @@ function copySN(){
 }
 function hideSN(){$('sn-modal').classList.add('hidden');}
 function toggleLedger(){const p=$('ledger-col');p.classList.toggle('hidden');$('ledger-btn').style.borderColor=p.classList.contains('hidden')?'':'rgba(20,184,166,.4)';if(!p.classList.contains('hidden')&&relayOn)fetchLedger();}
+function toggleAppMenu(){const m=$('app-menu');if(m)m.classList.toggle('hidden');}
+function closeAppMenu(){const m=$('app-menu');if(m)m.classList.add('hidden');}
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('[onclick="toggleAppMenu()"]');
+  const menu=$('app-menu');
+  if(!btn&&menu&&!menu.classList.contains('hidden'))menu.classList.add('hidden');
+});
 function togglePaste(){const p=$('paste-ov');if(p.style.display==='block')hidePaste();else{p.style.display='block';$('paste-ta').value='';$('paste-err').textContent='';$('paste-ta').focus();}}
 function hidePaste(){$('paste-ov').style.display='none';}
 
