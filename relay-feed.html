@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARAMANT Relay Feed — Live</title>
+<script>window._PARAMANT_RELAY='wss://paramant-relay.onrender.com'</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0f1e;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+.mono{font-family:'JetBrains Mono',ui-monospace,'Cascadia Code',monospace}
+
+/* Header */
+header{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(10,15,30,.95);border-bottom:1px solid #1e293b;backdrop-filter:blur(12px);display:flex;align-items:center;padding:0 24px;gap:16px;z-index:100}
+.logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.logo span{color:#14b8a6}
+.sep{color:#334155;font-size:12px}
+.pagetitle{font-size:13px;color:#64748b;font-family:ui-monospace,monospace}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#14b8a6;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.header-stats{margin-left:auto;display:flex;gap:16px;align-items:center}
+.stat{text-align:right}
+.stat-val{font-size:18px;font-weight:800;color:#14b8a6;font-family:ui-monospace,monospace}
+.stat-lbl{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:.05em}
+.back-btn{padding:6px 12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:12px;cursor:pointer;text-decoration:none;transition:all .2s}
+.back-btn:hover{border-color:#14b8a6;color:#14b8a6}
+
+/* Layout */
+main{padding-top:72px;display:grid;grid-template-columns:1fr 320px;gap:0;height:100vh;overflow:hidden}
+@media(max-width:768px){main{grid-template-columns:1fr}aside{display:none}}
+
+/* Feed */
+.feed-col{overflow-y:auto;padding:16px}
+.feed-header{margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.feed-title{font-size:11px;color:#475569;font-family:ui-monospace,monospace;letter-spacing:.1em}
+.feed-count{font-size:11px;color:#334155;font-family:ui-monospace,monospace}
+
+/* Blok */
+.block{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:border-color .2s;cursor:default;animation:fadeIn .3s ease}
+.block:hover{border-color:#1e3a5f}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.block.new{border-color:#14b8a6;animation:newBlock .6s ease}
+@keyframes newBlock{0%{border-color:#14b8a6;background:#0d2a26}100%{border-color:#1e293b;background:#0f172a}}
+.block-num{width:32px;height:32px;border-radius:8px;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:10px;color:#475569;font-family:ui-monospace,monospace;flex-shrink:0}
+.block-hash{font-family:ui-monospace,monospace;font-size:13px;color:#14b8a6;flex:1;letter-spacing:.05em}
+.block-hash span{color:#2dd4bf}
+.block-size{font-size:11px;color:#475569;font-family:ui-monospace,monospace;width:60px;text-align:right;flex-shrink:0}
+.block-time{font-size:11px;color:#334155;font-family:ui-monospace,monospace;width:70px;text-align:right;flex-shrink:0}
+.block-age{font-size:10px;color:#1e3a5f;font-family:ui-monospace,monospace;width:48px;text-align:right;flex-shrink:0}
+.block-arrow{color:#1e293b;font-size:16px;flex-shrink:0}
+
+.empty{text-align:center;padding:60px 20px;color:#334155;font-family:ui-monospace,monospace;font-size:13px;line-height:2}
+
+/* Sidebar */
+aside{background:#080d1a;border-left:1px solid #1e293b;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+.side-section{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:14px}
+.side-title{font-size:10px;color:#475569;font-family:ui-monospace,monospace;letter-spacing:.1em;margin-bottom:12px}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-card{background:#0a0f1e;border:1px solid #1e293b;border-radius:8px;padding:10px;text-align:center}
+.stat-card-val{font-size:22px;font-weight:800;color:#14b8a6;font-family:ui-monospace,monospace}
+.stat-card-lbl{font-size:10px;color:#334155;margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+
+/* Activity graph */
+.graph{height:48px;display:flex;align-items:flex-end;gap:2px}
+.bar{flex:1;background:#1e293b;border-radius:2px 2px 0 0;min-height:2px;transition:height .3s}
+.bar.active{background:#14b8a6}
+
+/* Disclaimer */
+.disclaimer{font-size:11px;color:#1e293b;font-family:ui-monospace,monospace;line-height:1.8;padding:12px;background:#080d1a;border:1px solid #111827;border-radius:8px}
+.disclaimer strong{color:#334155}
+
+/* Privacy banner */
+.privacy{background:linear-gradient(135deg,#0d2a26,#0a1a2e);border:1px solid rgba(20,184,166,.2);border-radius:12px;padding:16px;font-size:12px;color:#64748b;line-height:1.6}
+.privacy strong{color:#14b8a6}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#080d1a}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="live-dot" id="live-dot" style="background:#334155"></div>
+  <div class="logo">PARA<span>MANT</span></div>
+  <div class="sep">/</div>
+  <div class="pagetitle mono">relay feed</div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-val" id="hdr-msgs">—</div>
+      <div class="stat-lbl">berichten</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="hdr-online" style="color:#4ade80">—</div>
+      <div class="stat-lbl">online</div>
+    </div>
+    <a href="/" class="back-btn">← Terug</a>
+  </div>
+</header>
+
+<main>
+  <!-- Feed -->
+  <div class="feed-col">
+    <div class="feed-header">
+      <div class="feed-title mono">VERSLEUTELDE PAKKETTEN · LIVE</div>
+      <div class="feed-count mono" id="feed-count">— entries</div>
+    </div>
+    <div id="feed">
+      <div class="empty">
+        📡 Verbinden met relay…<br>
+        <span style="font-size:11px;color:#1e3a5f">Alleen hash · bytes · tijdstempel zichtbaar<br>Inhoud is end-to-end versleuteld en onleesbaar</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside>
+    <!-- Relay stats -->
+    <div class="side-section">
+      <div class="side-title">RELAY STATISTIEKEN</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-val" id="s-msgs">—</div>
+          <div class="stat-card-lbl">berichten</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="s-chats">—</div>
+          <div class="stat-card-lbl">gesprekken</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" style="color:#4ade80" id="s-online">—</div>
+          <div class="stat-card-lbl">online</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="s-uptime">—</div>
+          <div class="stat-card-lbl">uptime</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity -->
+    <div class="side-section">
+      <div class="side-title">ACTIVITEIT (laatste 12 min)</div>
+      <div class="graph" id="activity-graph">
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+        <div class="bar" style="height:4px"></div>
+      </div>
+    </div>
+
+    <!-- Privacy -->
+    <div class="privacy">
+      <strong>🔒 Volledige privacy gegarandeerd</strong><br><br>
+      Wat je hier ziet is alles wat de relay weet:<br>
+      Een anonieme hash · Pakketgrootte · Tijdstempel<br><br>
+      <strong>Wat niemand ziet:</strong> inhoud, namen, IP-adressen, of wie met wie praat.<br><br>
+      Berichten worden max. 5 minuten bewaard, dan automatisch gewist.
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <strong>PARAMANT relay</strong><br>
+      paramant-relay.onrender.com<br>
+      Zero plaintext · Hash-prefix only<br>
+      NIST FIPS 203 · ML-KEM-768
+    </div>
+  </aside>
+</main>
+
+<script>
+const RELAY = (window._PARAMANT_RELAY||'wss://paramant-relay.onrender.com')
+  .replace('wss://','https://').replace('ws://','http://');
+
+let allEntries = [];
+let activityBuckets = new Array(12).fill(0);
+let blockIndex = 0;
+
+function fmtBytes(b){
+  if(b<1024)return b+'B';
+  if(b<1048576)return(b/1024).toFixed(1)+'KB';
+  return(b/1048576).toFixed(1)+'MB';
+}
+function fmtTime(ts){
+  const d=new Date(ts);
+  return d.getHours().toString().padStart(2,'0')+':'+
+         d.getMinutes().toString().padStart(2,'0')+':'+
+         d.getSeconds().toString().padStart(2,'0');
+}
+function fmtAge(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60)return s+'s';
+  if(s<3600)return Math.floor(s/60)+'m';
+  return Math.floor(s/3600)+'u';
+}
+function fmtUptime(s){
+  if(s<3600)return Math.floor(s/60)+'m';
+  return Math.floor(s/3600)+'u '+Math.floor((s%3600)/60)+'m';
+}
+
+function buildBlock(e, isNew){
+  const d=document.createElement('div');
+  d.className='block'+(isNew?' new':'');
+  blockIndex++;
+
+  const num=document.createElement('div');
+  num.className='block-num mono';
+  num.textContent='#'+String(blockIndex).padStart(3,'0');
+
+  const hash=document.createElement('div');
+  hash.className='block-hash mono';
+  hash.innerHTML='<span>'+e.chatHash.slice(0,8)+'</span>'+e.chatHash.slice(8).replace('…','')+'…';
+
+  const size=document.createElement('div');
+  size.className='block-size mono';
+  size.textContent=fmtBytes(e.bytes);
+
+  const time=document.createElement('div');
+  time.className='block-time mono';
+  time.textContent=fmtTime(e.timestamp);
+
+  const age=document.createElement('div');
+  age.className='block-age mono';
+  age.textContent=fmtAge(e.timestamp);
+
+  d.appendChild(num);d.appendChild(hash);d.appendChild(size);d.appendChild(time);d.appendChild(age);
+  return d;
+}
+
+function updateActivityGraph(entries){
+  const now=Date.now();
+  const buckets=new Array(12).fill(0);
+  entries.forEach(e=>{
+    const age=(now-e.timestamp)/1000/60; // minutes ago
+    const bucket=Math.floor(age);
+    if(bucket>=0&&bucket<12)buckets[11-bucket]++;
+  });
+  const max=Math.max(...buckets,1);
+  const bars=document.querySelectorAll('#activity-graph .bar');
+  bars.forEach((bar,i)=>{
+    const h=Math.max(2,Math.round(buckets[i]/max*44));
+    bar.style.height=h+'px';
+    bar.className='bar'+(buckets[i]>0?' active':'');
+  });
+}
+
+function renderFeed(entries, isRefresh){
+  const feed=document.getElementById('feed');
+  const count=document.getElementById('feed-count');
+  if(!entries.length){
+    feed.innerHTML='<div class="empty">Geen pakketten in de laatste 5 minuten.<br><span style="font-size:11px;color:#1e3a5f">Stuur een bericht in PARAMANT om er één te zien verschijnen.</span></div>';
+    count.textContent='0 entries';
+    return;
+  }
+  blockIndex=0;
+  count.textContent=entries.length+' entr'+(entries.length===1?'y':'ies');
+  feed.innerHTML='';
+  entries.forEach((e,i)=>feed.appendChild(buildBlock(e,isRefresh&&i<3)));
+  updateActivityGraph(entries);
+}
+
+async function fetchAll(){
+  try{
+    const [statsR, ledgerR] = await Promise.all([
+      fetch(RELAY+'/api/stats'),
+      fetch(RELAY+'/api/ledger')
+    ]);
+    const stats=await statsR.json();
+    const ledger=await ledgerR.json();
+
+    // Update header stats
+    if(stats.ok){
+      document.getElementById('hdr-msgs').textContent=Number(stats.messages).toLocaleString('nl-NL');
+      document.getElementById('hdr-online').textContent=stats.online||0;
+      document.getElementById('s-msgs').textContent=Number(stats.messages).toLocaleString('nl-NL');
+      document.getElementById('s-chats').textContent=stats.chats||0;
+      document.getElementById('s-online').textContent=stats.online||0;
+      document.getElementById('s-uptime').textContent=fmtUptime(stats.uptime_s||0);
+      // Live indicator
+      const dot=document.getElementById('live-dot');
+      dot.style.background=(stats.online||0)>0?'#14b8a6':'#334155';
+    }
+
+    // Update feed
+    if(ledger.ok&&ledger.entries){
+      const isRefresh=allEntries.length>0;
+      allEntries=ledger.entries;
+      renderFeed(allEntries, isRefresh);
+    }
+
+  }catch(e){
+    document.getElementById('live-dot').style.background='#ef4444';
+  }
+}
+
+// Start
+fetchAll();
+// Ververs elke 5 seconden
+setInterval(fetchAll, 5000);
+</script>
+</body>
+</html>
