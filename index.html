@@ -1444,7 +1444,26 @@ function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyS
 function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
 
 // Broadcast verbindingsverzoek — de andere partij ziet een inkomend verzoek
-// ── Early-packet buffer ───────────────────────────────────────────
+// ── Sequentiële decrypt queue ─────────────────────────────────────────────
+// Voorkomt race conditions: meerdere gelijktijdige decryptPacket-aanroepen
+// lezen dezelfde recvChainKey/recvSeq → verkeerde sleutel → "Ontsleutelen mislukt"
+const decryptQueues = new Map(); // convId → Promise (last queued op)
+function queueDecrypt(conv, pkt){
+  const last = decryptQueues.get(conv.id) || Promise.resolve();
+  const next = last.then(async()=>{
+    try{
+      await decryptPacket(conv,pkt);
+      addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:pkt.seq,b:JSON.stringify(pkt).length,t:Date.now()});
+    }catch(e){
+      if(e.message && !e.message.includes('al gelezen') && !e.message.includes('recvSeq'))
+        sysMsg(conv,'⚠️ '+e.message);
+    }
+  });
+  decryptQueues.set(conv.id, next);
+  // Cleanup: don't hold references forever
+  next.finally(()=>{ if(decryptQueues.get(conv.id)===next) decryptQueues.delete(conv.id); });
+  return next;
+}
 // Pakketten die aankomen vóórdat de conv bestaat worden gebufferd
 // en opnieuw afgespeeld zodra de conv is aangemaakt
 const earlyPacketBuffer = new Map(); // chatHash → [{msg}]
@@ -1453,20 +1472,17 @@ function bufferEarlyPacket(hash, msg){
   if(buf.length < 20) buf.push(msg); // max 20 buffered
   earlyPacketBuffer.set(hash, buf);
 }
-function replayBuffered(conv){
+async function replayBuffered(conv){
   const key = conv.chatId ? conv.chatId.slice(0,16) : '';
   if(!key) return;
-  // Check all buffer keys that start with our chatId prefix
   earlyPacketBuffer.forEach((msgs, hash)=>{
     if(key.startsWith(hash.replace('…','').slice(0,8)) || hash.startsWith(key.slice(0,8))){
       earlyPacketBuffer.delete(hash);
-      msgs.forEach(msg=>{
+      // Via queueDecrypt voor gegarandeerd sequentiële verwerking
+      msgs.filter(msg=>msg.payload&&!msg.payload.pType).forEach(msg=>{
         const pay=msg.payload;
-        if(!pay||pay.pType)return;
         const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};
-        decryptPacket(conv,pkt)
-          .then(()=>addLedgerEntry({h:key,s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()}))
-          .catch(()=>{}); // silently skip if can't decrypt
+        queueDecrypt(conv, pkt);
       });
     }
   });
@@ -1576,9 +1592,7 @@ function onRelayMsg(msg){
       return;
     }
     const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};
-    decryptPacket(conv,pkt)
-      .then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()}))
-      .catch(e=>sysMsg(conv,'⚠️ '+e.message));
+    queueDecrypt(conv, pkt);
   }
   else if(msg.type==='peer_left'){
     presenceMap.delete(msg.nick);renderPresence();
