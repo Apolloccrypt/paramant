@@ -1019,8 +1019,29 @@ function drawFractal(cv,p){
 
 // Animated logo (not identity-derived — fixed interesting region)
 let hfA=0;
-const LP=(()=>{const h=new Uint8Array(32);h[0]=3;h[5]=128;h[6]=4;h[7]=64;return fractalParams(h);})();
-(function animL(){hfA+=.003;const p={...LP,cx:LP.cx+Math.sin(hfA*.7)*.004,cy:LP.cy+Math.cos(hfA*.5)*.003};['hero-cv','hero-main-cv','app-logo-cv','wl-cv'].forEach(id=>{const cv=$(id);if(cv)drawFractal(cv,p);});requestAnimationFrame(animL);})();
+// Logo: hardcoded mooie Mandelbrot-grenszone — herkenbaar, niet een blob
+// Seahorse valley nabij — mooi detail zichtbaar ook op kleine canvas
+const LP={
+  cx:-0.7435,cy:0.1314,
+  zoom:0.0045,           // niet te ver ingezoomd = herkenbare structuur
+  pal:[0,210,180],       // teal — past bij PARAMANT kleurschema
+  pal2:[20,120,255],     // blauw als mix
+  mix:0.35,
+  maxIt:120,             // genoeg detail
+  bright:1.1
+};
+(function animL(){
+  hfA+=.0015; // trager = rustiger
+  const p={
+    ...LP,
+    // Langzame orbiterende beweging langs de grens — altijd mooi detail
+    cx:LP.cx+Math.sin(hfA*.5)*.0008,
+    cy:LP.cy+Math.cos(hfA*.7)*.0006,
+    zoom:LP.zoom*(1+Math.sin(hfA*.3)*0.06) // heel subtiele zoom-puls
+  };
+  ['hero-cv','hero-main-cv','app-logo-cv','wl-cv'].forEach(id=>{const cv=$(id);if(cv)drawFractal(cv,p);});
+  requestAnimationFrame(animL);
+})();
 
 // ─── IDENTITY — SHA-256(pubKey) → avatar + nick ──────────────────
 const NADJ=['Stil','Snel','Slim','Wild','Koud','Vrij','Nacht','Diep','Scherp','Nevel','Vlug','Zwart','Goud','Stout','Zeker','Fel','Grijs','Hoog','Fijn','Raak','Koel','Helder','Ijzer','Sterk','Vast','Blauw','Rood','Flink','Handig','Rustig'];
