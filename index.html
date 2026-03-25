@@ -764,7 +764,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <button onclick="togglePaste()"
           class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all"
           title="📥 Bericht ontvangen van je amice? Klik hier en plak het versleutelde pakket">📥</button>
-        <textarea id="msg-inp" rows="1" placeholder="Typ een bericht…"
+        <textarea id="msg-inp" rows="1" placeholder="Verbind eerst voor je een bericht kunt sturen…" id="msg-inp-placeholder"
           class="flex-1 bg-slate-800 border border-slate-700 focus:border-teal-500 text-white rounded-xl px-4 py-3 text-base outline-none resize-none max-h-32 leading-normal transition-colors placeholder-slate-600"
           oninput="autoResize(this)"></textarea>
         <button onclick="doEncrypt()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-teal-500 hover:bg-teal-400 rounded-xl text-slate-900 text-xl font-bold transition-all active:scale-95">➤</button>
@@ -1056,7 +1056,7 @@ let qrShown=false;
 function toggleQR(){qrShown=!qrShown;const p=$('qr-panel');if(!qrShown){p.classList.add('hidden');return;}p.classList.remove('hidden');$('qr-box').innerHTML='';try{new QRCode($('qr-box'),{text:($('my-key-prev').dataset.full||myBundle).slice(0,200),width:160,height:160,correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
 async function regenIdentity(){
   if(convs.length>0&&!confirm('Nieuwe identiteit aanmaken? Alle gesprekken worden beëindigd.'))return;
-  convs.forEach(c=>{if(c.chainKey)c.chainKey.fill(0);});convs=[];activeId=null;
+  convs.forEach(c=>{if(c.sendChainKey)c.sendChainKey.fill(0);if(c.recvChainKey)c.recvChainKey.fill(0);});convs=[];activeId=null;
   await IDB.clearIdentity(); // Wis opgeslagen sleutel
   renderList();showWelcome();
   await buildIdentity();
@@ -1353,7 +1353,8 @@ function onRelayMsg(msg){
     }
 
     // ── Normaal versleuteld pakket — zoek de juiste conv op chatHash ──
-    // Gebruik chatHash uit de relay-boodschap als die er is
+    // Gooi alle payload weg die een pType hebben maar niet encrypted zijn
+    if(pay?.pType)return; // presence/conn_request etc. al afgehandeld of niet voor ons
     const incomingHash=msg.chatHash||'';
     let conv=null;
     if(incomingHash){
@@ -1662,7 +1663,21 @@ function onLedgerScroll(el){
 
 // ─── CONVERSATIONS ───────────────────────────────────────────────────
 const MAX=3;let convs=[],activeId=null;
-function newConv(id,name){return{id,name,chatId:null,chainKey:null,msgSeq:0,safetyNums:[],msgs:[],connected:false,tagsCnt:0,repCnt:0,kemCnt:0,kxType:'—',peerMLKEM:null,myRatchetKEM:null,destructTimer:0};}
+function newConv(id,name){return{
+  id,name,chatId:null,
+  // ── Twee onafhankelijke ratchet chains ─────────────────────────
+  // sendChainKey: A encrypt → ratchet eigen ketting
+  // recvChainKey: A decrypt → ratchet peer ketting
+  // Beide starten op hetzelfde CK maar divergeren zodra berichten
+  // in beide richtingen gaan — vereist voor correcte forward secrecy
+  sendChainKey:null, sendSeq:0,
+  recvChainKey:null, recvSeq:0,
+  // Legacy: behoud chainKey als alias voor avatar rendering
+  get chainKey(){return this.sendChainKey;},
+  safetyNums:[],msgs:[],connected:false,
+  tagsCnt:0,repCnt:0,kemCnt:0,kxType:'—',
+  peerMLKEM:null,myRatchetKEM:null,destructTimer:0
+};}
 const getConv=id=>convs.find(c=>c.id===id);
 const activeConv=()=>getConv(activeId);
 
@@ -1682,13 +1697,19 @@ async function doConnect(){
     try{
       master=await hkdf(shared,'paramant-master-v1',32);
       const sn=await safetyNums(master);
-      ck=await hkdf(master,'paramant-chain-init',32);
+      // Twee onafhankelijke chains uit dezelfde master — nooit verwarren
+      const sendCK=await hkdf(master,'paramant-send-chain-v1',32);
+      const recvCK=await hkdf(master,'paramant-recv-chain-v1',32);
       const id=Date.now();
       const conv=newConv(id,bundle.nick||name);
-      conv.chainKey=ck;conv.safetyNums=sn;conv.connected=true;
+      conv.sendChainKey=sendCK; conv.sendSeq=0;
+      conv.recvChainKey=recvCK; conv.recvSeq=0;
+      conv.safetyNums=sn;conv.connected=true;
       conv.kxType=myMLK&&bundle.mlkem?'ECDH P-256 + ML-KEM-768':'ECDH P-256';
       if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
-      conv.chatId=await chatIdFrom(ck);
+      // chatId voor relay room — stabiel, gebaseerd op master (al gewist na hkdf)
+      // Gebruik sendCK als stable basis — beide kanten hebben dezelfde sendCK na ECDH
+      conv.chatId=await chatIdFrom(sendCK);
       convs.push(conv);
       sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
       sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
@@ -1701,10 +1722,9 @@ async function doConnect(){
       renderList();showChat(id);
       $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
     }finally{
-      // Garanteer wissen van secrets — ook bij fout
       shared.fill(0);
       if(master)master.fill(0);
-      // ck stays in conv.chainKey — that is intentional
+      // sendCK en recvCK blijven in conv — dat is intentioneel
     }
   }catch(e){
     $('conn-err').textContent=e.message;$('conn-err').style.display='block';
@@ -1714,19 +1734,20 @@ async function doConnect(){
 $('peer-key').addEventListener('input',function(){try{const b=JSON.parse(this.value.trim());if(b.nick&&!$('peer-name').value)$('peer-name').value=b.nick;}catch(e){}});
 
 // ─── ENCRYPT / DECRYPT ────────────────────────────────────────────────
-async function doEncrypt(){const conv=activeConv();if(!conv?.chainKey)return;const txt=$('msg-inp').value.trim();if(!txt)return;$('msg-inp').value='';$('msg-inp').style.height='auto';await encPayload(conv,txt,'text');}
+async function doEncrypt(){const conv=activeConv();if(!conv?.sendChainKey)return;const txt=$('msg-inp').value.trim();if(!txt)return;$('msg-inp').value='';$('msg-inp').style.height='auto';await encPayload(conv,txt,'text');}
 async function encPayload(conv,payload,type){
   try{
-    const seq=conv.msgSeq;
+    if(!conv.sendChainKey)throw new Error('Geen verbinding. Verbind eerst met je amice.');
+    const seq=conv.sendSeq;
     let kemShared=null,kemCt=null,newKEMPub=null;
     if(mlOK()&&conv.peerMLKEM&&seq>0&&seq%KEM_IV===0){const res=await kemEncap(conv.peerMLKEM);if(res){kemShared=res.ss;kemCt=res.ct;conv.kemCnt++;}try{conv.myRatchetKEM=getML().keygen();newKEMPub=b2h(conv.myRatchetKEM.publicKey);}catch(e){}}
-    const{nextCK,msgKey}=await ratchet(conv.chainKey,kemShared);
-    conv.chainKey=nextCK;conv.msgSeq++;
+    const{nextCK,msgKey}=await ratchet(conv.sendChainKey,kemShared);
+    conv.sendChainKey=nextCK;conv.sendSeq++;
     const encoded=type==='text'?new TextEncoder().encode(payload):new TextEncoder().encode(JSON.stringify(payload));
     const padded=pad32(encoded);
     const aad=new TextEncoder().encode(`paramant:${seq}:${type}`);
     const{iv,ct}=await aesEnc(msgKey,padded,aad);
-    const niKey=`${seq}:${b2h(iv).slice(0,8)}`;await NDB.add(niKey);
+    const niKey=`s:${seq}:${b2h(iv).slice(0,8)}`;await NDB.add(niKey);
     const pkt={v:'paramant-v2',type,seq,iv:b2h(iv),ct:b2h(ct)};
     if(kemCt)pkt.kemCt=kemCt;if(newKEMPub)pkt.kemPub=newKEMPub;
     conv.tagsCnt++;
@@ -1741,15 +1762,17 @@ async function doDecrypt(){const conv=activeConv();if(!conv?.chainKey)return;con
 async function decryptPacket(conv,pkt){
   const{type='text',seq,iv:ivHex,ct:ctHex,kemCt,kemPub}=pkt;
   if(!ivHex||!ctHex||seq===undefined)throw new Error('Pakket mist informatie.');
-  const niKey=`${seq}:${ivHex.slice(0,8)}`;
+  if(!conv.recvChainKey)throw new Error('Geen ontvangst-keten. Verbind eerst opnieuw.');
+  const niKey=`r:${seq}:${ivHex.slice(0,8)}`;
   if(await NDB.has(niKey)){conv.repCnt++;updateAudit(conv);throw new Error('Dit pakket is al gelezen (replay-bescherming).');}
   let kemShared=null;
   if(kemCt&&conv.myRatchetKEM?.secretKey){kemShared=await kemDecap(kemCt,conv.myRatchetKEM.secretKey);conv.myRatchetKEM=null;if(kemShared)conv.kemCnt++;}
   if(kemPub)conv.peerMLKEM=kemPub;
-  let ck=conv.chainKey;
-  for(let i=conv.msgSeq;i<seq;i++){const r=await ratchet(ck);ck=r.nextCK;}
+  // Ratchet recvChainKey forward to seq (skip lost messages)
+  let ck=conv.recvChainKey;
+  for(let i=conv.recvSeq;i<seq;i++){const r=await ratchet(ck);ck=r.nextCK;}
   const{nextCK,msgKey}=await ratchet(ck,kemShared);
-  conv.chainKey=nextCK;conv.msgSeq=seq+1;
+  conv.recvChainKey=nextCK;conv.recvSeq=seq+1;
   const iv=h2b(ivHex),ctBytes=h2b(ctHex),aad=new TextEncoder().encode(`paramant:${seq}:${type}`);
   const padded=await aesDec(msgKey,iv,ctBytes,aad);
   const plain=unpad32(padded);
@@ -1874,7 +1897,7 @@ function showChat(id){
   $('new-btn').disabled=convs.length>=MAX;closeSidebar();
   setNav('chat', conv.name);
 }
-function endConv(){const c=activeConv();if(!c||!confirm(`Gesprek met ${c.name} sluiten?`))return;if(c.chainKey)c.chainKey.fill(0);convs=convs.filter(x=>x.id!==activeId);renderList();if(convs.length>0)showChat(convs[0].id);else showWelcome();}
+function endConv(){const c=activeConv();if(!c||!confirm(`Gesprek met ${c.name} sluiten?`))return;if(c.sendChainKey)c.sendChainKey.fill(0);if(c.recvChainKey)c.recvChainKey.fill(0);convs=convs.filter(x=>x.id!==activeId);renderList();if(convs.length>0)showChat(convs[0].id);else showWelcome();}
 function renderList(){
   const list=$('conv-list');list.querySelectorAll('.ci-item').forEach(e=>e.remove());
   $('empty-hint').style.display=convs.length?'none':'block';
@@ -1890,7 +1913,7 @@ function renderList(){
     const right=document.createElement('div');right.className='flex items-center gap-1.5 flex-shrink-0';
     const dot=document.createElement('div');dot.className='w-2 h-2 rounded-full '+(c.connected?'bg-green-400':'bg-slate-600');
     const x=document.createElement('button');x.className='w-6 h-6 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 text-xs transition-all opacity-0 group-hover:opacity-100';x.textContent='✕';
-    x.onclick=e=>{e.stopPropagation();if(confirm(`Gesprek met ${c.name} verwijderen?`)){if(c.chainKey)c.chainKey.fill(0);convs=convs.filter(x=>x.id!==c.id);if(activeId===c.id){if(convs.length>0)showChat(convs[0].id);else showWelcome();}renderList();}};
+    x.onclick=e=>{e.stopPropagation();if(confirm(`Gesprek met ${c.name} verwijderen?`)){if(c.sendChainKey)c.sendChainKey.fill(0);if(c.recvChainKey)c.recvChainKey.fill(0);convs=convs.filter(x=>x.id!==c.id);if(activeId===c.id){if(convs.length>0)showChat(convs[0].id);else showWelcome();}renderList();}};
     right.appendChild(dot);right.appendChild(x);
     div.appendChild(av);div.appendChild(inf);div.appendChild(right);
     list.insertBefore(div,$('empty-hint'));
@@ -1899,7 +1922,7 @@ function renderList(){
 }
 function updateAudit(c){
   if(!c||c.id!==activeId)return;
-  $('au-kx').textContent=c.kxType||'—';$('au-rnd').textContent='#'+c.msgSeq;$('au-tags').textContent=c.tagsCnt;
+  $('au-kx').textContent=c.kxType||'—';$('au-rnd').textContent='#'+(c.sendSeq||0)+'/'+(c.recvSeq||0);$('au-tags').textContent=c.tagsCnt;
   $('au-kem').textContent=c.kemCnt||0;if(c.kemCnt>0)$('au-kem-wrap').classList.remove('hidden');
   $('au-rep').textContent=c.repCnt||0;if(c.repCnt>0)$('au-rep-wrap').classList.remove('hidden');
 }
