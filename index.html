@@ -1284,7 +1284,7 @@ function disconnectRelay(){
   relayWant=false;
   if(relayWS){try{relayWS.close();}catch(e){}}
   relayWS=null;relayOn=false;
-  presenceMap.clear();renderPresence();setRelayUI('off');
+  joinedRooms.clear();presenceMap.clear();renderPresence();setRelayUI('off');
 }
 
 function toggleRelay(){
@@ -1306,7 +1306,16 @@ function showRelayConfigTip(){
   document.body.appendChild(tip);
   setTimeout(()=>{if(tip.parentElement){tip.style.transition='opacity .4s';tip.style.opacity='0';setTimeout(()=>tip.remove(),400);}},15000);
 }
-function relayJoin(room){if(!relayOn||!relayWS||relayWS.readyState!==1)return;relayWS.send(JSON.stringify({type:'join',chatHash:room,nick:myNick}));}
+const joinedRooms = new Set(); // voorkomt dubbele relayJoin → dubbele replay
+function relayJoin(room){
+  if(!relayOn||!relayWS||relayWS.readyState!==1)return;
+  relayWS.send(JSON.stringify({type:'join',chatHash:room,nick:myNick}));
+  joinedRooms.add(room);
+}
+function relayJoinOnce(room){
+  if(joinedRooms.has(room))return; // al joined — relay zou opnieuw buffered sturen
+  relayJoin(room);
+}
 function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyState!==1)return false;try{relayWS.send(JSON.stringify({type:'packet',chatHash:conv.chatId,seq:pkt.seq,payload:{iv:pkt.iv,ct:pkt.ct,type:pkt.type,kemCt:pkt.kemCt,kemPub:pkt.kemPub}}));return true;}catch(e){return false;}}
 function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
 
@@ -1809,7 +1818,7 @@ async function doConnect(){
       sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
       sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
       if(relayOn){
-        relayJoin(conv.chatId);
+        relayJoinOnce(conv.chatId); // relayJoinOnce voorkomt dubbele replay
         broadcastConnRequest(bundle);
       }
       renderList();showChat(id);
@@ -1857,8 +1866,11 @@ async function decryptPacket(conv,pkt){
   const{type='text',seq,iv:ivHex,ct:ctHex,kemCt,kemPub,replayed}=pkt;
   if(!ivHex||!ctHex||seq===undefined)throw new Error('Pakket mist informatie.');
   if(!conv.recvChainKey)throw new Error('Geen ontvangst-keten. Verbind eerst opnieuw.');
+
+  // Guard: seq al verwerkt (relay stuurt soms hetzelfde pakket twee keer via room buffer)
+  if(seq < conv.recvSeq) return; // stil negeren — al eerder verwerkt
+
   const niKey=`r:${seq}:${ivHex.slice(0,8)}`;
-  // Replay-bescherming: sla over als al gezien, TENZIJ relay het opnieuw stuurt (replayed)
   if(!replayed && await NDB.has(niKey)){conv.repCnt++;updateAudit(conv);throw new Error('Dit pakket is al gelezen (replay-bescherming).');}
   if(replayed && await NDB.has(niKey)) return; // al verwerkt, stil negeren
   let kemShared=null;
