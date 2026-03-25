@@ -16,7 +16,24 @@
      Aanbevolen: download index.html en gebruik die lokale kopie voor maximale integriteitscontrole. -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{animation:{'fade-up':'fadeUp .4s ease forwards','pulse-soft':'pulseSoft 2.5s infinite','chain-scroll':'chainScroll 20s linear infinite'}}}}</script>
-<script src="https://cdn.jsdelivr.net/npm/@noble/post-quantum@0.2.1/build/noble-post-quantum.umd.min.js" crossorigin="anonymous" onerror="console.warn('ML-KEM offline — ECDH-only mode')"></script>
+<script>
+// noble-post-quantum laden met meerdere fallbacks
+(function(){
+  function tryLoad(urls, idx){
+    if(idx>=urls.length){console.warn('ML-KEM: alle CDNs gefaald — ECDH-only mode');return;}
+    var s=document.createElement('script');
+    s.crossOrigin='anonymous';
+    s.src=urls[idx];
+    s.onerror=function(){tryLoad(urls,idx+1);};
+    document.head.appendChild(s);
+  }
+  tryLoad([
+    'https://unpkg.com/@noble/post-quantum@0.2.1/build/noble-post-quantum.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/@noble/post-quantum@0.2.1/build/noble-post-quantum.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/noble-post-quantum/0.2.1/noble-post-quantum.umd.min.js'
+  ],0);
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
