@@ -633,7 +633,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div class="text-slate-400 text-sm leading-relaxed">Bel je amice en vergelijk veiligheidsnummers. Gelijk? Niemand luistert mee.</div>
         <div class="mt-3 mono text-xs text-teal-600">Safety numbers</div>
       </div>
-      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-tune-500/30 transition-all">
         <div class="text-3xl mb-3">🌊</div>
         <div class="text-white font-semibold mb-1.5">Wiskundig uniek avatar</div>
         <div class="text-slate-400 text-sm leading-relaxed">Jouw fractal-avatar én naam worden afgeleid van je sleutel via SHA-256. Altijd hetzelfde voor dezelfde sleutel.</div>
@@ -641,7 +641,49 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       </div>
     </div>
 
-    <!-- Eerlijke beperkingen — transparantie over wat de tool wel/niet garandeert -->
+    <!-- Infrastructuur sectie -->
+    <div class="mt-14 mb-2">
+      <div class="inline-block px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-full text-slate-400 text-sm font-medium mono mb-6">De infrastructuur</div>
+      <h3 class="text-xl font-bold text-white mb-2">Eigendom. Europees. Controleerbaar.</h3>
+      <p class="text-slate-500 text-sm mb-8 max-w-lg mx-auto">Geen big tech. Geen Amerikaanse servers. Alles draait op infrastructuur die wij controleren — onder Europees recht.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left mb-6">
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-xl flex-shrink-0">🇩🇪</div>
+          <div>
+            <div class="text-white font-semibold text-sm">Hetzner — Neurenberg</div>
+            <div class="mono text-xs text-slate-600">relay.paramant.app</div>
+          </div>
+        </div>
+        <div class="text-slate-400 text-sm leading-relaxed">De relay draait op een dedicated server in Duitsland. Striktste GDPR-handhaving in Europa. Geen Amerikaanse wetgeving (FISA, NSL).</div>
+        <div class="mt-3 mono text-xs text-teal-600">EU · GDPR · eigendom</div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-xl flex-shrink-0">☁️</div>
+          <div>
+            <div class="text-white font-semibold text-sm">Cloudflare — tunnel</div>
+            <div class="mono text-xs text-slate-600">paramant.app</div>
+          </div>
+        </div>
+        <div class="text-slate-400 text-sm leading-relaxed">De app en relay zijn bereikbaar via Cloudflare tunnel. Cloudflare ziet alleen versleuteld verkeer — nooit de inhoud van berichten.</div>
+        <div class="mt-3 mono text-xs text-teal-600">TLS · DDoS-bescherming</div>
+      </div>
+      <div class="bg-slate-800/40 border border-teal-500/20 rounded-2xl p-5 hover:border-teal-500/40 transition-all">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-xl flex-shrink-0">🧅</div>
+          <div>
+            <div class="text-white font-semibold text-sm">Tor — hidden service</div>
+            <div class="mono text-xs text-slate-600">.onion adres</div>
+          </div>
+        </div>
+        <div class="text-slate-400 text-sm leading-relaxed">Voor maximale anonimiteit. Via Tor Browser is zelfs het IP-adres van de gebruiker onzichtbaar. Geen enkel knooppunt ziet het volledige pad.</div>
+        <div class="mt-3 mono text-xs text-purple-500">IP anoniem · Tor Browser</div>
+      </div>
+    </div>
+
+    <!-- Eerlijke beperkingen -->
     <div class="mt-10 max-w-2xl mx-auto border border-slate-700/60 rounded-2xl overflow-hidden">
       <div class="bg-slate-800/40 px-5 py-3 border-b border-slate-700/60 flex items-center gap-2">
         <span class="text-slate-400 text-sm font-semibold">Eerlijk over de beperkingen</span>
@@ -665,8 +707,15 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div class="px-5 py-3.5 flex items-start gap-3">
           <span class="text-yellow-500 flex-shrink-0 mt-0.5">⚠</span>
           <div>
+            <div class="text-slate-300 text-sm font-medium">Cloudflare ziet verbindingsmetadata</div>
+            <div class="text-slate-500 text-xs mt-0.5 leading-relaxed">Cloudflare logt IP-adressen en tijdstempels van verbindingen op infrastructuurniveau — buiten onze controle. Gebruik Tor Browser voor volledige IP-anonimiteit.</div>
+          </div>
+        </div>
+        <div class="px-5 py-3.5 flex items-start gap-3">
+          <span class="text-yellow-500 flex-shrink-0 mt-0.5">⚠</span>
+          <div>
             <div class="text-slate-300 text-sm font-medium">Geen formele cryptografische audit</div>
-            <div class="text-slate-500 text-xs mt-0.5 leading-relaxed">De 60/60 implementatiechecks verifiëren dat alle componenten aanwezig en correct verbonden zijn — geen vervanging voor handmatig werk door gespecialiseerde cryptografen. Side-channel aanvallen zijn niet formeel uitgesloten.</div>
+            <div class="text-slate-500 text-xs mt-0.5 leading-relaxed">De implementatiechecks verifiëren dat alle componenten aanwezig en correct verbonden zijn — geen vervanging voor handmatig werk door gespecialiseerde cryptografen.</div>
           </div>
         </div>
       </div>
