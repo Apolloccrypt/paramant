@@ -1551,7 +1551,6 @@ function onRelayMsg(msg){
 
       // ── Pre-join de relay room zodat berichten van de afzender
       //    direct aankomen, ook vóórdat doConnect voltooid is ──
-      // Bereken dezelfde chatId die de afzender heeft via ECDH
       (async()=>{
         try{
           const eb=h2b(bparsed.ecdh.replace(/\s+/g,''));
@@ -1563,8 +1562,10 @@ function onRelayMsg(msg){
           const chatCK=await hkdf(master,'paramant-chat-id-v2',32);
           const chatId=await chatIdFrom(chatCK);
           shared.fill(0);master.fill(0);chatCK.fill(0);
-          // Join de room — relay levert nu berichten aan ons ook al bestaat conv nog niet
-          relayJoin(chatId);
+          // Stuur join direct via WS — NIET via joinedRooms (zodat doConnect later ook kan joinen)
+          if(relayWS&&relayWS.readyState===1){
+            relayWS.send(JSON.stringify({type:'join',chatHash:chatId,nick:myNick}));
+          }
         }catch(e){}
       })();
 
@@ -1983,11 +1984,20 @@ async function doConnect(){
       sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
       sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
       if(relayOn){
-        relayJoinOnce(conv.chatId); // één keer joinen — relay stuurt buffer alleen bij eerste join
+        // Vers joinen — relay stuurt buffer opnieuw
+        joinedRooms.delete(conv.chatId);
+        relayJoin(conv.chatId);
         broadcastConnRequest(bundle);
+        // Veiligheidsmarge: nogmaals joinen na 1.5s voor het geval het eerste bericht
+        // verzonden was vóór onze join-bevestiging bij de relay aankwam
+        setTimeout(()=>{
+          if(convs.find(c=>c.chatId===conv.chatId&&c.connected)){
+            joinedRooms.delete(conv.chatId);
+            relayJoin(conv.chatId);
+          }
+        }, 1500);
       }
       renderList();showChat(id);
-      setTimeout(()=>replayBuffered(conv), 200);
       $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
     }finally{
       shared.fill(0);
