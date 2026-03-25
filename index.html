@@ -1470,9 +1470,10 @@ const RELAY_CLEAR  = (()=>{
   return '';
 })();
 
-// Gebruik .onion als beschikbaar en als we in Tor Browser zitten
-// anders clearnet; anders offline
-const RELAY_WS = RELAY_ONION || RELAY_CLEAR;
+// Gebruik .onion ALLEEN als de pagina zelf via .onion geladen is (Tor Browser)
+// Normale browsers kunnen nooit verbinden met .onion adressen
+const USE_ONION = RELAY_ONION && location.hostname.endsWith('.onion');
+const RELAY_WS = USE_ONION ? RELAY_ONION : RELAY_CLEAR;
 const IS_ONION = RELAY_WS.includes('.onion');
 const RELAY_API = (!IS_ONION && RELAY_WS)
   ? RELAY_WS.replace('wss://','https://').replace('ws://','http://')
