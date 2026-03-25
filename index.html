@@ -579,6 +579,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <div id="rl-dot" class="w-2 h-2 rounded-full bg-slate-600 flex-shrink-0 transition-all"></div>
       <span id="rl-lbl">Relay uit</span>
     </button>
+    <span id="relay-hint" class="text-xs text-slate-600 mono hidden lg:block flex-shrink-0">↑ relay aan</span>
 
     <!-- Online teller — alleen op grotere schermen -->
     <div id="online-badge" class="hidden items-center gap-1 px-2.5 py-1.5 bg-slate-800/60 border border-slate-700 rounded-xl text-xs mono text-slate-400 flex-shrink-0">
@@ -1038,8 +1039,10 @@ const IDB=(()=>{
       d.createObjectStore('id',{keyPath:'k'});
   };
   req.onsuccess=e=>{db=e.target.result;queue.forEach(f=>f(db));queue.length=0;};
-  req.onerror=()=>{};
-  const get=()=>new Promise(res=>{if(db)res(db);else queue.push(res);});
+  // onerror: geef queue vrij met null zodat app niet hangt (bijv. iOS private mode)
+  req.onerror=()=>{queue.forEach(f=>f(null));queue.length=0;};
+  const get=()=>new Promise(res=>{if(db!=null)res(db);else queue.push(res);});
+  const safe=(fn,fb=null)=>get().then(d=>d?fn(d):fb);
   return{
     // Nonce ops
     async hasNonce(id){const d=await get();return new Promise(r=>{d.transaction('n','readonly').objectStore('n').get(id).onsuccess=e=>r(!!e.target.result);});},
@@ -2314,7 +2317,6 @@ function getMsgsShadow(){
 }
 // $msgs() geeft de shadow root terug — alle msg-functies gebruiken dit
 function $msgs(){ return getMsgsShadow(); }
-function msgsEl(){ return getMsgsShadow(); } // alias
 function setNav(screen, label){
   const sep=$('nav-sep'), home=$('nav-home'), sep2=$('nav-sep2'), cur=$('nav-current');
   if(screen==='welcome'){
