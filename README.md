@@ -26,7 +26,7 @@ Het gedraagt zich als een **openbaar encrypted ledger**: vergelijkbaar met block
 
 PARAMANT gebruikt **post-quantum hybride end-to-end encryptie** — de sterkst mogelijke klasse berichtbeveiliging die momenteel bestaat en die voldoet aan de nieuwste NIST-standaarden.
 
-### Algoritmen (NIST gecertificeerd)
+### Algoritmen (NIST-gestandaardiseerd)
 
 | Algoritme | Standaard | Rol |
 |---|---|---|
@@ -121,11 +121,13 @@ PARAMANT gedraagt zich als een **openbaar encrypted ledger**:
 
 ## Security Audit — Claims vs Code
 
-Onafhankelijke verificatie van alle claims tegen de daadwerkelijke broncode. **60/60 checks geslaagd.**
+Onafhankelijke verificatie van alle claims tegen de daadwerkelijke broncode. **60/60 geautomatiseerde implementatiechecks geslaagd.**
+
+> ⚠️ **Let op:** Dit zijn geautomatiseerde checks die verifiëren dat alle cryptografische componenten aanwezig en correct verbonden zijn. Het is *geen vervanging* voor een formele audit door gespecialiseerde cryptografen. Side-channel aanvallen en subtiele KDF-fouten zijn niet formeel uitgesloten.
 
 | Claim / Eigenschap | Status | Verificatie |
 |---|:---:|---|
-| ML-KEM-768 + ECDH P-256 + AES-256-GCM | ✅ | Alle 3 aanwezig in code, NIST gecertificeerd |
+| ML-KEM-768 + ECDH P-256 + AES-256-GCM | ✅ | Alle 3 aanwezig — NIST-gestandaardiseerde algoritmen (FIPS 203, SP 800-186, SP 800-38D) |
 | "Niemand kan meelezen" | ✅ | Relay ontvangt en bewaart nul plaintext |
 | "Geen account nodig" | ✅ | Geen login, register of wachtwoord in code |
 | "Post-quantum hybrid" | ✅ | ML-KEM in elke handshake + elke 8 berichten opnieuw geïnjecteerd |
@@ -136,18 +138,27 @@ Onafhankelijke verificatie van alle claims tegen de daadwerkelijke broncode. **6
 | Relay hardening | ✅ | Rate limits, IP caps, room buffer gecapped op 5 pakketten |
 | HTTP security headers | ✅ | HSTS, `CSP: default-src 'none'`, X-Frame-Options: DENY |
 
-### Bekende Beperkingen — Compensated by Design
+### Bekende Beperkingen — Eerlijk Gedocumenteerd
+
+**Geheugenisolatie in de browser**
+`fill(0)` wist sleutels direct na gebruik en verkleint het aanvalsvenster drastisch. JavaScript-engines (V8/SpiderMonkey) kunnen data echter eerder hebben gekopieerd tijdens garbage collection of JIT-optimalisatie — absolute geheugengarantie is inherent onmogelijk in browser-native tools. Een native app biedt sterkere isolatie. PARAMANT kiest bewust voor toegankelijkheid boven installatieplicht.
+
+**Browser-extensies**
+Extensies met DOM-toegang kunnen tekst onderscheppen vóór versleuteling — buiten het bereik van de CSP. PARAMANT detecteert en waarschuwt bij bekende extensie-signaturen, en adviseert gebruik in incognito-modus. Dit is een fundamentele beperking van alle browser-native tools, inclusief WhatsApp Web en Signal Desktop.
 
 **Key Transparency**
-Je moet erop vertrouwen dat de publieke sleutel die je ontvangt echt van jouw amice komt. Dat verifieer je door de **veiligheidsnummers te vergelijken** via telefoon of in persoon. Doe je dat, dan is dit risico nul.
+Verifieer de verbinding door de **veiligheidsnummers te vergelijken** via telefoon of in persoon. Doe je dat, dan is het MITM-risico nul.
 
 **ECDSA packet signatures**
-Berichten zijn niet ondertekend met een handtekening van de afzender. Maar de **AES-256-GCM encryptie bevat een authenticatietag** — als iemand een bericht aanpast of namaakt, mislukt de decryptie altijd. Een vals pakket komt nooit door.
+Niet geïmplementeerd. De **AES-256-GCM authenticatietag** zorgt er echter voor dat elk aangepast of nagemaakt pakket de decryptie laat mislukken — een vals pakket komt nooit door.
 
 **Relay ephemeral**
-De relay heeft geen database. Als de server herstart verdwijnt de ledger-geschiedenis. Dat is opzettelijk — er is niets te stelen. De berichten zelf staan toch al nooit op de relay, alleen hash + grootte + tijd.
+Geen database — herstart = ledger weg. Opzettelijk: er is niets te stelen. Berichten staan nooit op de relay.
 
-> De drie beperkingen zijn **compensated by design** — geen van de drie laat een aanvaller berichten lezen, vervalsen of achterhalen. Ze zijn bewuste afwegingen voor een gratis, serverloze tool zonder bedrijf erachter.
+**Geen formele cryptografische audit**
+De 60/60 checks zijn geautomatiseerde implementatiechecks. Side-channel aanvallen en subtiele fouten in de KDF-logica zijn niet formeel uitgesloten door onafhankelijke cryptografen.
+
+> Geen van de beperkingen laat een aanvaller berichten lezen, vervalsen of achterhalen. Ze zijn bewuste afwegingen voor een gratis, open-source tool zonder bedrijf erachter.
 
 ---
 

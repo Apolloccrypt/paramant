@@ -420,10 +420,39 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div class="mt-3 mono text-xs text-teal-600">SHA-256(pubKey)</div>
       </div>
     </div>
+
+    <!-- Eerlijke beperkingen — transparantie over wat de tool wel/niet garandeert -->
+    <div class="mt-10 max-w-2xl mx-auto border border-slate-700/60 rounded-2xl overflow-hidden">
+      <div class="bg-slate-800/40 px-5 py-3 border-b border-slate-700/60 flex items-center gap-2">
+        <span class="text-slate-400 text-sm font-semibold">Eerlijk over de beperkingen</span>
+        <span class="ml-auto mono text-xs text-slate-600">transparantie</span>
+      </div>
+      <div class="divide-y divide-slate-800/60">
+        <div class="px-5 py-3.5 flex items-start gap-3">
+          <span class="text-yellow-500 flex-shrink-0 mt-0.5">⚠</span>
+          <div>
+            <div class="text-slate-300 text-sm font-medium">Geheugenisolatie is niet absoluut</div>
+            <div class="text-slate-500 text-xs mt-0.5 leading-relaxed">Sleutels worden na gebruik gewist (<code class="text-teal-600">fill(0)</code>), maar JavaScript-engines kunnen data eerder kopiëren in RAM. Absolute geheugenisolatie vereist een native app — niet een browser.</div>
+          </div>
+        </div>
+        <div class="px-5 py-3.5 flex items-start gap-3">
+          <span class="text-yellow-500 flex-shrink-0 mt-0.5">⚠</span>
+          <div>
+            <div class="text-slate-300 text-sm font-medium">Browser-extensies vallen buiten onze CSP</div>
+            <div class="text-slate-500 text-xs mt-0.5 leading-relaxed">Een kwaadaardige extensie met DOM-toegang kan tekst onderscheppen vóór versleuteling. Gebruik PARAMANT in een browser zonder onbekende extensies — of in een privévenster.</div>
+          </div>
+        </div>
+        <div class="px-5 py-3.5 flex items-start gap-3">
+          <span class="text-yellow-500 flex-shrink-0 mt-0.5">⚠</span>
+          <div>
+            <div class="text-slate-300 text-sm font-medium">Geen formele cryptografische audit</div>
+            <div class="text-slate-500 text-xs mt-0.5 leading-relaxed">De 60/60 implementatiechecks verifiëren dat alle componenten aanwezig en correct verbonden zijn — geen vervanging voor handmatig werk door gespecialiseerde cryptografen. Side-channel aanvallen zijn niet formeel uitgesloten.</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
-
-<!-- CTA -->
 <section class="py-24 px-5 text-center relative overflow-hidden">
   <div class="absolute inset-0 bg-gradient-to-b from-transparent via-teal-900/8 to-transparent pointer-events-none"></div>
   <div class="relative z-10 max-w-xl mx-auto">
@@ -2050,7 +2079,42 @@ function togglePaste(){const p=$('paste-ov');if(p.style.display==='block')hidePa
 function hidePaste(){$('paste-ov').style.display='none';}
 
 // ─── LAUNCH ───────────────────────────────────────────────────────────
-function openApp(){$('app').style.display='flex';document.body.style.overflow='hidden';}
+function openApp(){
+  $('app').style.display='flex';
+  document.body.style.overflow='hidden';
+  // Incognito/extensie hint — eenmalig per sessie
+  if(!sessionStorage.getItem('pm-ext-checked')){
+    sessionStorage.setItem('pm-ext-checked','1');
+    setTimeout(()=>{
+      // Heuristiek: zijn er tekenen van extensies die de DOM hebben aangeraakt?
+      const extSigns = [
+        document.documentElement.hasAttribute('data-extension'),
+        document.documentElement.hasAttribute('data-grammarly'),
+        !!document.querySelector('[data-extension-id]'),
+        typeof window.__parcel_require__ !== 'undefined',
+        // Niet-incognito detectie is niet betrouwbaar, maar we kunnen wel hints geven
+      ].filter(Boolean).length > 0;
+
+      if(extSigns){
+        showToast('⚠️ Browser-extensie gedetecteerd — gebruik incognito voor maximale veiligheid.', null, '#7c2d12');
+      } else if(!navigator.webdriver){
+        // Subtiele herinnering — altijd goed om te weten
+        const hint = document.createElement('div');
+        hint.id = 'incognito-hint';
+        hint.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9999;max-width:260px;';
+        hint.innerHTML = `<div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:10px 14px;font-size:11px;color:#64748b;font-family:Inter,sans-serif;line-height:1.5">
+          🔒 <strong style="color:#94a3b8">Tip voor maximale veiligheid:</strong><br>
+          Gebruik incognito-modus en schakel extensies uit. Browser-extensies kunnen DOM-toegang hebben vóór encryptie.
+          <span onclick="this.closest('#incognito-hint').remove()" style="float:right;cursor:pointer;color:#475569;margin-left:8px">✕</span>
+        </div>`;
+        document.body.appendChild(hint);
+        setTimeout(()=>{
+          if(hint.parentNode){hint.style.transition='opacity .5s';hint.style.opacity='0';setTimeout(()=>hint.remove(),500);}
+        }, 8000);
+      }
+    }, 1200);
+  }
+}
 function closeApp(){$('app').style.display='none';document.body.style.overflow='';}
 if(location.hash==='#app')openApp();
 
