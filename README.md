@@ -188,11 +188,13 @@ window._PARAMANT_RELAY_ONION = 'ws://jouw-adres.onion';
 ```
 paramant/
 ├── index.html      ← Volledige app (HTML + CSS + JS, één bestand, ~105KB)
-└── vercel.json     ← Security headers (CSP, X-Frame-Options, etc.)
+├── vercel.json     ← Security headers (CSP, X-Frame-Options, etc.)
+└── README.md       ← Dit bestand
 
 paramant-relay/
 ├── relay.js        ← WebSocket relay server (Node.js, alleen ws dependency)
-└── package.json    ← { "start": "node relay.js" }
+├── package.json    ← { "start": "node relay.js" }
+└── README.md
 ```
 
 ---
