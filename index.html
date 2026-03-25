@@ -26,7 +26,7 @@ body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:
 .mono{font-family:'JetBrains Mono',monospace}
 
 /* App overlay */
-#app{display:none;position:fixed;inset:0;flex-direction:column;background:#0f172a;z-index:9999;overflow:hidden}
+#app{display:none;position:fixed;inset:0;flex-direction:column;background:#0f172a;z-index:9999;overflow:hidden;height:100dvh}
 
 /* Scrollbar */
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
@@ -610,7 +610,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   </div>
 
   <!-- App body -->
-  <div id="app-body" class="flex flex-1 overflow-hidden min-h-0">
+  <div id="app-body" class="flex flex-1 overflow-hidden min-h-0" style="min-height:0;flex:1 1 0">
 
     <!-- Mobile overlay -->
     <div id="mob-ov" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden" onclick="closeSidebar()"></div>
@@ -695,7 +695,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     </div>
 
     <!-- Main area -->
-    <div id="main" class="flex-1 flex flex-col overflow-hidden">
+    <div id="main" class="flex-1 flex flex-col overflow-hidden min-h-0" style="min-height:0;flex:1 1 0">
 
       <!-- Welcome -->
       <div id="welcome" class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
@@ -857,8 +857,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       </div>
 
       <!-- Messages -->
-      <div id="chat-wrap" style="display:none" class="flex-1 flex-col overflow-hidden relative">
-        <div id="msgs-host" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
+      <div id="chat-wrap" style="display:none;flex:1 1 0;min-height:0" class="flex-col overflow-hidden relative">
+        <div id="msgs-host" style="flex:1 1 0;min-height:0;-webkit-overflow-scrolling:touch" class="overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
         <!-- Paste overlay -->
         <div id="paste-ov" style="display:none" class="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 p-4 shadow-2xl">
           <div class="text-sm font-semibold text-white mb-1">📥 Bericht van je amice lezen</div>
@@ -2341,7 +2341,10 @@ function showConnect(){if(convs.length>=MAX){showToast('Je hebt al 3 gesprekken.
 function cancelConnect(){if(activeId)showChat(activeId);else showWelcome();}
 function showChat(id){
   const conv=getConv(id);if(!conv)return;activeId=id;
-  _s('welcome','none');_s('conn-scr','none');_s('chat-head','flex');_s('chat-wrap','flex');$('chat-wrap').style.flexDirection='column';_s('input-row','flex');_s('audit-bar','block');
+  _s('welcome','none');_s('conn-scr','none');_s('chat-head','flex');
+  const cw=$('chat-wrap');
+  if(cw){cw.style.display='flex';cw.style.flex='1 1 0';cw.style.minHeight='0';cw.style.flexDirection='column';}
+  _s('input-row','flex');_s('audit-bar','block');
   $('ch-nm').textContent=conv.name;
   $('ch-st').textContent=(relayOn?'📡 Relay · ':'')+'Verbonden · quantum-veilig 🔒';
   const db=$('destruct-btn');if(db){db.textContent=conv.destructTimer?`⏱ Wis na ${conv.destructTimer}min`:'⏱ Auto-wis';db.style.color=conv.destructTimer?'#f59e0b':'';}
