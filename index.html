@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PARAMANT — Niemand kan meelezen. Letterlijk niemand.</title>
-<meta name="description" content="Post-quantum versleuteld appen zonder account. ML-KEM-768 + ECDH P-256 + AES-256-GCM. Optionele relay ziet alleen hash-prefix. Gratis voor altijd.">
+<meta name="description" content="Post-quantum versleuteld appen zonder account. ML-KEM-768 + ECDH P-256 + AES-256-GCM. Geen inhoud opgeslagen. Gratis en open-source.">
 <meta name="theme-color" content="#0f172a">
 <meta property="og:title" content="PARAMANT — Niemand kan meelezen. Letterlijk niemand.">
 <meta property="og:description" content="Post-quantum versleuteld appen. ML-KEM-768 (NIST FIPS 203). Niemand kan meelezen — ook wij niet.">
@@ -83,7 +83,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   <div class="flex-1"></div>
   <a href="#hoe" class="hidden md:block text-sm text-slate-400">Hoe werkt het?</a>
   <a href="#vergelijk" class="hidden md:block text-sm text-slate-400">Vergelijking</a>
-  <a href="#ledger-section" class="hidden md:block text-sm text-slate-400">Beveiliging</a>
+  <a href="#ledger" class="hidden md:block text-sm text-slate-400">Online</a>
   <button onclick="openApp()" class="ml-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-semibold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-teal-500/20 active:scale-95">
     Start gratis →
   </button>
@@ -216,15 +216,15 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             Zonder relay werkt PARAMANT als een verzegelde envelop die je handmatig doorstuurt — volledig veilig, maar je moet het pakket zelf kopiëren en plakken.
           </p>
           <p class="text-slate-400 text-sm leading-relaxed mb-3">
-            Met de relay gaan berichten automatisch, net als een gewone chat — maar dan zonder dat de relay ooit de inhoud ziet. Hij ziet alleen: <span class="text-slate-300 mono">hash · bytes · tijdstempel</span>. Meer niet.
+            Met de relay gaan berichten automatisch, net als een gewone chat — maar dan zonder dat de relay ooit de inhoud ziet. Hij ziet alleen: <span class="text-slate-300 mono">hash · bytes · tijdstempel</span>. Meer niet. De hostingprovider logt verbindingen op infrastructuurniveau — gebruik Tor voor maximale anonimiteit.
           </p>
           <div class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1 p-3 bg-slate-900 rounded-xl border border-slate-700">
-              <div class="text-xs text-slate-500 mono mb-1">VERBINDING UIT</div>
+              <div class="text-xs text-slate-500 mono mb-1">RELAY UIT</div>
               <div class="text-slate-300 text-sm">Kopieer → plak → verstuur<br><span class="text-slate-500 text-xs">Werkt via elk kanaal</span></div>
             </div>
             <div class="flex-1 p-3 bg-teal-500/8 rounded-xl border border-teal-500/25">
-              <div class="text-xs text-teal-500 mono mb-1">🟢 VERBONDEN</div>
+              <div class="text-xs text-teal-500 mono mb-1">🟢 RELAY ACTIEF</div>
               <div class="text-teal-300 text-sm">Automatisch verzonden<br><span class="text-teal-600 text-xs">Aanbevolen voor normaal gebruik</span></div>
             </div>
           </div>
@@ -239,7 +239,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <div>
         <h3 class="text-white font-bold text-base mb-1.5">Eén van de veiligste manieren om bestanden te delen</h3>
         <p class="text-slate-400 text-sm leading-relaxed">
-          Elk bestand wordt versleuteld met <span class="text-slate-300">AES-256-GCM</span> met een unieke sleutel die na gebruik wordt gewist. Geen enkele server — ook niet de relay — ziet de inhoud. Maximum bestandsgrootte: <span class="text-teal-400 font-semibold">10 MB per bestand</span>. Berichten: onbeperkt.
+          Elk bestand wordt versleuteld met <span class="text-slate-300">AES-256-GCM</span> met een unieke sleutel die na gebruik wordt gewist. Geen enkele server ziet de inhoud — ook niet de relay. De hostingprovider ziet alleen dat er een verbinding is, nooit wat er verstuurd wordt. Maximum bestandsgrootte: <span class="text-teal-400 font-semibold">10 MB per bestand</span>. Berichten: onbeperkt.
         </p>
       </div>
     </div>
@@ -344,7 +344,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         </h3>
         <div class="bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden">
           <div class="px-4 py-2 bg-slate-800 border-b border-slate-700 mono text-xs text-slate-400 flex justify-between">
-            <span>WIE IS ONLINE</span><span class="text-teal-500">LIVE</span>
+            <span>ACTIEVE GEBRUIKERS</span><span class="text-teal-500">LIVE</span>
           </div>
           <div class="p-4 space-y-2 mono text-xs">
             <div class="flex justify-between items-center py-2 border-b border-slate-800">
@@ -403,7 +403,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <span class="text-2xl">🌐</span>
             <div>
               <div class="text-white font-medium text-sm">IP-adressen en locatie</div>
-              <div class="text-slate-500 text-xs mt-0.5">Geen logs. Geen registratie. De server weet niet wie verbinding maakt.</div>
+              <div class="text-slate-500 text-xs mt-0.5">De relay zelf logt geen IPs. De hostingprovider (Render.com) logt verbindingen op infrastructuurniveau — buiten onze controle.</div>
             </div>
           </div>
           <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
@@ -539,7 +539,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <div class="flex flex-wrap gap-4 text-sm text-slate-500">
       <a href="#hoe" class="hover:text-teal-400 transition-colors">Hoe werkt het?</a>
       <a href="#vergelijk" class="hover:text-teal-400 transition-colors">Vergelijking</a>
-      <a href="#ledger-section" class="hover:text-teal-400 transition-colors">Beveiliging</a>
+      <a href="#ledger" class="hover:text-teal-400 transition-colors">Online</a>
       <a href="javascript:openApp()" class="hover:text-teal-400 transition-colors">Open app</a>
       <a href="https://github.com/Apolloccrypt/paramant" target="_blank" rel="noopener" class="hover:text-teal-400 transition-colors">GitHub</a>
       <a href="https://buymeacoffee.com/mickbeer" target="_blank" rel="noopener" class="hover:text-teal-400 transition-colors">🔐 Steun de relay</a>
@@ -577,9 +577,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs mono text-slate-400 transition-all flex-shrink-0"
       title="Zet de relay aan voor automatisch verzenden. Zonder relay kun je ook berichten sturen via kopiëren en plakken.">
       <div id="rl-dot" class="w-2 h-2 rounded-full bg-slate-600 flex-shrink-0 transition-all"></div>
-      <span id="rl-lbl">Verbinding uit</span>
+      <span id="rl-lbl">Offline</span>
     </button>
-    <span id="relay-hint" class="text-xs text-slate-600 mono hidden lg:block flex-shrink-0">↑ klik om berichten automatisch te sturen</span>
+    <span id="relay-hint" class="text-xs text-slate-600 mono hidden lg:block flex-shrink-0">↑ klik om online te gaan</span>
 
     <!-- Online teller — alleen op grotere schermen -->
     <div id="online-badge" class="hidden items-center gap-1 px-2.5 py-1.5 bg-slate-800/60 border border-slate-700 rounded-xl text-xs mono text-slate-400 flex-shrink-0">
@@ -594,7 +594,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
     <!-- Ledger knop — alleen desktop -->
     <button onclick="toggleLedger()" id="ledger-btn" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs text-slate-400 transition-all flex-shrink-0">
-      👥 Gebruikers
+      👥 Online
     </button>
 
     <!-- ← Site knop — alleen desktop -->
@@ -604,7 +604,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <div class="relative lg:hidden flex-shrink-0">
       <button onclick="toggleAppMenu()" class="w-8 h-8 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 text-sm">⋯</button>
       <div id="app-menu" class="hidden absolute right-0 top-10 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 min-w-max overflow-hidden">
-        <button onclick="toggleLedger();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">👥 Gebruikers</button>
+        <button onclick="toggleLedger();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">👥 Actief</button>
         <button onclick="closeApp();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">← Terug naar site</button>
       </div>
     </div>
@@ -711,8 +711,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div id="relay-welcome-hint" class="w-full max-w-sm mb-4 p-3 bg-teal-500/8 border border-teal-500/20 rounded-xl flex items-start gap-2.5 text-left">
           <span class="text-teal-400 text-lg flex-shrink-0">💡</span>
           <div>
-            <div class="relay-hint-title text-teal-300 font-medium text-sm">Klik "Verbinding uit" om berichten automatisch te versturen</div>
-            <div class="relay-hint-sub text-teal-500 text-xs mt-0.5">→ Klik op "Verbinding uit" — wordt 🟢 Verbonden. Duurt max. 30 sec.</div>
+            <div class="relay-hint-title text-teal-300 font-medium text-sm">Klik "Offline" (rechtsboven) om berichten automatisch te versturen</div>
+            <div class="relay-hint-sub text-teal-500 text-xs mt-0.5">→ Klik op "Offline" — wordt 🟢 Online. Duurt max. 30 sec.</div>
             <div class="text-slate-600 text-xs mt-1.5 leading-relaxed">ℹ️ De relay herverbindt automatisch als de verbinding wegvalt.</div>
           </div>
         </div>
@@ -755,7 +755,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <div class="flex items-center justify-between px-4 py-2.5 bg-teal-500/8 border-b border-teal-500/15">
               <div class="flex items-center gap-2">
                 <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                <span class="text-teal-400 text-xs font-mono font-semibold tracking-widest">NU ONLINE</span>
+                <span class="text-teal-400 text-xs font-mono font-semibold tracking-widest">LIVE NU ONLINE</span>
               </div>
               <span id="wl-presence-count" class="text-teal-600 text-xs font-mono">0 actief</span>
             </div>
@@ -897,10 +897,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <!-- Header -->
       <div class="p-3 border-b border-slate-800 flex-shrink-0">
         <div class="flex items-center justify-between mb-1">
-          <div class="mono text-xs text-teal-400 tracking-widest font-bold">WIE IS ONLINE</div>
+          <div class="mono text-xs text-teal-400 tracking-widest font-bold">ACTIEVE GEBRUIKERS</div>
           <button onclick="fetchLedger()" class="mono text-xs text-slate-600 hover:text-teal-400 transition-colors" title="Ververs ledger">↺</button>
         </div>
-        <div class="text-xs text-slate-600 mb-3 leading-relaxed">Wie is er nu online. Verstuurde berichten zijn anoniem — alleen een code zichtbaar, nooit de inhoud.</div>
+        <div class="text-xs text-slate-600 mb-3 leading-relaxed">Wie is er nu online en eerder verstuurde berichten (anoniem — alleen hash zichtbaar).</div>
         <!-- Stats row -->
         <div class="grid grid-cols-3 gap-1.5 mb-3">
           <div class="bg-slate-800/80 border border-slate-700 rounded-lg p-1.5 text-center">
@@ -926,7 +926,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       </div>
       <!-- Entries — infinite scroll -->
       <div id="ledger-entries" class="flex-1 overflow-y-auto p-2" onscroll="onLedgerScroll(this)">
-        <div class="text-center py-8 text-slate-600 mono text-xs leading-loose">📡 Verbind om te zien wie er online is</div>
+        <div class="text-center py-8 text-slate-600 mono text-xs leading-loose">📡 Verbind om te zien wie online is</div>
       </div>
     </div>
 
@@ -1354,7 +1354,7 @@ function setRelayUI(s){
   if(s==='on'){
     stopRelayCountdown();
     d.classList.add(IS_ONION?'bg-purple-400':'bg-green-400');
-    l.textContent=IS_ONION?'🧅 Tor':'🟢 Verbonden';
+    l.textContent=IS_ONION?'🧅 Tor':'🟢 Online';
     if(hint)hint.style.display='none';
     if(wHint)wHint.style.display='none';
     if(wPres)wPres.classList.remove('hidden');
@@ -1389,15 +1389,15 @@ function setRelayUI(s){
   }else{
     stopRelayCountdown();
     d.classList.add('bg-slate-600');
-    l.textContent='Verbinding uit';
+    l.textContent='Offline';
     if(hint){hint.textContent='↑ klik om online te gaan';hint.style.display='';}
     if(onlineBadge)onlineBadge.style.display='none';
     if(wHint){
       wHint.style.display='';
       const title=wHint.querySelector('.relay-hint-title');
       const sub=wHint.querySelector('.relay-hint-sub');
-      if(title)title.textContent='Klik op "Verbinding uit" om automatisch te verbinden';
-      if(sub)sub.textContent='→ Wordt 🟢 Verbonden. Duurt max. 30 sec.';
+      if(title)title.textContent='Klik op "Offline" om online te gaan';
+      if(sub)sub.textContent='→ Wordt 🟢 Online. Maximaal 30 sec.';
     }
     if(wPres)wPres.classList.add('hidden');
   }
@@ -1802,7 +1802,7 @@ function renderPresence(){
   if(el){
     el.querySelectorAll('.pr-row').forEach(e=>e.remove());
     if(peers.length){
-      const hdr=document.createElement('div');hdr.className='pr-row mono text-xs text-slate-500 px-2 py-1.5 tracking-widest';hdr.textContent='NU ONLINE';el.insertBefore(hdr,el.firstChild);
+      const hdr=document.createElement('div');hdr.className='pr-row mono text-xs text-slate-500 px-2 py-1.5 tracking-widest';hdr.textContent='WIE IS ONLINE';el.insertBefore(hdr,el.firstChild);
       peers.forEach(p=>el.insertBefore(buildPresenceRow(p,false),el.children[1]||null));
     }
   }
