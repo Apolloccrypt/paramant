@@ -2061,7 +2061,45 @@ document.addEventListener('dragleave',()=>{dragDepth--;});
 document.addEventListener('dragover',e=>e.preventDefault());
 document.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;const conv=activeConv();if(!conv?.chainKey)return;Array.from(e.dataTransfer.files).slice(0,5).forEach(f=>processFile(conv,f));});
 async function handleFiles(inp){const conv=activeConv();if(!conv?.chainKey){inp.value='';return;}Array.from(inp.files).slice(0,5).forEach(f=>processFile(conv,f));inp.value='';}
-async function processFile(conv,file){if(file.size>10485760){sysMsg(conv,`⛔ ${file.name} is te groot (max 10 MB)`);return;}const pg=addProgMsg(conv,file.name,file.size);try{const buf=await file.arrayBuffer();const bytes=new Uint8Array(buf);let b64='';const chunk=8192;for(let i=0;i<bytes.length;i+=chunk){b64+=btoa(String.fromCharCode(...bytes.subarray(i,i+chunk)));updateProg(pg,Math.min(85,Math.round(i/bytes.length*85)),'Bezig…');}updateProg(pg,95,'Bijna…');await encPayload(conv,{name:file.name,mime:file.type||'application/octet-stream',size:file.size,data:b64},'file');updateProg(pg,100,'✓ Verstuurd!');setTimeout(()=>pg?.remove(),2500);}catch(e){updateProg(pg,0,'⛔ '+e.message);}}
+async function processFile(conv,file){
+  if(file.size>10485760){sysMsg(conv,`⛔ ${file.name} is te groot (max 10 MB)`);return;}
+  const pg=addProgMsg(conv,file.name,file.size);
+  try{
+    // Gebruik FileReader voor betrouwbare base64 encoding (geen stack overflow bij grote files)
+    const b64 = await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>{
+        // result is "data:mime/type;base64,XXXX" — we willen alleen het base64 deel
+        const idx=r.result.indexOf(',');
+        res(idx>=0 ? r.result.slice(idx+1) : r.result);
+      };
+      r.onerror=()=>rej(new Error('Bestand lezen mislukt'));
+      r.onprogress=e=>{if(e.lengthComputable)updateProg(pg,Math.min(80,Math.round(e.loaded/e.total*80)),'Laden…');};
+      r.readAsDataURL(file);
+    });
+    updateProg(pg,90,'Versleutelen…');
+    await encPayload(conv,{name:file.name,mime:file.type||'application/octet-stream',size:file.size,data:b64},'file');
+    updateProg(pg,100,'✓ Verstuurd!');
+    setTimeout(()=>pg?.remove(),2500);
+  }catch(e){updateProg(pg,0,'⛔ '+e.message);}
+}
+
+function downloadFile(meta){
+  if(!meta?.data){showToast('⚠️ Bestandsdata ontbreekt — ontvang het bestand opnieuw.');return;}
+  try{
+    // Maak data URL en open — werkt ook als atob spaak loopt
+    const url = `data:${meta.mime||'application/octet-stream'};base64,${meta.data}`;
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=meta.name||'bestand';
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>document.body.removeChild(a),1000);
+  }catch(e){
+    showToast('⚠️ Download mislukt: '+e.message);
+  }
+}
 function addProgMsg(conv,name,size){
   const w=document.createElement('div');w.className='fade-up';
   const d=document.createElement('div');d.className='inline-block max-w-xs bg-slate-800 border border-slate-700 rounded-2xl p-3';
@@ -2076,25 +2114,6 @@ function addProgMsg(conv,name,size){
   w._bar=bar;w._st=st;const _sh2=$msgs();const _ho2=$('msgs-host');if(_sh2&&_ho2){_sh2.appendChild(wrap);_ho2.scrollTop=_ho2.scrollHeight;}return w;
 }
 function updateProg(el,pct,lbl){if(!el)return;if(el._bar)el._bar.style.width=pct+'%';if(el._st)el._st.textContent=lbl;}
-function downloadFile(meta){
-  if(!meta?.data){showToast('⚠️ Bestandsdata ontbreekt — ontvang het bestand opnieuw.');return;}
-  try{
-    const bin=atob(meta.data);
-    const bytes=new Uint8Array(bin.length);
-    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-    const blob=new Blob([bytes],{type:meta.mime||'application/octet-stream'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=meta.name||'bestand';
-    a.style.display='none';
-    document.body.appendChild(a); // vereist op mobiel
-    a.click();
-    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
-  }catch(e){
-    showToast('⚠️ Download mislukt: '+e.message);
-  }
-}
 function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
 
 // ─── VOICE ────────────────────────────────────────────────────────────
