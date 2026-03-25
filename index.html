@@ -12,7 +12,7 @@
 <!-- CDNs -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{animation:{'fade-up':'fadeUp .4s ease forwards','pulse-soft':'pulseSoft 2.5s infinite','chain-scroll':'chainScroll 20s linear infinite'}}}}</script>
-<script src="https://cdn.jsdelivr.net/npm/@noble/post-quantum@0.2.1/build/noble-post-quantum.umd.min.js" crossorigin onerror="console.warn('ML-KEM offline — ECDH-only mode')"></script>
+<script src="https://cdn.jsdelivr.net/npm/@noble/post-quantum@0.2.1/build/noble-post-quantum.umd.min.js" crossorigin="anonymous" onerror="console.warn('ML-KEM offline — ECDH-only mode')"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -1344,21 +1344,29 @@ async function doConnect(){
     const theirKey=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
     const bits=await crypto.subtle.deriveBits({name:'ECDH',public:theirKey},myKP.privateKey,256);
     const shared=new Uint8Array(bits);
-    const master=await hkdf(shared,'paramant-master-v1',32);shared.fill(0);
-    const sn=await safetyNums(master);
-    const ck=await hkdf(master,'paramant-chain-init',32);master.fill(0);
-    const id=Date.now();
-    const conv=newConv(id,bundle.nick||name);
-    conv.chainKey=ck;conv.safetyNums=sn;conv.connected=true;
-    conv.kxType=myMLK&&bundle.mlkem?'ECDH P-256 + ML-KEM-768':'ECDH P-256';
-    if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
-    conv.chatId=await chatIdFrom(ck);
-    convs.push(conv);
-    sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
-    sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
-    if(relayOn)relayJoin(conv.chatId);
-    renderList();showChat(id);
-    $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
+    let master=null,ck=null;
+    try{
+      master=await hkdf(shared,'paramant-master-v1',32);
+      const sn=await safetyNums(master);
+      ck=await hkdf(master,'paramant-chain-init',32);
+      const id=Date.now();
+      const conv=newConv(id,bundle.nick||name);
+      conv.chainKey=ck;conv.safetyNums=sn;conv.connected=true;
+      conv.kxType=myMLK&&bundle.mlkem?'ECDH P-256 + ML-KEM-768':'ECDH P-256';
+      if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
+      conv.chatId=await chatIdFrom(ck);
+      convs.push(conv);
+      sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
+      sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
+      if(relayOn)relayJoin(conv.chatId);
+      renderList();showChat(id);
+      $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
+    }finally{
+      // Garanteer wissen van secrets — ook bij fout
+      shared.fill(0);
+      if(master)master.fill(0);
+      // ck stays in conv.chainKey — that is intentional
+    }
   }catch(e){
     $('conn-err').textContent=e.message;$('conn-err').style.display='block';
     $('conn-btn').disabled=false;$('conn-btn').textContent='⚡ Verbinden';
