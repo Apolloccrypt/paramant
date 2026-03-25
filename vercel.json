@@ -12,7 +12,7 @@
         "Referrer-Policy": "no-referrer",
         "Permissions-Policy": "microphone=(self), camera=(), geolocation=()",
         "Cache-Control": "no-store, no-cache, must-revalidate, private",
-        "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' wss://paramant-relay.onrender.com https://paramant-relay.onrender.com wss: ws:; img-src 'self' data: blob:; worker-src blob:; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+        "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' wss://paramant-relay.onrender.com https://paramant-relay.onrender.com wss: ws:; img-src 'self' data: blob:; worker-src blob:; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
       },
       "dest": "/$1"
     }
