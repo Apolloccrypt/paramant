@@ -881,19 +881,46 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 </div><!-- /app -->
 
 <!-- Safety numbers modal -->
-<div id="sn-modal" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
-  <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm relative">
+<div id="sn-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md relative">
     <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-teal-500 to-transparent rounded-t-2xl"></div>
-    <h3 class="text-lg font-bold text-white mb-2">🔢 Veiligheidsnummers controleren</h3>
-    <p class="text-slate-400 text-sm mb-2 leading-relaxed">Bel je amice nu op en lees deze 8 nummers hardop voor. Laat je amice hetzelfde doen.</p>
-    <div class="mb-3 p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-400">
-      <strong class="text-slate-300">Wat doe je?</strong> Jij leest voor → je amice vergelijkt. Dan leest je amice voor → jij vergelijkt. Zijn ze exact gelijk? Dan is er niemand die meeluistert.
+
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h3 class="text-xl font-bold text-white">🔢 Veiligheidsnummers</h3>
+        <p class="text-slate-400 text-xs mt-1">SHA-256 vingerafdruk van jullie gedeelde sleutel</p>
+      </div>
+      <button onclick="hideSN()" class="text-slate-500 hover:text-white text-2xl leading-none mt-0.5">✕</button>
     </div>
-    <div id="sn-grid" class="grid grid-cols-4 gap-2 mb-4"></div>
-    <div class="p-3 bg-teal-500/8 border border-teal-500/18 rounded-xl mb-4">
-      <p class="text-teal-400 text-xs leading-relaxed">✅ Zelfde nummers = veilige verbinding<br>❌ Andere nummers = verbreek de verbinding</p>
+
+    <!-- Instruction -->
+    <div class="mb-4 p-3 bg-teal-500/10 border border-teal-500/20 rounded-xl text-sm text-teal-300 leading-relaxed">
+      📞 <strong>Bel je amice nu.</strong> Lees deze nummers hardop voor. Je amice vergelijkt mee. Zijn ze exact gelijk? Dan luistert niemand mee.
     </div>
-    <button onclick="hideSN()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white font-semibold rounded-xl transition-all">Sluiten</button>
+
+    <!-- Numbers — groot en leesbaar -->
+    <div id="sn-grid" class="grid grid-cols-4 gap-2 mb-3"></div>
+
+    <!-- Copy all button -->
+    <button onclick="copySN()" id="sn-copy-btn"
+      class="w-full py-2.5 mb-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2">
+      📋 Kopieer alle nummers
+    </button>
+
+    <!-- Result indicator -->
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <div class="p-2.5 bg-teal-500/8 border border-teal-500/20 rounded-xl text-center">
+        <div class="text-teal-400 font-bold text-sm">✅ Gelijk</div>
+        <div class="text-teal-600 text-xs mt-0.5">Verbinding veilig</div>
+      </div>
+      <div class="p-2.5 bg-red-500/8 border border-red-500/20 rounded-xl text-center">
+        <div class="text-red-400 font-bold text-sm">❌ Niet gelijk</div>
+        <div class="text-red-600 text-xs mt-0.5">Verbreek verbinding</div>
+      </div>
+    </div>
+
+    <button onclick="hideSN()" class="w-full py-3 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold rounded-xl transition-all">✓ Geverifieerd — sluit</button>
   </div>
 </div>
 
@@ -1181,12 +1208,19 @@ async function regenIdentity(){
   drawFractal($('my-avatar'),myFractalParams);
 }
 function dlPage(){
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([document.documentElement.outerHTML],{type:'text/html'}));
-  a.download='paramant.html';
+  // "Lokale kluis" export — volledige app als één HTML-bestand
+  // Werkt offline, op USB, zonder internet of server
+  const html = document.documentElement.outerHTML;
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'paramant-lokaal.html';
   a.click();
-  // Show offline instructions toast after short delay
-  setTimeout(()=>showToast('✅ Opgeslagen! Open paramant.html in elke browser — werkt zonder internet.',null,'#0f4c3a'),800);
+  setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+  setTimeout(()=>showToast(
+    '🔒 Lokale kluis opgeslagen — open paramant-lokaal.html in elke browser, volledig offline.',
+    null, '#0f4c3a'
+  ), 600);
 }
 
 // ─── RELAY ───────────────────────────────────────────────────────────
@@ -2200,7 +2234,28 @@ function updateAudit(c){
 }
 
 // ─── MODALS ───────────────────────────────────────────────────────────
-function showSN(){const c=activeConv();if(!c)return;$('sn-grid').innerHTML=c.safetyNums.map(n=>`<div class="bg-slate-900 border border-slate-700 rounded-xl py-3 text-center mono text-base font-bold text-yellow-400 tracking-wider">${n}</div>`).join('');$('sn-modal').classList.remove('hidden');}
+function showSN(){
+  const c=activeConv();if(!c||!c.safetyNums.length)return;
+  const grid=$('sn-grid');
+  grid.innerHTML='';
+  c.safetyNums.forEach(n=>{
+    const div=document.createElement('div');
+    div.className='bg-slate-900 border border-slate-700 rounded-xl py-4 text-center';
+    const num=document.createElement('div');
+    num.className='mono text-xl font-black text-yellow-400 tracking-widest leading-none';
+    num.textContent=n;
+    div.appendChild(num);
+    grid.appendChild(div);
+  });
+  const btn=$('sn-copy-btn');if(btn)btn.textContent='📋 Kopieer alle nummers';
+  $('sn-modal').classList.remove('hidden');
+}
+function copySN(){
+  const c=activeConv();if(!c||!c.safetyNums.length)return;
+  const txt='PARAMANT veiligheidsnummers:\n'+c.safetyNums.join('  ');
+  navigator.clipboard.writeText(txt).catch(()=>{});
+  const btn=$('sn-copy-btn');if(btn){btn.textContent='✓ Gekopieerd!';setTimeout(()=>btn.textContent='📋 Kopieer alle nummers',2000);}
+}
 function hideSN(){$('sn-modal').classList.add('hidden');}
 function toggleLedger(){const p=$('ledger-col');p.classList.toggle('hidden');$('ledger-btn').style.borderColor=p.classList.contains('hidden')?'':'rgba(20,184,166,.4)';if(!p.classList.contains('hidden')&&relayOn)fetchLedger();}
 function togglePaste(){const p=$('paste-ov');if(p.style.display==='block')hidePaste();else{p.style.display='block';$('paste-ta').value='';$('paste-err').textContent='';$('paste-ta').focus();}}
