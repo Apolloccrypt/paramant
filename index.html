@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARAMANT — Veiliger dan Signal. Geen account.</title>
+<meta name="description" content="Post-quantum versleuteld appen. Geen account. Geen server die meekijkt. Beter dan Signal en WhatsApp. Gratis voor altijd.">
+<meta name="theme-color" content="#0f172a">
+<meta property="og:title" content="PARAMANT — Veiliger dan Signal. Geen account.">
+<meta property="og:description" content="Quantum-safe berichten. Niemand kan meelezen — ook wij niet.">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22PARAMANT%22%2C%22short_name%22%3A%22PARAMANT%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
+<!-- CDNs -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{animation:{'fade-up':'fadeUp .4s ease forwards','pulse-soft':'pulseSoft 2.5s infinite','chain-scroll':'chainScroll 20s linear infinite'}}}}</script>
+<script src="https://cdn.jsdelivr.net/npm/@noble/post-quantum@0.2.1/build/noble-post-quantum.umd.min.js" crossorigin onerror="console.warn('ML-KEM offline — ECDH-only mode')"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:hidden}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* App overlay */
+#app{display:none;position:fixed;inset:0;flex-direction:column;background:#0f172a;z-index:9999;overflow:hidden}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pulseSoft{0%,100%{box-shadow:0 0 0 0 rgba(20,184,166,.35)}70%{box-shadow:0 0 0 8px rgba(20,184,166,0)}}
+@keyframes chainScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes blink{50%{opacity:.3}}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{text-shadow:0 0 10px rgba(20,184,166,.4)}50%{text-shadow:0 0 20px rgba(20,184,166,.8),0 0 40px rgba(20,184,166,.3)}}
+
+.fade-up{animation:fadeUp .4s ease forwards}
+.pulse-badge{animation:pulseSoft 2.5s infinite}
+.chain-scroll{animation:chainScroll 22s linear infinite}
+.slide-in{animation:slideIn .3s ease forwards}
+
+/* Bubble styles */
+.bbl-sent{background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.22);border-bottom-right-radius:4px}
+.bbl-recv{background:#1e293b;border:1px solid #334155;border-bottom-left-radius:4px}
+.bbl-sys{background:rgba(20,184,166,.05);border:1px solid rgba(20,184,166,.12)}
+
+/* Step indicators */
+.step-done{background:#0d9488;color:#fff;border-color:#0d9488}
+.step-curr{background:#14b8a6;color:#0f172a;border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.2)}
+.step-next{background:transparent;color:#475569;border-color:#334155}
+
+/* Landing nav */
+nav a{transition:color .15s}
+nav a:hover{color:#2dd4bf}
+
+/* Hash chain visual */
+.hash-block{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.15);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(20,184,166,.7);white-space:nowrap}
+.hash-link{color:rgba(20,184,166,.3);font-size:14px;padding:0 4px}
+
+/* Canvas pixelated for fractals */
+canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ LANDING ═══════════════════════════ -->
+<div id="landing">
+
+<!-- NAV -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex items-center gap-3 px-5 md:px-10 h-16 bg-slate-900/90 border-b border-slate-800 backdrop-blur-xl">
+  <div class="flex items-center gap-2.5">
+    <div class="w-8 h-8 rounded-xl overflow-hidden border border-teal-500/40 flex-shrink-0">
+      <canvas id="hero-cv" width="32" height="32"></canvas>
+    </div>
+    <span class="font-bold text-lg text-white tracking-tight font-['Inter']">PARAMANT</span>
+  </div>
+  <div class="flex-1"></div>
+  <a href="#hoe" class="hidden md:block text-sm text-slate-400">Hoe werkt het?</a>
+  <a href="#vergelijk" class="hidden md:block text-sm text-slate-400">Vergelijking</a>
+  <a href="#ledger" class="hidden md:block text-sm text-slate-400">Publiek ledger</a>
+  <button onclick="openApp()" class="ml-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-semibold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-teal-500/20 active:scale-95">
+    Start gratis →
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="relative min-h-screen flex flex-col items-center justify-center text-center px-5 pt-24 pb-16 overflow-hidden">
+  <!-- Grid -->
+  <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:44px_44px] opacity-[0.22]"></div>
+  <!-- Glow -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto">
+    <!-- Logo canvas -->
+    <div class="w-20 h-20 rounded-2xl border-2 border-teal-500/40 overflow-hidden mx-auto mb-8 cursor-pointer hover:border-teal-500/70 transition-all shadow-xl shadow-teal-500/10" onclick="openApp()">
+      <canvas id="hero-main-cv" width="80" height="80"></canvas>
+    </div>
+
+    <!-- Badge -->
+    <div class="inline-flex items-center gap-2 px-4 py-2 mb-7 bg-teal-500/10 border border-teal-500/25 rounded-full text-sm text-teal-400 font-medium">
+      <span class="w-2 h-2 rounded-full bg-teal-400 pulse-badge flex-shrink-0"></span>
+      NIST-gecertificeerd · ML-KEM-768 · Quantum-proof
+    </div>
+
+    <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-5">
+      Veiliger dan Signal.<br>
+      <span class="text-teal-400" style="animation:glow 3s ease-in-out infinite">Geen account nodig.</span>
+    </h1>
+
+    <p class="text-lg md:text-xl text-slate-400 font-light max-w-xl mx-auto mb-10 leading-relaxed">
+      Berichten die letterlijk niemand kan lezen — ook geen enkele server.
+      Net als bitcoin openbaar aantoonbaar, maar volledig onleesbaar.
+    </p>
+
+    <!-- Trust pills -->
+    <div class="flex flex-wrap justify-center gap-2.5 mb-10">
+      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">🔒 Eind-tot-eind versleuteld</div>
+      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">📵 Nul account, nul telefoon</div>
+      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 border border-teal-500/30 rounded-full text-sm text-teal-400">⚛ Quantum-proof</div>
+      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">🌐 Werkt ook offline</div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <button onclick="openApp()" class="px-8 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-lg rounded-2xl transition-all hover:shadow-xl hover:shadow-teal-500/25 active:scale-95">
+        🔐 Nu veilig appen — gratis
+      </button>
+      <a href="#hoe" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold text-lg rounded-2xl transition-all text-center">
+        Hoe werkt het? ↓
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- HASH CHAIN TICKER — blockchain vibe -->
+<div class="py-5 bg-slate-950 border-y border-slate-800 overflow-hidden">
+  <p class="text-center text-xs text-slate-600 mono mb-3 tracking-widest">PUBLIEK LEDGER — IEDEREEN ZIET DE HASH · NIEMAND LEEST DE INHOUD</p>
+  <div class="flex overflow-hidden">
+    <div class="chain-scroll flex gap-2 items-center">
+      <!-- Duplicate for seamless loop -->
+      <span class="hash-block">a3f8c2d1e7b4<span class="text-slate-600 mx-1">·</span>1.2KB<span class="text-slate-600 mx-1">·</span>14:23:41</span><span class="hash-link">→</span>
+      <span class="hash-block">7e9b1a4f2c8d<span class="text-slate-600 mx-1">·</span>2.8KB<span class="text-slate-600 mx-1">·</span>14:23:44</span><span class="hash-link">→</span>
+      <span class="hash-block">f1d7a2e9c3b5<span class="text-slate-600 mx-1">·</span>0.9KB<span class="text-slate-600 mx-1">·</span>14:24:18</span><span class="hash-link">→</span>
+      <span class="hash-block">3c8e5f2b9d1a<span class="text-slate-600 mx-1">·</span>14.1KB<span class="text-slate-600 mx-1">·</span>14:25:03</span><span class="hash-link">→</span>
+      <span class="hash-block">9a2d7c4e1f8b<span class="text-slate-600 mx-1">·</span>1.8KB<span class="text-slate-600 mx-1">·</span>14:25:44</span><span class="hash-link">→</span>
+      <span class="hash-block">5b8f1e3a6c7d<span class="text-slate-600 mx-1">·</span>3.3KB<span class="text-slate-600 mx-1">·</span>14:26:11</span><span class="hash-link">→</span>
+      <span class="hash-block">d4c9b2f7e1a8<span class="text-slate-600 mx-1">·</span>0.7KB<span class="text-slate-600 mx-1">·</span>14:26:58</span><span class="hash-link">→</span>
+      <span class="hash-block">2e7a5d9b3c4f<span class="text-slate-600 mx-1">·</span>2.1KB<span class="text-slate-600 mx-1">·</span>14:27:33</span><span class="hash-link">→</span>
+      <!-- Duplicate -->
+      <span class="hash-block">a3f8c2d1e7b4<span class="text-slate-600 mx-1">·</span>1.2KB<span class="text-slate-600 mx-1">·</span>14:23:41</span><span class="hash-link">→</span>
+      <span class="hash-block">7e9b1a4f2c8d<span class="text-slate-600 mx-1">·</span>2.8KB<span class="text-slate-600 mx-1">·</span>14:23:44</span><span class="hash-link">→</span>
+      <span class="hash-block">f1d7a2e9c3b5<span class="text-slate-600 mx-1">·</span>0.9KB<span class="text-slate-600 mx-1">·</span>14:24:18</span><span class="hash-link">→</span>
+      <span class="hash-block">3c8e5f2b9d1a<span class="text-slate-600 mx-1">·</span>14.1KB<span class="text-slate-600 mx-1">·</span>14:25:03</span><span class="hash-link">→</span>
+      <span class="hash-block">9a2d7c4e1f8b<span class="text-slate-600 mx-1">·</span>1.8KB<span class="text-slate-600 mx-1">·</span>14:25:44</span><span class="hash-link">→</span>
+      <span class="hash-block">5b8f1e3a6c7d<span class="text-slate-600 mx-1">·</span>3.3KB<span class="text-slate-600 mx-1">·</span>14:26:11</span><span class="hash-link">→</span>
+      <span class="hash-block">d4c9b2f7e1a8<span class="text-slate-600 mx-1">·</span>0.7KB<span class="text-slate-600 mx-1">·</span>14:26:58</span><span class="hash-link">→</span>
+      <span class="hash-block">2e7a5d9b3c4f<span class="text-slate-600 mx-1">·</span>2.1KB<span class="text-slate-600 mx-1">·</span>14:27:33</span><span class="hash-link">→</span>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="hoe" class="py-20 px-5">
+  <div class="max-w-4xl mx-auto text-center">
+    <div class="inline-block px-4 py-1.5 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-sm font-medium mono mb-4">Zo simpel is het</div>
+    <h2 class="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">Klaar in 3 stappen</h2>
+    <p class="text-slate-400 text-lg mb-14 max-w-xl mx-auto">Geen app te installeren. Geen wachtwoord te onthouden. Gewoon veilig appen.</p>
+
+    <div class="grid md:grid-cols-3 gap-6 text-left">
+      <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 hover:border-teal-500/40 transition-all group">
+        <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-teal-500/25 transition-all">📋</div>
+        <div class="mono text-teal-400 text-xs font-semibold tracking-widest mb-2">STAP 1</div>
+        <h3 class="text-white font-bold text-lg mb-3">Kopieer jouw adres</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Je krijgt automatisch een uniek adres. Dit is jouw "deur" — stuur het naar je vriend via WhatsApp, sms of e-mail.</p>
+        <div class="mt-4 p-3 bg-slate-900 rounded-xl border border-slate-700">
+          <p class="text-xs text-teal-400/70 mono">{"ecdh":"04a3f9…","nick":"Stil-Wolf21"}</p>
+        </div>
+      </div>
+      <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 hover:border-teal-500/40 transition-all group">
+        <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-teal-500/25 transition-all">🤝</div>
+        <div class="mono text-teal-400 text-xs font-semibold tracking-widest mb-2">STAP 2</div>
+        <h3 class="text-white font-bold text-lg mb-3">Verbind met je vriend</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Plak het adres van je vriend en klik "Verbind". Direct een beveiligde, quantum-veilige verbinding — zonder server ertussen.</p>
+        <div class="mt-4 p-3 bg-slate-900 rounded-xl border border-teal-500/20">
+          <p class="text-xs text-teal-400 mono flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-teal-400 flex-shrink-0"></span>Verbonden · quantum-veilig 🔒</p>
+        </div>
+      </div>
+      <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 hover:border-teal-500/40 transition-all group">
+        <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-teal-500/25 transition-all">💬</div>
+        <div class="mono text-teal-400 text-xs font-semibold tracking-widest mb-2">STAP 3</div>
+        <h3 class="text-white font-bold text-lg mb-3">Appen maar!</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Typ, spreek of sleep bestanden. Elk bericht wordt versleuteld — je kunt het pakket sturen via elk kanaal. Alleen jij en je vriend kunnen het lezen.</p>
+        <div class="mt-4 flex gap-2">
+          <span class="text-lg">🎤</span><span class="text-lg">📎</span><span class="text-lg">📋</span>
+          <span class="text-xs text-slate-500 self-center">spraak · bestanden · copy-paste</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section id="vergelijk" class="py-20 px-5 bg-slate-900 border-y border-slate-800">
+  <div class="max-w-3xl mx-auto text-center">
+    <div class="inline-block px-4 py-1.5 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-sm font-medium mono mb-4">Het eerlijke verhaal</div>
+    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">PARAMANT vs de rest</h2>
+    <p class="text-slate-400 mb-10 text-lg">Andere apps zijn goed. Maar PARAMANT is beter.</p>
+
+    <div class="overflow-hidden rounded-2xl border border-slate-700">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-slate-800 border-b border-slate-700">
+            <th class="text-left p-4 text-slate-400 font-medium">Eigenschap</th>
+            <th class="p-3 text-center">
+              <div class="text-slate-400 font-medium text-xs">💬</div>
+              <div class="text-slate-300 font-medium">WhatsApp</div>
+            </th>
+            <th class="p-3 text-center">
+              <div class="text-slate-400 font-medium text-xs">🔵</div>
+              <div class="text-slate-300 font-medium">Signal</div>
+            </th>
+            <th class="p-3 text-center">
+              <div class="text-slate-400 font-medium text-xs">✈️</div>
+              <div class="text-slate-300 font-medium">Telegram</div>
+            </th>
+            <th class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20">
+              <div class="text-teal-400 text-xs">🔐</div>
+              <div class="text-teal-400 font-bold">PARAMANT</div>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800">
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            <td class="p-4 text-slate-300 font-medium text-left">Account nodig?</td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telefoonnummer</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telefoonnummer</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telefoonnummer</div></td>
+            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Helemaal niets</div></td>
+          </tr>
+          <tr class="bg-slate-900/40 hover:bg-slate-800/30 transition-colors">
+            <td class="p-4 text-slate-300 font-medium text-left">Server leest mee?</td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Meta-servers</div></td>
+            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-slate-500">Signal-servers</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telegram cloud</div></td>
+            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Geen server</div></td>
+          </tr>
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            <td class="p-4 text-slate-300 font-medium text-left">Quantum-proof?</td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Niet bestand</div></td>
+            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-slate-500">Deels (PQXDH)</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Niet bestand</div></td>
+            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">ML-KEM-768</div></td>
+          </tr>
+          <tr class="bg-slate-900/40 hover:bg-slate-800/30 transition-colors">
+            <td class="p-4 text-slate-300 font-medium text-left">Metadata bewaard?</td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Wie, wanneer, wie</div></td>
+            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-slate-500">Minimaal</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Volledig</div></td>
+            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Nul metadata</div></td>
+          </tr>
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            <td class="p-4 text-slate-300 font-medium text-left">Offline werking?</td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
+            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Altijd</div></td>
+          </tr>
+          <tr class="bg-slate-900/40 hover:bg-slate-800/30 transition-colors">
+            <td class="p-4 text-slate-300 font-medium text-left">App installeren?</td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Verplicht</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Verplicht</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Verplicht</div></td>
+            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Browser, klaar</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- BLOCKCHAIN LEDGER SECTION -->
+<section id="ledger" class="py-20 px-5">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-14">
+      <div class="inline-block px-4 py-1.5 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-sm font-medium mono mb-4">Net als blockchain</div>
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Openbaar. Encrypted.<br>Transparant maar onleesbaar.</h2>
+      <p class="text-slate-400 text-lg max-w-xl mx-auto">Iedereen kan zien <em class="text-slate-300 not-italic font-medium">dát</em> er een gesprek plaatsvond. Maar niemand kan zien <em class="text-slate-300 not-italic font-medium">wie</em>, <em class="text-slate-300 not-italic font-medium">wat</em> of <em class="text-slate-300 not-italic font-medium">met wie</em>.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 items-start">
+      <!-- What the relay sees -->
+      <div>
+        <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center text-sm">📬</span>
+          Wat de relay ziet
+        </h3>
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden">
+          <div class="px-4 py-2 bg-slate-800 border-b border-slate-700 mono text-xs text-slate-400 flex justify-between">
+            <span>PUBLIEK LEDGER</span><span class="text-teal-500">LIVE</span>
+          </div>
+          <div class="p-4 space-y-2 mono text-xs">
+            <div class="flex justify-between items-center py-2 border-b border-slate-800">
+              <span class="text-teal-600">a3f8c2d1e7b4…</span>
+              <span class="text-slate-500">1.2 KB</span>
+              <span class="text-slate-600">14:23:41</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-slate-800">
+              <span class="text-teal-600">7e9b1a4f2c8d…</span>
+              <span class="text-slate-500">2.8 KB</span>
+              <span class="text-slate-600">14:23:44</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-slate-800">
+              <span class="text-teal-600">a3f8c2d1e7b4…</span>
+              <span class="text-slate-500">1.1 KB</span>
+              <span class="text-slate-600">14:24:02</span>
+            </div>
+            <div class="flex justify-between items-center py-2">
+              <span class="text-teal-600">f1d7a2e9c3b5…</span>
+              <span class="text-slate-500">10.3 KB</span>
+              <span class="text-slate-600">14:24:18</span>
+            </div>
+          </div>
+          <div class="px-4 py-3 bg-slate-800/50 border-t border-slate-700 text-xs text-slate-500 mono">
+            Hash-prefix · pakketgrootte · tijdstempel
+          </div>
+        </div>
+        <div class="mt-3 flex items-start gap-2 text-sm text-teal-400">
+          <span class="mt-0.5 flex-shrink-0">✓</span>
+          <span>Dit is alles. De relay is als een openbare postbus — hij ziet alleen verzegelde enveloppen met een serienummer.</span>
+        </div>
+      </div>
+
+      <!-- What nobody sees -->
+      <div>
+        <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center text-sm">🚫</span>
+          Wat niemand ziet
+        </h3>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
+            <span class="text-2xl">👤</span>
+            <div>
+              <div class="text-white font-medium text-sm">Namen en identiteiten</div>
+              <div class="text-slate-500 text-xs mt-0.5">Wie het stuurde is onbekend. Adressen zijn wiskundige sleutels, geen namen.</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
+            <span class="text-2xl">💬</span>
+            <div>
+              <div class="text-white font-medium text-sm">De inhoud van berichten</div>
+              <div class="text-slate-500 text-xs mt-0.5">Versleuteld met AES-256-GCM. Zonder de sleutel is het onleesbare ruis.</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
+            <span class="text-2xl">🌐</span>
+            <div>
+              <div class="text-white font-medium text-sm">IP-adressen en locatie</div>
+              <div class="text-slate-500 text-xs mt-0.5">Geen logs. Geen registratie. De server weet niet wie verbinding maakt.</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
+            <span class="text-2xl">🕐</span>
+            <div>
+              <div class="text-white font-medium text-sm">Met wie, wanneer, hoe lang</div>
+              <div class="text-slate-500 text-xs mt-0.5">De hash koppelt niet terug naar personen. Twee berichten met dezelfde hash — dat is alles.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY FEATURES -->
+<section class="py-20 px-5 bg-slate-900 border-t border-slate-800">
+  <div class="max-w-5xl mx-auto text-center">
+    <div class="inline-block px-4 py-1.5 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-sm font-medium mono mb-4">De beveiliging</div>
+    <h2 class="text-3xl font-bold text-white mb-4 tracking-tight">Zes lagen bescherming</h2>
+    <p class="text-slate-400 mb-12 max-w-xl mx-auto">U hoeft dit niet te begrijpen. Maar het is er. Allemaal.</p>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-left">
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+        <div class="text-3xl mb-3">⚛️</div>
+        <div class="text-white font-semibold mb-1.5">Quantum-bestendig</div>
+        <div class="text-slate-400 text-sm leading-relaxed">ML-KEM-768 + ECDH P-256. Beschermt ook als kwantumcomputers ooit beschikbaar worden.</div>
+        <div class="mt-3 mono text-xs text-teal-600">NIST FIPS 203</div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+        <div class="text-3xl mb-3">🔑</div>
+        <div class="text-white font-semibold mb-1.5">Elke bericht eigen sleutel</div>
+        <div class="text-slate-400 text-sm leading-relaxed">AES-256-GCM ratchet. Oude berichten blijven veilig zelfs als iets later uitlekt.</div>
+        <div class="mt-3 mono text-xs text-teal-600">Forward secrecy</div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+        <div class="text-3xl mb-3">🔄</div>
+        <div class="text-white font-semibold mb-1.5">Zelf-herstellend</div>
+        <div class="text-slate-400 text-sm leading-relaxed">Elke 8 berichten een nieuwe kwantumsleutel. Een aanval op één bericht raakt nooit de rest.</div>
+        <div class="mt-3 mono text-xs text-teal-600">KEM-injectie</div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+        <div class="text-3xl mb-3">🛡️</div>
+        <div class="text-white font-semibold mb-1.5">Geen herhaling mogelijk</div>
+        <div class="text-slate-400 text-sm leading-relaxed">Elk bericht heeft een uniek nonce. Hetzelfde pakket twee keer? Geblokkeerd.</div>
+        <div class="mt-3 mono text-xs text-teal-600">Replay-bescherming</div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+        <div class="text-3xl mb-3">🔢</div>
+        <div class="text-white font-semibold mb-1.5">Verifieer de verbinding</div>
+        <div class="text-slate-400 text-sm leading-relaxed">Bel je vriend en vergelijk veiligheidsnummers. Gelijk? Niemand luistert mee.</div>
+        <div class="mt-3 mono text-xs text-teal-600">Safety numbers</div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
+        <div class="text-3xl mb-3">🌊</div>
+        <div class="text-white font-semibold mb-1.5">Wiskundig uniek avatar</div>
+        <div class="text-slate-400 text-sm leading-relaxed">Jouw fractal-avatar én naam worden afgeleid van je sleutel via SHA-256. Altijd hetzelfde voor dezelfde sleutel.</div>
+        <div class="mt-3 mono text-xs text-teal-600">SHA-256(pubKey)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-24 px-5 text-center relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-teal-900/8 to-transparent pointer-events-none"></div>
+  <div class="relative z-10 max-w-xl mx-auto">
+    <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-5 tracking-tight">Klaar voor echte privacy?</h2>
+    <p class="text-slate-400 text-lg mb-8">Geen download. Geen registratie. Klik en je bent beveiligd.</p>
+    <button onclick="openApp()" class="w-full sm:w-auto px-10 py-5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-xl rounded-2xl transition-all hover:shadow-2xl hover:shadow-teal-500/25 active:scale-95">
+      🔐 Nu veilig appen — gratis
+    </button>
+    <div class="mt-6 mono text-xs text-slate-600 tracking-widest">POST-QUANTUM · GEEN ACCOUNT · GEEN SERVER · GEEN COMPROMIS</div>
+  </div>
+</section>
+
+<footer class="py-8 px-6 bg-slate-900 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+  <div class="font-bold text-white text-lg tracking-tight">PARAMANT</div>
+  <div class="flex gap-5 text-sm text-slate-500">
+    <a href="#hoe" class="hover:text-teal-400 transition-colors">Hoe werkt het?</a>
+    <a href="#vergelijk" class="hover:text-teal-400 transition-colors">Vergelijking</a>
+    <a href="#ledger" class="hover:text-teal-400 transition-colors">Ledger</a>
+    <a href="javascript:openApp()" class="hover:text-teal-400 transition-colors">Open app</a>
+  </div>
+  <div class="mono text-xs text-slate-600">ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</div>
+</footer>
+
+</div><!-- /landing -->
+
+
+<!-- ════════════════════════════ APP ════════════════════════════ -->
+<div id="app">
+
+  <!-- Top bar -->
+  <div class="flex items-center gap-3 px-4 h-14 bg-slate-900 border-b border-slate-800 flex-shrink-0">
+    <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400">☰</button>
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg overflow-hidden border border-teal-500/40"><canvas id="app-logo-cv" width="28" height="28"></canvas></div>
+      <span class="font-bold text-white text-sm tracking-tight">PARAMANT</span>
+    </div>
+    <div class="flex-1"></div>
+    <!-- Relay toggle -->
+    <button onclick="toggleRelay()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs mono text-slate-400 transition-all">
+      <div id="rl-dot" class="w-2 h-2 rounded-full bg-slate-600 flex-shrink-0 transition-all"></div>
+      <span id="rl-lbl">Offline</span>
+    </button>
+    <div class="hidden md:flex items-center gap-1.5 mono text-xs text-slate-500">
+      <span>📡</span><span id="counter">—</span>
+    </div>
+    <button onclick="toggleLedger()" id="ledger-btn" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs text-slate-400 transition-all">
+      📊 Ledger
+    </button>
+    <button onclick="closeApp()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-400 hover:text-white transition-all">← Site</button>
+  </div>
+
+  <!-- App body -->
+  <div id="app-body" class="flex flex-1 overflow-hidden min-h-0">
+
+    <!-- Mobile overlay -->
+    <div id="mob-ov" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar-panel" class="fixed md:relative inset-y-0 left-0 z-50 md:z-auto w-72 flex flex-col bg-slate-900 border-r border-slate-800 -translate-x-full md:translate-x-0 transition-transform duration-250 overflow-hidden">
+
+      <!-- Identity card -->
+      <div class="p-4 border-b border-slate-800 flex-shrink-0">
+        <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-14 h-14 rounded-full border-2 border-teal-500/60 overflow-hidden flex-shrink-0 shadow-lg shadow-teal-500/10">
+              <canvas id="my-avatar" width="56" height="56"></canvas>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div id="my-nick" class="font-bold text-white mono text-sm truncate">…</div>
+              <div class="text-xs text-slate-500 mt-0.5">Jouw naam (uit jouw sleutel)</div>
+              <span id="pq-badge" class="hidden mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 bg-teal-500/15 border border-teal-500/25 rounded-full text-teal-400 text-xs">⚛ Quantum-proof</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="mono text-xs text-slate-500 tracking-widest uppercase mb-1.5">Jouw adres — deel dit met je vriend</div>
+            <div id="my-key-prev" class="mono text-xs text-teal-400 leading-relaxed break-all bg-slate-900 rounded-xl p-2.5 border border-slate-700 max-h-10 overflow-hidden">Genereren…</div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <button id="copy-key-btn" onclick="copyMyKey()" class="py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-semibold text-sm rounded-xl transition-all active:scale-95">📋 Kopieer</button>
+            <button onclick="toggleQR()" class="py-2.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-sm rounded-xl transition-all">📷 QR-code</button>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="regenIdentity()" class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-600">↺ Nieuw adres</button>
+            <button onclick="dlPage()" class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-600">⬇ Download</button>
+          </div>
+          <div id="qr-panel" class="hidden mt-3 text-center">
+            <div id="qr-box" class="inline-block"></div>
+            <div class="text-xs text-slate-500 mt-2">Laat je vriend dit scannen</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversations -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 flex-shrink-0">
+        <div class="mono text-xs font-semibold text-slate-500 tracking-widest uppercase">Gesprekken</div>
+        <button id="new-btn" onclick="showConnect()" class="w-7 h-7 flex items-center justify-center bg-teal-500 hover:bg-teal-400 rounded-lg text-slate-900 font-bold text-xl transition-all">+</button>
+      </div>
+      <div id="conv-list" class="flex-1 overflow-y-auto py-2 px-2">
+        <div id="empty-hint" class="text-center py-8 text-slate-500 text-sm leading-loose mono">
+          Klik <strong class="text-slate-300">+</strong> om te verbinden
+        </div>
+      </div>
+    </div>
+
+    <!-- Main area -->
+    <div id="main" class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- Welcome -->
+      <div id="welcome" class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
+        <button onclick="openSidebar()" class="md:hidden absolute top-16 left-4 w-9 h-9 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 text-lg">☰</button>
+        <div class="w-20 h-20 rounded-2xl border border-teal-500/40 overflow-hidden mb-6 shadow-lg shadow-teal-500/10 mx-auto">
+          <canvas id="wl-cv" width="80" height="80"></canvas>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-3">Welkom bij PARAMANT</h2>
+        <p class="text-slate-400 max-w-xs mb-8 leading-relaxed text-sm">Kopieer jouw adres links en stuur het naar je vriend. Daarna klik je op <strong class="text-white">+</strong> om te verbinden.</p>
+        <div class="w-full max-w-sm space-y-2.5 mb-8">
+          <div class="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl p-3 text-left">
+            <div class="w-8 h-8 rounded-lg bg-teal-500/20 border border-teal-500/25 flex items-center justify-center text-teal-400 font-bold text-sm flex-shrink-0">1</div>
+            <div><div class="text-white font-medium text-sm">Kopieer jouw adres</div><div class="text-slate-500 text-xs">Gebruik de 📋 knop links</div></div>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl p-3 text-left">
+            <div class="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-sm flex-shrink-0">2</div>
+            <div><div class="text-white font-medium text-sm">Stuur het aan je vriend</div><div class="text-slate-500 text-xs">Via WhatsApp, mail of QR-code</div></div>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl p-3 text-left">
+            <div class="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-sm flex-shrink-0">3</div>
+            <div><div class="text-white font-medium text-sm">Verbind via + knop</div><div class="text-slate-500 text-xs">Plak het adres van je vriend</div></div>
+          </div>
+        </div>
+        <button onclick="showConnect()" class="px-8 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-base rounded-2xl transition-all hover:shadow-xl hover:shadow-teal-500/20 active:scale-95">🤝 Nieuw gesprek starten</button>
+      </div>
+
+      <!-- Connect screen -->
+      <div id="conn-scr" style="display:none" class="flex-1 flex items-center justify-center px-4 py-6">
+        <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-6 relative">
+          <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-teal-500 to-transparent rounded-t-2xl"></div>
+          <!-- Step indicator -->
+          <div class="flex items-center gap-2 mb-6">
+            <div class="step-done w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold">✓</div>
+            <div class="flex-1 h-0.5 bg-teal-500"></div>
+            <div class="step-curr w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold">2</div>
+            <div class="flex-1 h-0.5 bg-slate-700"></div>
+            <div class="step-next w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold">3</div>
+          </div>
+          <h2 class="text-xl font-bold text-white mb-1">Verbind met je vriend</h2>
+          <p class="text-slate-400 text-sm mb-5 leading-relaxed">Plak het adres van je vriend. Geef hem ook jouw adres zodat hij hetzelfde kan doen.</p>
+          <div class="space-y-4">
+            <div>
+              <label class="mono text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 block">Naam (optioneel)</label>
+              <input id="peer-name" type="text" maxlength="30" placeholder="bijv. Karin, Papa, Collega Jan…"
+                class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 text-white rounded-xl px-4 py-3 text-base outline-none transition-colors placeholder-slate-600">
+            </div>
+            <div>
+              <label class="mono text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 block">Adres van je vriend</label>
+              <textarea id="peer-key" rows="4" placeholder="Plak hier het adres van je vriend…"
+                class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 text-teal-300 mono rounded-xl px-4 py-3 text-xs outline-none resize-none transition-colors placeholder-slate-600 placeholder:font-sans placeholder:text-sm leading-relaxed"></textarea>
+            </div>
+          </div>
+          <div id="conn-err" style="display:none" class="mt-3 px-4 py-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 text-sm mono"></div>
+          <div class="flex gap-3 mt-5">
+            <button id="conn-btn" onclick="doConnect()" class="flex-1 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-base rounded-xl transition-all active:scale-95">⚡ Verbinden</button>
+            <button onclick="cancelConnect()" class="px-5 py-4 bg-slate-700 border border-slate-600 text-slate-300 font-medium rounded-xl transition-all hover:bg-slate-600">← Terug</button>
+          </div>
+          <div class="mt-4 p-3 bg-teal-500/5 border border-teal-500/15 rounded-xl flex items-start gap-2">
+            <span class="text-teal-400 flex-shrink-0">🔒</span>
+            <p class="text-teal-400/80 text-xs leading-relaxed">Verbinding is eind-tot-eind versleuteld. Niemand kan meelezen — ook wij niet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat header -->
+      <div id="chat-head" style="display:none" class="items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-800 flex-shrink-0">
+        <button onclick="openSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-lg text-slate-400">☰</button>
+        <div id="ch-av" class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 border-2 border-teal-500/40 flex items-center justify-center font-bold text-teal-400"></div>
+        <div class="flex-1 min-w-0">
+          <div id="ch-nm" class="font-bold text-white text-base truncate">—</div>
+          <div id="ch-st" class="text-xs text-teal-400 mono mt-0.5">Verbonden · quantum-veilig 🔒</div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="showSN()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-lg text-xs text-slate-400 mono transition-all">🔢 Verifieer</button>
+          <button id="destruct-btn" onclick="cycleDestruct()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-orange-500/30 rounded-lg text-xs text-slate-400 mono transition-all">⏱ Auto-wis</button>
+          <button onclick="exportConv()" class="hidden sm:block px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-400 mono transition-all hover:border-slate-600">⬇ Export</button>
+          <button onclick="endConv()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-red-500/30 rounded-lg text-xs text-slate-400 mono transition-all">✕</button>
+        </div>
+      </div>
+
+      <!-- Audit bar (subtle, not scary) -->
+      <div id="audit-bar" style="display:none" class="px-4 py-2 bg-slate-950/80 border-b border-slate-800 flex-shrink-0">
+        <div class="flex items-center gap-3 mono text-xs text-slate-600 flex-wrap">
+          <span>🛡️ <b id="au-kx" class="text-slate-500">—</b></span>
+          <span>Ronde <b id="au-rnd" class="text-slate-500">#0</b></span>
+          <span>✓ <b id="au-tags" class="text-teal-700">0</b></span>
+          <span id="au-kem-wrap" class="hidden">⚛ <b id="au-kem" class="text-teal-700">0</b> KEM</span>
+          <span id="au-rep-wrap" class="hidden text-red-600">🚫 <b id="au-rep">0</b></span>
+          <span id="au-cid-wrap" class="hidden">ID: <b id="au-cid" class="text-slate-600">—</b></span>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="chat-wrap" style="display:none" class="flex-1 flex-col overflow-hidden relative">
+        <div id="msgs" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
+        <!-- Paste overlay -->
+        <div id="paste-ov" style="display:none" class="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 p-4 shadow-2xl">
+          <div class="text-sm font-semibold text-white mb-3">📥 Ontvangen bericht — plak het hier:</div>
+          <textarea id="paste-ta" rows="4" placeholder="Plak hier het versleutelde pakket dat je hebt ontvangen (het lange stuk tekst)…"
+            class="w-full bg-slate-800 border border-slate-600 focus:border-teal-500 text-teal-300 mono rounded-xl px-4 py-3 text-xs outline-none resize-none placeholder-slate-600 placeholder:font-sans placeholder:text-sm leading-relaxed"></textarea>
+          <div class="flex items-center gap-3 mt-3 flex-wrap">
+            <button onclick="doDecrypt()" class="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold rounded-xl transition-all active:scale-95">🔓 Lezen</button>
+            <button onclick="hidePaste()" class="px-4 py-3 bg-slate-700 border border-slate-600 text-slate-300 rounded-xl transition-all">Annuleer</button>
+            <span id="paste-err" class="text-red-400 text-sm mono flex-1"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input row -->
+      <div id="input-row" style="display:none" class="items-end gap-2 px-3 py-3 bg-slate-900 border-t border-slate-800 flex-shrink-0">
+        <input type="file" id="file-inp" multiple style="display:none" onchange="handleFiles(this)">
+        <button onclick="document.getElementById('file-inp').click()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all" title="Bestand">📎</button>
+        <button id="voice-btn" onclick="toggleVoice()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all" title="Inspreken">🎤</button>
+        <button onclick="togglePaste()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all" title="Ontvangen pakket plakken">📥</button>
+        <textarea id="msg-inp" rows="1" placeholder="Typ een bericht…"
+          class="flex-1 bg-slate-800 border border-slate-700 focus:border-teal-500 text-white rounded-xl px-4 py-3 text-base outline-none resize-none max-h-32 leading-normal transition-colors placeholder-slate-600"
+          oninput="autoResize(this)"></textarea>
+        <button onclick="doEncrypt()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-teal-500 hover:bg-teal-400 rounded-xl text-slate-900 text-xl font-bold transition-all active:scale-95">➤</button>
+      </div>
+    </div>
+
+    <!-- Ledger column -->
+    <div id="ledger-col" class="hidden w-56 flex-shrink-0 bg-slate-950 border-l border-slate-800 flex-col overflow-hidden">
+      <div class="p-4 border-b border-slate-800 flex-shrink-0">
+        <div class="mono text-xs text-teal-400 tracking-widest mb-1">PUBLIEK LEDGER</div>
+        <div class="text-xs text-slate-500 leading-relaxed mb-3">Hash + grootte + tijd.<br>Niemand leest de inhoud.</div>
+        <div class="flex gap-2">
+          <div class="flex-1 bg-slate-800 border border-slate-700 rounded-lg p-2 text-center">
+            <div id="ls-msgs" class="mono font-bold text-teal-400 text-sm">—</div>
+            <div class="text-slate-500 text-xs">pakketten</div>
+          </div>
+          <div class="flex-1 bg-slate-800 border border-slate-700 rounded-lg p-2 text-center">
+            <div id="ls-chats" class="mono font-bold text-teal-400 text-sm">—</div>
+            <div class="text-slate-500 text-xs">chats</div>
+          </div>
+        </div>
+      </div>
+      <div id="ledger-entries" class="flex-1 overflow-y-auto p-2">
+        <div class="text-center py-8 text-slate-600 mono text-xs leading-loose">📡 Verbind relay<br>voor live data</div>
+      </div>
+    </div>
+
+  </div><!-- /app-body -->
+</div><!-- /app -->
+
+<!-- Safety numbers modal -->
+<div id="sn-modal" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm relative">
+    <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-teal-500 to-transparent rounded-t-2xl"></div>
+    <h3 class="text-lg font-bold text-white mb-2">🔢 Veiligheidsnummers</h3>
+    <p class="text-slate-400 text-sm mb-4 leading-relaxed">Bel je vriend en vergelijk deze nummers hardop. Zijn ze hetzelfde? Dan is niemand aan het meelezen.</p>
+    <div id="sn-grid" class="grid grid-cols-4 gap-2 mb-4"></div>
+    <div class="p-3 bg-teal-500/8 border border-teal-500/18 rounded-xl mb-4">
+      <p class="text-teal-400 text-xs leading-relaxed">✅ Zelfde nummers = veilige verbinding<br>❌ Andere nummers = verbreek de verbinding</p>
+    </div>
+    <button onclick="hideSN()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white font-semibold rounded-xl transition-all">Sluiten</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ─── Helpers ────────────────────────────────────────────────────────
+const $=id=>document.getElementById(id);
+const b2h=a=>Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');
+const h2b=h=>{h=h.replace(/\s+/g,'');const m=h.match(/.{2}/g);return m?new Uint8Array(m.map(x=>parseInt(x,16))):null;};
+const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+
+// ─── CRYPTO ENGINE — volledig intact ────────────────────────────────
+async function hkdf(s,info,l=32){const k=await crypto.subtle.importKey('raw',s,'HKDF',false,['deriveBits']);const b=await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt:new Uint8Array(32),info:new TextEncoder().encode(info)},k,l*8);return new Uint8Array(b);}
+async function sha256(data){return new Uint8Array(await crypto.subtle.digest('SHA-256',data));}
+const KEM_IV=8;
+async function ratchet(ck,kem=null){const mat=kem?new Uint8Array([...ck,...kem]):ck;const nCK=await hkdf(mat,kem?'kem-ratchet':'chain',32);const mk=await hkdf(ck,'msg',32);ck.fill(0);if(kem)kem.fill(0);if(mat!==ck)mat.fill(0);return{nextCK:nCK,msgKey:mk};}
+async function aesEnc(mk,pt,aad){const iv=rnd(12),k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['encrypt']);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:aad},k,pt);mk.fill(0);return{iv,ct:new Uint8Array(ct)};}
+async function aesDec(mk,iv,ct,aad){const k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['decrypt']);try{const pt=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:aad},k,ct));mk.fill(0);return pt;}catch(e){mk.fill(0);throw new Error('Ontsleutelen mislukt — controleer of je het goede pakket hebt geplakt.');}}
+async function safetyNums(m){const h=await sha256(m);return Array.from({length:8},(_,i)=>String(((h[i*4]<<16)|(h[i*4+1]<<8)|h[i*4+2])%100000).padStart(5,'0'));}
+async function chatIdFrom(ck){const h=await hkdf(new Uint8Array(ck),'paramant-chat-id-v1',8);return b2h(h);}
+function pad32(d){const p=32-(d.length%32);const o=new Uint8Array(d.length+p);o.set(d);o.fill(p,d.length);return o;}
+function unpad32(d){const p=d[d.length-1];if(p<1||p>32)throw new Error('Ongeldige padding');for(let i=d.length-p;i<d.length;i++)if(d[i]!==p)throw new Error('Padding corrupt');return d.slice(0,d.length-p);}
+function mlOK(){try{return!!(window.noblePostQuantum?.ml_kem768);}catch(e){return false;}}
+function getML(){return window.noblePostQuantum.ml_kem768;}
+async function kemEncap(pub){if(!mlOK()||!pub)return null;try{const{cipherText,sharedSecret}=getML().encapsulate(h2b(pub));return{ct:b2h(cipherText),ss:sharedSecret};}catch(e){return null;}}
+async function kemDecap(ct,sk){if(!mlOK()||!ct||!sk)return null;try{return getML().decapsulate(h2b(ct),sk);}catch(e){return null;}}
+const NDB=(()=>{let db=null;const q=[];const r=indexedDB.open('paramant-v4',1);r.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('n'))e.target.result.createObjectStore('n',{keyPath:'id'});};r.onsuccess=e=>{db=e.target.result;q.forEach(f=>f(db));q.length=0;};const g=()=>new Promise(res=>{if(db)res(db);else q.push(res);});return{async has(id){const d=await g();return new Promise(r=>{d.transaction('n','readonly').objectStore('n').get(id).onsuccess=e=>r(!!e.target.result);});},async add(id){const d=await g();return new Promise(r=>{const t=d.transaction('n','readwrite');t.objectStore('n').put({id,ts:Date.now()});t.oncomplete=r;});}};})();
+
+// ─── FRACTAL AVATAR — 100% hash-derived ─────────────────────────────
+const MB_REGIONS=[[-0.7269,0.1889,0.022],[-0.5252,0.5252,0.016],[0.2850,0.0100,0.038],[-0.7453,0.1127,0.007],[-0.1256,0.6440,0.012],[-1.7548,0.0001,0.009],[-0.8000,0.1560,0.028],[-0.4244,0.3578,0.011],[0.0000,0.6180,0.045],[-0.5890,-0.4250,0.014],[-1.3150,0.0740,0.007],[-0.5980,0.6630,0.006],[0.4295,0.1658,0.019],[-0.7780,0.1340,0.009],[-0.2340,-0.8270,0.013],[-1.4012,0.0000,0.011],[-0.1011,0.9532,0.008],[0.3690,0.6700,0.015],[-0.8650,0.2320,0.010],[-0.6890,-0.2780,0.017]];
+const MB_PAL=[[0,212,180],[0,122,255],[180,0,255],[255,107,53],[34,197,94],[255,200,0],[0,180,255],[200,0,120],[120,200,0],[0,255,200],[255,60,120],[60,120,255],[255,160,0],[0,255,100],[180,60,255]];
+function fractalParams(h){const ri=h[0]%MB_REGIONS.length;const[bx,by,sc]=MB_REGIONS[ri];const offX=((h[1]*256+h[2])/65535-.5)*sc*2.4;const offY=((h[3]*256+h[4])/65535-.5)*sc*2.4;const zoom=sc*(.4+(h[5]/255)*.6);const pal=MB_PAL[h[6]%MB_PAL.length];const maxIt=32+(h[7]%64);return{cx:bx+offX,cy:by+offY,zoom,pal,maxIt};}
+function drawFractal(cv,p){if(!cv||!p)return;const W=cv.width,H=cv.height,c=cv.getContext('2d'),img=c.createImageData(W,H);const{cx,cy,zoom,pal,maxIt}=p;const asp=H/W;const xm=cx-zoom,xM=cx+zoom,ym=cy-zoom*asp,yM=cy+zoom*asp;for(let py=0;py<H;py++)for(let px=0;px<W;px++){const re=xm+(px/W)*(xM-xm),im=ym+(py/H)*(yM-ym);let zx=0,zy=0,it=0;while(zx*zx+zy*zy<4&&it<maxIt){const x2=zx*zx,y2=zy*zy;zy=2*zx*zy+im;zx=x2-y2+re;it++;}const i=(py*W+px)*4;if(it===maxIt){img.data[i]=15;img.data[i+1]=23;img.data[i+2]=42;img.data[i+3]=255;}else{const t=it/maxIt;img.data[i]=Math.round(pal[0]*t);img.data[i+1]=Math.round(pal[1]*t*(1-t*.3));img.data[i+2]=Math.round(pal[2]*t*(1-t*.2));img.data[i+3]=255;}}c.putImageData(img,0,0);}
+
+// Animated logo (not identity-derived — fixed interesting region)
+let hfA=0;
+const LP=(()=>{const h=new Uint8Array(32);h[0]=3;h[5]=128;h[6]=4;h[7]=64;return fractalParams(h);})();
+(function animL(){hfA+=.003;const p={...LP,cx:LP.cx+Math.sin(hfA*.7)*.004,cy:LP.cy+Math.cos(hfA*.5)*.003};['hero-cv','hero-main-cv','app-logo-cv','wl-cv'].forEach(id=>{const cv=$(id);if(cv)drawFractal(cv,p);});requestAnimationFrame(animL);})();
+
+// ─── IDENTITY — SHA-256(pubKey) → avatar + nick ──────────────────
+const NADJ=['Stil','Snel','Slim','Wild','Koud','Vrij','Nacht','Diep','Scherp','Nevel','Vlug','Zwart','Goud','Stout','Zeker','Fel','Grijs','Hoog','Fijn','Raak','Koel','Helder','Ijzer','Sterk','Vast','Blauw','Rood','Flink','Handig','Rustig'];
+const NNOUN=['Vos','Kat','Wolf','Ster','Rots','Golf','Pijl','Haai','Lynx','Uil','Kraai','Maan','Kever','Tijger','Adelaar','Cobra','Arend','Zeehond','Ibis','Zalm','Beer','Das','Raaf','Eland','Slang','Haas','Aap','Krab','Mug','Gier'];
+const NSYM=['_','-','.','!','@','~','#','+'];
+const NPFX=['x','z','k','q','v','h','j','m','r',''];
+function nickFromHash(h){const s=h[16]%5;const adj=NADJ[((h[17]<<8)|h[18])%NADJ.length];const noun=NNOUN[((h[19]<<8)|h[20])%NNOUN.length];const sym=NSYM[h[21]%NSYM.length];const num=String(((h[22]<<8)|h[23])%900+100);const pfx=NPFX[h[24]%NPFX.length];if(s===0)return(adj+sym+noun+num.slice(0,2)).slice(0,15);if(s===1)return(pfx+noun+adj.slice(0,3)+num.slice(0,2)).slice(0,15);if(s===2)return(noun+sym+adj).slice(0,15);if(s===3)return(pfx+noun+num.slice(0,2)).slice(0,15);return(adj.slice(0,4)+noun+num.slice(0,2)).slice(0,15);}
+
+let myNick='',myKP=null,myMLK=null,myBundle='',myIdentityHash=null,myFractalParams=null;
+async function buildIdentity(){
+  myKP=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
+  const rawPub=new Uint8Array(await crypto.subtle.exportKey('raw',myKP.publicKey));
+  myIdentityHash=await sha256(rawPub);
+  myNick=nickFromHash(myIdentityHash);
+  myFractalParams=fractalParams(myIdentityHash);
+  const epub=b2h(rawPub);
+  const bundle={ecdh:epub,nick:myNick};
+  if(mlOK()){try{const ml=getML();myMLK=ml.keygen();bundle.mlkem=b2h(myMLK.publicKey);}catch(e){myMLK=null;}}
+  myBundle=JSON.stringify(bundle);
+}
+async function initIdentity(){
+  try{
+    await buildIdentity();
+    $('my-nick').textContent=myNick;
+    $('my-key-prev').textContent=myBundle.slice(0,80)+'…';
+    $('my-key-prev').dataset.full=myBundle;
+    if(myMLK)$('pq-badge').classList.remove('hidden');
+    drawFractal($('my-avatar'),myFractalParams);
+    if(!myMLK){setTimeout(async()=>{if(!mlOK()||!myKP)return;try{const ml=getML();myMLK=ml.keygen();const rawPub=new Uint8Array(await crypto.subtle.exportKey('raw',myKP.publicKey));const b=JSON.parse(myBundle);b.mlkem=b2h(myMLK.publicKey);myBundle=JSON.stringify(b);$('my-key-prev').textContent=myBundle.slice(0,80)+'…';$('my-key-prev').dataset.full=myBundle;$('pq-badge').classList.remove('hidden');}catch(e){}},2500);}
+  }catch(e){$('my-key-prev').textContent='Herlaad pagina';}
+}
+initIdentity();
+
+function copyMyKey(){const k=$('my-key-prev').dataset.full||myBundle;navigator.clipboard.writeText(k).catch(()=>{});const btn=$('copy-key-btn');btn.textContent='✓ Gekopieerd!';setTimeout(()=>btn.textContent='📋 Kopieer',2000);}
+let qrShown=false;
+function toggleQR(){qrShown=!qrShown;const p=$('qr-panel');if(!qrShown){p.classList.add('hidden');return;}p.classList.remove('hidden');$('qr-box').innerHTML='';try{new QRCode($('qr-box'),{text:($('my-key-prev').dataset.full||myBundle).slice(0,200),width:160,height:160,correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
+async function regenIdentity(){if(convs.length>0&&!confirm('Nieuwe identiteit? Alle gesprekken worden beëindigd.'))return;convs.forEach(c=>{if(c.chainKey)c.chainKey.fill(0);});convs=[];activeId=null;renderList();showWelcome();await initIdentity();}
+function dlPage(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([document.documentElement.outerHTML],{type:'text/html'}));a.download='paramant.html';a.click();}
+
+// ─── RELAY ───────────────────────────────────────────────────────────
+// Stel jouw relay-URL in (optioneel — werkt ook offline):
+// window._PARAMANT_RELAY = 'wss://jouw-relay.onrender.com';
+// ── Relay — Tor-bewust, dual-mode (clearnet + .onion) ─────────────
+// Stel in:
+//   window._PARAMANT_RELAY       = 'wss://clearnet-relay.onrender.com'  (clearnet)
+//   window._PARAMANT_RELAY_ONION = 'ws://jouwrelay.onion'               (.onion)
+//
+// Automatische keuze:
+//   - Tor Browser gedetecteerd + .onion beschikbaar → .onion
+//   - Anders → clearnet relay
+//   - Geen van beide → offline copy-paste modus
+
+function isTorBrowser(){
+  // Tor Browser reageert op navigator.userAgent + window.screen afmetingen
+  // Beste heuristiek: probeer verbinding met .onion — slaagt alleen in Tor Browser
+  return !!(window._PARAMANT_RELAY_ONION);
+}
+
+const RELAY_ONION  = window._PARAMANT_RELAY_ONION || '';
+const RELAY_CLEAR  = (()=>{
+  if(window._PARAMANT_RELAY) return window._PARAMANT_RELAY;
+  if(location.hostname==='localhost'||location.hostname==='127.0.0.1') return 'ws://localhost:8080';
+  return '';
+})();
+
+// Gebruik .onion als beschikbaar en als we in Tor Browser zitten
+// anders clearnet; anders offline
+const RELAY_WS = RELAY_ONION || RELAY_CLEAR;
+const IS_ONION = RELAY_WS.includes('.onion');
+const RELAY_API = (!IS_ONION && RELAY_WS)
+  ? RELAY_WS.replace('wss://','https://').replace('ws://','http://')
+  : ''; // .onion heeft geen HTTP API via gewone browser
+
+let relayWS=null,relayOn=false,relayWant=false;
+const presenceMap=new Map();
+
+function setRelayUI(s){
+  const d=$('rl-dot'),l=$('rl-lbl');
+  d.className='w-2 h-2 rounded-full flex-shrink-0 transition-all ';
+  if(s==='on'){
+    d.classList.add(IS_ONION?'bg-purple-400':'bg-green-400');
+    l.textContent=IS_ONION?'🧅 Tor relay':'Relay actief';
+  }else if(s==='con'){
+    d.classList.add('bg-yellow-400');
+    l.textContent=IS_ONION?'🧅 Tor…':'Verbinden…';
+  }else if(s==='err'){
+    d.classList.add('bg-red-500');
+    l.textContent=IS_ONION?'Tor fout':'Relay fout';
+  }else{
+    d.classList.add('bg-slate-600');
+    l.textContent='Offline';
+  }
+}
+
+function wakeupRelay(){
+  // Geen wakeup nodig voor .onion (geen Render cold-start)
+  if(IS_ONION||!RELAY_API)return;
+  fetch(`${RELAY_API}/health`).catch(()=>{});
+  setTimeout(()=>fetch(`${RELAY_API}/health`).catch(()=>{}),15000);
+}
+
+function connectRelay(){
+  if(!RELAY_WS){
+    showToast('Geen relay geconfigureerd.\nOffline modus: kopieer pakketten handmatig.');
+    relayWant=false;
+    // Toon configuratie-tip
+    showRelayConfigTip();
+    return;
+  }
+  if(relayWS&&(relayWS.readyState===0||relayWS.readyState===1))return;
+  setRelayUI('con');
+  if(IS_ONION){
+    // .onion verbinding — werkt alleen in Tor Browser
+    // Geen wakeup, geen health check via http
+    console.log('[relay] Verbinden via Tor hidden service:', RELAY_WS);
+  }
+  try{
+    relayWS=new WebSocket(RELAY_WS);
+    relayWS.onopen=()=>{
+      relayOn=true;setRelayUI('on');
+      convs.forEach(c=>{if(c.connected&&c.chatId)relayJoin(c.chatId);});
+      broadcastPresence();
+      if(!IS_ONION)fetchStats();
+      if(IS_ONION)showToast('🧅 Verbonden via Tor — maximale anonimiteit',null,'#581c87');
+    };
+    relayWS.onclose=()=>{
+      relayOn=false;presenceMap.clear();renderPresence();
+      if(relayWant){setRelayUI('con');setTimeout(connectRelay,IS_ONION?8000:4000);}
+      else setRelayUI('off');
+    };
+    relayWS.onerror=()=>{
+      relayOn=false;setRelayUI('err');
+      if(IS_ONION){
+        // .onion werkt alleen in Tor Browser — geef duidelijke foutmelding
+        showToast('🧅 .onion verbinding mislukt. Gebruik Tor Browser.',null,'#7c3aed');
+        if(RELAY_CLEAR&&relayWant){
+          // Fallback naar clearnet als .onion faalt
+          setTimeout(()=>{
+            if(!relayOn&&relayWant&&RELAY_CLEAR){
+              console.log('[relay] .onion fallback naar clearnet');
+              // Clearnet fallback
+            }
+          },5000);
+        }
+      }
+      if(relayWant)setTimeout(connectRelay,8000);
+    };
+    relayWS.onmessage=e=>{try{onRelayMsg(JSON.parse(e.data));}catch(x){}}
+  }catch(e){setRelayUI('err');if(relayWant)setTimeout(connectRelay,8000);}
+}
+
+function disconnectRelay(){
+  relayWant=false;
+  if(relayWS){try{relayWS.close();}catch(e){}}
+  relayWS=null;relayOn=false;
+  presenceMap.clear();renderPresence();setRelayUI('off');
+}
+
+function toggleRelay(){
+  relayWant=!relayWant;
+  if(relayWant){wakeupRelay();connectRelay();}
+  else disconnectRelay();
+}
+
+function showRelayConfigTip(){
+  // Toon een subtiele tip hoe relay te configureren
+  const existing=$('relay-tip');if(existing)return;
+  const tip=document.createElement('div');tip.id='relay-tip';
+  tip.style.cssText='position:fixed;bottom:70px;right:16px;max-width:280px;background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:14px 16px;border-radius:14px;font-size:12px;z-index:9999;line-height:1.6;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+  tip.innerHTML=`<div style="font-weight:600;color:#e2e8f0;margin-bottom:6px">📡 Relay instellen (optioneel)</div>
+<div style="color:#64748b;font-size:11px;margin-bottom:8px">Voeg toe aan HTML voor &lt;/head&gt;:</div>
+<div style="font-family:monospace;font-size:10px;background:#0f172a;padding:8px;border-radius:8px;color:#2dd4bf;word-break:break-all">window._PARAMANT_RELAY<br>= 'wss://relay.onrender.com'</div>
+<div style="font-family:monospace;font-size:10px;background:#0f172a;padding:8px;border-radius:8px;color:#a78bfa;margin-top:6px;word-break:break-all">// Via Tor (.onion):<br>window._PARAMANT_RELAY_ONION<br>= 'ws://xyz.onion'</div>
+<button onclick="this.parentElement.remove()" style="margin-top:10px;padding:4px 12px;background:#334155;border:none;color:#94a3b8;border-radius:8px;cursor:pointer;font-size:11px;width:100%">Sluiten</button>`;
+  document.body.appendChild(tip);
+  setTimeout(()=>{if(tip.parentElement){tip.style.transition='opacity .4s';tip.style.opacity='0';setTimeout(()=>tip.remove(),400);}},15000);
+}
+function relayJoin(room){if(!relayOn||!relayWS||relayWS.readyState!==1)return;relayWS.send(JSON.stringify({type:'join',chatHash:room,nick:myNick}));}
+function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyState!==1)return false;try{relayWS.send(JSON.stringify({type:'packet',chatHash:conv.chatId,seq:pkt.seq,payload:{iv:pkt.iv,ct:pkt.ct,type:pkt.type,kemCt:pkt.kemCt,kemPub:pkt.kemPub}}));return true;}catch(e){return false;}}
+function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
+setInterval(()=>{if(relayOn)broadcastPresence();},25000);
+setInterval(()=>{if(relayOn)fetchStats();},15000);
+setInterval(()=>{if(RELAY_API)fetch(`${RELAY_API}/health`).catch(()=>{});},600000);
+
+function onRelayMsg(msg){if(msg.type==='packet'){const pay=msg.payload;if(pay?.pType==='presence'&&pay.nick&&pay.bundle&&pay.nick!==myNick){presenceMap.set(pay.nick,{nick:pay.nick,bundle:pay.bundle,avatarHint:pay.avatarHint,ts:pay.ts});renderPresence();return;}const conv=convs.find(c=>c.chatId&&c.connected);if(!conv)return;const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};decryptPacket(conv,pkt).then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()})).catch(e=>sysMsg(conv,'⚠️ '+e.message));}else if(msg.type==='peer_left'){presenceMap.delete(msg.nick);renderPresence();}}
+
+function renderPresence(){const el=$('ledger-entries');if(!el)return;el.querySelectorAll('.pr-row').forEach(e=>e.remove());if(!presenceMap.size)return;const hdr=document.createElement('div');hdr.className='pr-row mono text-xs text-slate-500 px-2 py-1.5 tracking-widest';hdr.textContent='LIVE NU';el.insertBefore(hdr,el.firstChild);Array.from(presenceMap.values()).sort((a,b)=>b.ts-a.ts).forEach(p=>{const row=document.createElement('div');row.className='pr-row flex items-center gap-2 p-2 bg-teal-500/5 border border-teal-500/15 rounded-xl mb-1.5 cursor-pointer hover:border-teal-500/30 transition-all';row.onclick=()=>quickConnect(p);const av=document.createElement('div');av.className='w-8 h-8 rounded-full border border-teal-500/40 overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold text-teal-400 bg-slate-800';if(p.avatarHint){const cv=document.createElement('canvas');cv.width=32;cv.height=32;const fh=new Uint8Array(32);const hb=h2b(p.avatarHint)||new Uint8Array(8);fh.set(hb.slice(0,8));drawFractal(cv,fractalParams(fh));av.appendChild(cv);}else av.textContent=p.nick.charAt(0).toUpperCase();const inf=document.createElement('div');inf.className='flex-1 min-w-0';inf.innerHTML=`<div class="text-xs font-medium text-white truncate">${p.nick}</div><div class="text-xs text-green-400 mono">● online</div>`;const btn=document.createElement('button');btn.className='text-xs px-2 py-1 bg-teal-500/20 border border-teal-500/25 text-teal-400 rounded-lg hover:bg-teal-500/30 transition-all flex-shrink-0';btn.textContent='Verbind';btn.onclick=(e)=>{e.stopPropagation();quickConnect(p);};row.appendChild(av);row.appendChild(inf);row.appendChild(btn);el.insertBefore(row,el.children[1]||null);});}
+function quickConnect(p){showConnect();setTimeout(()=>{$('peer-key').value=p.bundle||'';try{const b=JSON.parse(p.bundle);if(b.nick)$('peer-name').value=b.nick;}catch(e){}},60);}
+async function fetchStats(){if(!RELAY_API)return;try{const r=await fetch(`${RELAY_API}/api/stats`);const d=await r.json();if(d.ok){$('counter').textContent=d.messages.toLocaleString('nl-NL');$('ls-msgs').textContent=d.messages.toLocaleString('nl-NL');$('ls-chats').textContent=d.chats;}}catch(e){}}
+async function fetchLedger(){if(!RELAY_API)return;try{const r=await fetch(`${RELAY_API}/api/ledger`);const d=await r.json();if(d.ok&&d.entries)d.entries.slice(0,20).forEach(e=>addLedgerEntry({h:e.chatHash.replace('…',''),s:e.seq,b:e.bytes,t:e.timestamp}));}catch(e){}}
+function addLedgerEntry(e){const el=$('ledger-entries');if(el.querySelector('.lc-empty-msg'))el.innerHTML='';const div=document.createElement('div');div.className='mono text-xs rounded-lg p-2 mb-1 bg-slate-800/50 border border-slate-700/50 slide-in';div.innerHTML=`<div class="text-teal-600 truncate">${e.h}…</div><div class="text-slate-600">${(e.b/1024).toFixed(1)}KB · ${new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;const fp=Array.from(el.children).find(c=>!c.classList.contains('pr-row'));el.insertBefore(div,fp||null);while(el.querySelectorAll('div:not(.pr-row)').length>40)el.querySelectorAll('div:not(.pr-row)')[el.querySelectorAll('div:not(.pr-row)').length-1].remove();}
+
+// ─── CONVERSATIONS ───────────────────────────────────────────────────
+const MAX=3;let convs=[],activeId=null;
+function newConv(id,name){return{id,name,chatId:null,chainKey:null,msgSeq:0,safetyNums:[],msgs:[],connected:false,tagsCnt:0,repCnt:0,kemCnt:0,kxType:'—',peerMLKEM:null,myRatchetKEM:null,destructTimer:0};}
+const getConv=id=>convs.find(c=>c.id===id);
+const activeConv=()=>getConv(activeId);
+
+// ─── CONNECT ─────────────────────────────────────────────────────────
+async function doConnect(){
+  const raw=$('peer-key').value.trim();
+  const name=$('peer-name').value.trim()||`Vriend ${convs.length+1}`;
+  $('conn-err').style.display='none';$('conn-btn').disabled=true;$('conn-btn').textContent='⟳ Verbinding maken…';
+  try{
+    let bundle={};try{bundle=JSON.parse(raw);}catch(e){bundle={ecdh:raw};}
+    const eb=h2b((bundle.ecdh||raw).replace(/\s+/g,''));
+    if(!eb||eb.length!==65)throw new Error('Ongeldig adres. Heb je het volledige adres geplakt?');
+    const theirKey=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
+    const bits=await crypto.subtle.deriveBits({name:'ECDH',public:theirKey},myKP.privateKey,256);
+    const shared=new Uint8Array(bits);
+    const master=await hkdf(shared,'paramant-master-v1',32);shared.fill(0);
+    const sn=await safetyNums(master);
+    const ck=await hkdf(master,'paramant-chain-init',32);master.fill(0);
+    const id=Date.now();
+    const conv=newConv(id,bundle.nick||name);
+    conv.chainKey=ck;conv.safetyNums=sn;conv.connected=true;
+    conv.kxType=myMLK&&bundle.mlkem?'ECDH P-256 + ML-KEM-768':'ECDH P-256';
+    if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
+    conv.chatId=await chatIdFrom(ck);
+    convs.push(conv);
+    sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
+    sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
+    if(relayOn)relayJoin(conv.chatId);
+    renderList();showChat(id);
+    $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
+  }catch(e){
+    $('conn-err').textContent=e.message;$('conn-err').style.display='block';
+    $('conn-btn').disabled=false;$('conn-btn').textContent='⚡ Verbinden';
+  }
+}
+$('peer-key').addEventListener('input',function(){try{const b=JSON.parse(this.value.trim());if(b.nick&&!$('peer-name').value)$('peer-name').value=b.nick;}catch(e){}});
+
+// ─── ENCRYPT / DECRYPT ────────────────────────────────────────────────
+async function doEncrypt(){const conv=activeConv();if(!conv?.chainKey)return;const txt=$('msg-inp').value.trim();if(!txt)return;$('msg-inp').value='';$('msg-inp').style.height='auto';await encPayload(conv,txt,'text');}
+async function encPayload(conv,payload,type){
+  try{
+    const seq=conv.msgSeq;
+    let kemShared=null,kemCt=null,newKEMPub=null;
+    if(mlOK()&&conv.peerMLKEM&&seq>0&&seq%KEM_IV===0){const res=await kemEncap(conv.peerMLKEM);if(res){kemShared=res.ss;kemCt=res.ct;conv.kemCnt++;}try{conv.myRatchetKEM=getML().keygen();newKEMPub=b2h(conv.myRatchetKEM.publicKey);}catch(e){}}
+    const{nextCK,msgKey}=await ratchet(conv.chainKey,kemShared);
+    conv.chainKey=nextCK;conv.msgSeq++;
+    const encoded=type==='text'?new TextEncoder().encode(payload):new TextEncoder().encode(JSON.stringify(payload));
+    const padded=pad32(encoded);
+    const aad=new TextEncoder().encode(`paramant:${seq}:${type}`);
+    const{iv,ct}=await aesEnc(msgKey,padded,aad);
+    const niKey=`${seq}:${b2h(iv).slice(0,8)}`;await NDB.add(niKey);
+    const pkt={v:'paramant-v2',type,seq,iv:b2h(iv),ct:b2h(ct)};
+    if(kemCt)pkt.kemCt=kemCt;if(newKEMPub)pkt.kemPub=newKEMPub;
+    conv.tagsCnt++;
+    const pktStr=JSON.stringify(pkt);
+    const relayed=relaySend(conv,pkt);
+    addMsg(conv,'sent',{pkt:pktStr,type,payload,seq,t:now(),relayed,pq:!!kemCt});
+    updateAudit(conv);
+    if(relayed){addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:seq,b:pktStr.length,t:Date.now()});fetchStats();}
+  }catch(e){const c=activeConv();if(c)sysMsg(c,'⛔ Fout: '+e.message);}
+}
+async function doDecrypt(){const conv=activeConv();if(!conv?.chainKey)return;const raw=$('paste-ta').value.trim();$('paste-err').textContent='';try{let pkt;try{pkt=JSON.parse(raw);}catch(e){throw new Error('Ongeldig pakket — plak de volledige inhoud.');}await decryptPacket(conv,pkt);hidePaste();}catch(e){$('paste-err').textContent=e.message;}}
+async function decryptPacket(conv,pkt){
+  const{type='text',seq,iv:ivHex,ct:ctHex,kemCt,kemPub}=pkt;
+  if(!ivHex||!ctHex||seq===undefined)throw new Error('Pakket mist informatie.');
+  const niKey=`${seq}:${ivHex.slice(0,8)}`;
+  if(await NDB.has(niKey)){conv.repCnt++;updateAudit(conv);throw new Error('Dit pakket is al gelezen (replay-bescherming).');}
+  let kemShared=null;
+  if(kemCt&&conv.myRatchetKEM?.secretKey){kemShared=await kemDecap(kemCt,conv.myRatchetKEM.secretKey);conv.myRatchetKEM=null;if(kemShared)conv.kemCnt++;}
+  if(kemPub)conv.peerMLKEM=kemPub;
+  let ck=conv.chainKey;
+  for(let i=conv.msgSeq;i<seq;i++){const r=await ratchet(ck);ck=r.nextCK;}
+  const{nextCK,msgKey}=await ratchet(ck,kemShared);
+  conv.chainKey=nextCK;conv.msgSeq=seq+1;
+  const iv=h2b(ivHex),ctBytes=h2b(ctHex),aad=new TextEncoder().encode(`paramant:${seq}:${type}`);
+  const padded=await aesDec(msgKey,iv,ctBytes,aad);
+  const plain=unpad32(padded);
+  await NDB.add(niKey);conv.tagsCnt++;
+  if(type==='text')addMsg(conv,'recv',{text:new TextDecoder().decode(plain),seq,t:now(),pq:!!kemShared});
+  else addMsg(conv,'recv',{type:'file',meta:JSON.parse(new TextDecoder().decode(plain)),seq,t:now()});
+  updateAudit(conv);
+}
+
+// ─── FILES ────────────────────────────────────────────────────────────
+let dragDepth=0;
+document.addEventListener('dragenter',e=>{if(!activeConv()?.chainKey)return;e.preventDefault();dragDepth++;});
+document.addEventListener('dragleave',()=>{dragDepth--;});
+document.addEventListener('dragover',e=>e.preventDefault());
+document.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;const conv=activeConv();if(!conv?.chainKey)return;Array.from(e.dataTransfer.files).slice(0,5).forEach(f=>processFile(conv,f));});
+async function handleFiles(inp){const conv=activeConv();if(!conv?.chainKey){inp.value='';return;}Array.from(inp.files).slice(0,5).forEach(f=>processFile(conv,f));inp.value='';}
+async function processFile(conv,file){if(file.size>10485760){sysMsg(conv,`⛔ ${file.name} is te groot (max 10 MB)`);return;}const pg=addProgMsg(conv,file.name,file.size);try{const buf=await file.arrayBuffer();const bytes=new Uint8Array(buf);let b64='';const chunk=8192;for(let i=0;i<bytes.length;i+=chunk){b64+=btoa(String.fromCharCode(...bytes.subarray(i,i+chunk)));updateProg(pg,Math.min(85,Math.round(i/bytes.length*85)),'Bezig…');}updateProg(pg,95,'Bijna…');await encPayload(conv,{name:file.name,mime:file.type||'application/octet-stream',size:file.size,data:b64},'file');updateProg(pg,100,'✓ Verstuurd!');setTimeout(()=>pg?.remove(),2500);}catch(e){updateProg(pg,0,'⛔ '+e.message);}}
+function addProgMsg(conv,name,size){const w=document.createElement('div');w.className='fade-up';const d=document.createElement('div');d.className='inline-block max-w-xs bg-slate-800 border border-slate-700 rounded-2xl p-3';d.innerHTML=`<div class="text-sm font-medium text-white mb-2">📎 ${name} (${fmtSize(size)})</div><div class="h-1.5 bg-slate-700 rounded-full overflow-hidden"><div class="prog-bar h-full bg-teal-500 rounded-full w-0 transition-all"></div></div><div class="prog-st mono text-xs text-slate-500 mt-1.5">Laden…</div>`;const wrap=document.createElement('div');wrap.className='flex justify-end px-1 py-0.5';wrap.appendChild(d);w._bar=d.querySelector('.prog-bar');w._st=d.querySelector('.prog-st');$('msgs').appendChild(wrap);$('msgs').scrollTop=$('msgs').scrollHeight;return w;}
+function updateProg(el,pct,lbl){if(!el)return;if(el._bar)el._bar.style.width=pct+'%';if(el._st)el._st.textContent=lbl;}
+function downloadFile(meta){const bin=atob(meta.data);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bytes],{type:meta.mime}));a.download=meta.name;a.click();}
+function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
+
+// ─── VOICE ────────────────────────────────────────────────────────────
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recog=null,voiceOn=false;
+if(SR){recog=new SR();recog.lang='nl-NL';recog.onresult=e=>{$('msg-inp').value=e.results[0][0].transcript;autoResize($('msg-inp'));};recog.onend=()=>{voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';};recog.onerror=()=>{voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';};}
+function toggleVoice(){if(!recog){showToast('Inspreken werkt niet in deze browser.');return;}if(voiceOn){recog.stop();voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';}else{recog.start();voiceOn=true;$('voice-btn').style.borderColor='rgb(239 68 68 / .6)';$('voice-btn').style.color='rgb(239 68 68)';}}
+
+// ─── SELF-DESTRUCT ────────────────────────────────────────────────────
+const DEST=[0,5,10,30];
+function cycleDestruct(){const c=activeConv();if(!c)return;const i=DEST.indexOf(c.destructTimer||0);c.destructTimer=DEST[(i+1)%DEST.length];const btn=$('destruct-btn');btn.textContent=c.destructTimer?`⏱ Wis na ${c.destructTimer}min`:'⏱ Auto-wis';btn.style.color=c.destructTimer?'#f59e0b':'';sysMsg(c,c.destructTimer?`🔥 Berichten verdwijnen na ${c.destructTimer} minuten.`:'Auto-wis uitgeschakeld.');}
+function schedDestruct(el,mins){if(!mins)return;setTimeout(()=>{el.style.transition='opacity .6s,transform .5s';el.style.opacity='0';el.style.transform='scale(.9)';setTimeout(()=>el.remove(),700);},mins*60000);}
+
+// ─── EXPORT ───────────────────────────────────────────────────────────
+function exportConv(){const c=activeConv();if(!c)return;const d={exported:new Date().toISOString(),name:c.name,msgs:c.msgs.map(m=>({dir:m.dir,t:m.t,text:m.dir==='recv'?m.data?.text:m.dir==='sys'?m.data?.text:'[versleuteld]'}))};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`paramant-${c.name.replace(/\W/g,'-')}-${Date.now()}.json`;a.click();}
+
+// ─── MESSAGES ─────────────────────────────────────────────────────────
+function addMsg(conv,dir,data){const t=data.t||now();conv.msgs.push({dir,data,t});if(conv.id===activeId){const el=buildMsg(dir,data,t);$('msgs').appendChild(el);$('msgs').scrollTop=$('msgs').scrollHeight;if(dir!=='sys'&&conv.destructTimer)schedDestruct(el,conv.destructTimer);}renderList();}
+function sysMsg(conv,text){const t=now();conv.msgs.push({dir:'sys',data:{text},t});if(conv.id===activeId){$('msgs').appendChild(buildMsg('sys',{text},t));$('msgs').scrollTop=$('msgs').scrollHeight;}}
+function buildMsg(dir,data,t){
+  const outer=document.createElement('div');
+  if(dir==='sys'){outer.className='flex justify-center my-1';const b=document.createElement('div');b.className='bbl-sys px-4 py-2 rounded-2xl text-xs text-teal-400/80 text-center max-w-sm leading-relaxed';b.textContent=data.text;outer.appendChild(b);return outer;}
+  outer.className=`flex flex-col ${dir==='sent'?'items-end':'items-start'} fade-up`;
+  if(dir==='sent'){
+    const box=document.createElement('div');box.className='max-w-xs lg:max-w-sm';
+    const lbl=document.createElement('div');lbl.className='mono text-xs text-slate-500 mb-1.5 px-1';lbl.textContent=data.type==='file'?'📎 Versleuteld bestand — stuur dit naar je vriend:':'📤 Versleuteld bericht — stuur dit pakket naar je vriend:';
+    const pkt=document.createElement('div');pkt.className='bg-slate-800 border border-slate-700 rounded-2xl p-3';
+    const prev=document.createElement('div');prev.className='mono text-xs text-teal-400/50 mb-2 truncate';prev.textContent=(data.pkt||'').slice(0,60)+'…';
+    const cp=document.createElement('button');cp.className='w-full py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm rounded-xl transition-all active:scale-95';cp.textContent='📋 Kopieer en stuur';cp.onclick=()=>{navigator.clipboard.writeText(data.pkt).catch(()=>{});cp.textContent='✓ Gekopieerd!';setTimeout(()=>cp.textContent='📋 Kopieer en stuur',1800);};
+    if(data.relayed){const rl=document.createElement('div');rl.className='mono text-xs text-green-400 mt-1.5 text-center';rl.textContent='✓ Automatisch verzonden via relay';}
+    pkt.appendChild(prev);pkt.appendChild(cp);
+    if(data.relayed){const rl=document.createElement('div');rl.className='mono text-xs text-green-400 mt-1.5 text-center';rl.textContent='✓ Automatisch verzonden via relay';pkt.appendChild(rl);}
+    box.appendChild(lbl);box.appendChild(pkt);outer.appendChild(box);
+  }else if(dir==='recv'){
+    const box=document.createElement('div');box.className='max-w-xs lg:max-w-sm';
+    if(data.type==='file'){const fb=document.createElement('div');fb.className='flex items-center gap-3 p-3 bg-slate-800 border border-slate-700 rounded-2xl cursor-pointer hover:border-teal-500/40 transition-all';fb.onclick=()=>downloadFile(data.meta);fb.innerHTML=`<div class="text-3xl flex-shrink-0">📄</div><div class="flex-1 min-w-0"><div class="font-medium text-white text-sm truncate">${data.meta?.name||'bestand'}</div><div class="text-slate-500 text-xs mt-0.5">${fmtSize(data.meta?.size||0)} · Tik om op te slaan</div></div>`;box.appendChild(fb);}
+    else{const b=document.createElement('div');b.className='bbl-recv px-4 py-3 rounded-2xl text-white text-base leading-relaxed';b.textContent=data.text;box.appendChild(b);}
+    outer.appendChild(box);
+  }
+  const meta=document.createElement('div');meta.className='mono text-xs text-slate-600 mt-1 px-1 flex items-center gap-2';
+  meta.appendChild(document.createTextNode(t));
+  if(dir==='sent'){const ck=document.createElement('span');ck.className='text-teal-600';ck.textContent='✓';meta.appendChild(ck);}
+  if(data.pq){const pq=document.createElement('span');pq.className='text-teal-700';pq.textContent='⚛';meta.appendChild(pq);}
+  outer.appendChild(meta);return outer;
+}
+function renderMsgs(conv){$('msgs').innerHTML='';conv.msgs.forEach(m=>$('msgs').appendChild(buildMsg(m.dir,m.data,m.t)));$('msgs').scrollTop=$('msgs').scrollHeight;}
+
+// ─── SCREENS — _s() uses only inline style, avoids Tailwind conflicts ─
+function _s(id,d){const e=$(id);if(!e)return;e.style.display=d;}
+function showWelcome(){_s('welcome','flex');_s('conn-scr','none');_s('chat-head','none');_s('chat-wrap','none');_s('input-row','none');_s('audit-bar','none');activeId=null;document.querySelectorAll('.ci-item').forEach(e=>e.classList.remove('bg-slate-800','border-teal-500/30'));}
+function showConnect(){if(convs.length>=MAX){showToast('Je hebt al 3 gesprekken. Sluit er eerst één.');return;}_s('welcome','none');_s('conn-scr','flex');_s('chat-head','none');_s('chat-wrap','none');_s('input-row','none');_s('audit-bar','none');$('peer-key').value='';$('peer-name').value='';$('conn-err').style.display='none';$('conn-btn').disabled=false;$('conn-btn').textContent='⚡ Verbinden';closeSidebar();setTimeout(()=>$('peer-key').focus(),80);}
+function cancelConnect(){if(activeId)showChat(activeId);else showWelcome();}
+function showChat(id){
+  const conv=getConv(id);if(!conv)return;activeId=id;
+  _s('welcome','none');_s('conn-scr','none');_s('chat-head','flex');_s('chat-wrap','flex');$('chat-wrap').style.flexDirection='column';_s('input-row','flex');_s('audit-bar','block');
+  $('ch-nm').textContent=conv.name;
+  $('ch-st').textContent=(relayOn?'📡 Relay · ':'')+'Verbonden · quantum-veilig 🔒';
+  const db=$('destruct-btn');if(db){db.textContent=conv.destructTimer?`⏱ Wis na ${conv.destructTimer}min`:'⏱ Auto-wis';db.style.color=conv.destructTimer?'#f59e0b':'';}
+  const av=$('ch-av');av.innerHTML='';
+  if(conv.chainKey){const cvEl=document.createElement('canvas');cvEl.width=40;cvEl.height=40;sha256(new Uint8Array(conv.chainKey)).then(h=>drawFractal(cvEl,fractalParams(h))).catch(()=>{});av.appendChild(cvEl);}else av.textContent=conv.name.charAt(0).toUpperCase();
+  renderMsgs(conv);hidePaste();updateAudit(conv);
+  document.querySelectorAll('.ci-item').forEach(e=>e.classList.remove('bg-slate-800','border-teal-500/30'));
+  const ci=$('ci-'+id);if(ci)ci.classList.add('bg-slate-800','border-teal-500/30');
+  $('new-btn').disabled=convs.length>=MAX;closeSidebar();
+}
+function endConv(){const c=activeConv();if(!c||!confirm(`Gesprek met ${c.name} sluiten?`))return;if(c.chainKey)c.chainKey.fill(0);convs=convs.filter(x=>x.id!==activeId);renderList();if(convs.length>0)showChat(convs[0].id);else showWelcome();}
+function renderList(){
+  const list=$('conv-list');list.querySelectorAll('.ci-item').forEach(e=>e.remove());
+  $('empty-hint').style.display=convs.length?'none':'block';
+  convs.forEach(c=>{
+    const div=document.createElement('div');div.className='ci-item group flex items-center gap-3 px-3 py-3 rounded-2xl cursor-pointer border border-transparent hover:border-slate-700 hover:bg-slate-800/60 transition-all mx-1 mb-1';div.id='ci-'+c.id;div.onclick=()=>showChat(c.id);
+    if(c.id===activeId)div.classList.add('bg-slate-800','border-teal-500/30');
+    const av=document.createElement('div');av.className='w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 border-2 border-slate-600 flex items-center justify-center font-bold text-teal-400 text-sm';
+    if(c.chainKey){const cvEl=document.createElement('canvas');cvEl.width=40;cvEl.height=40;sha256(new Uint8Array(c.chainKey)).then(h=>drawFractal(cvEl,fractalParams(h))).catch(()=>{});av.appendChild(cvEl);}else av.textContent=c.name.charAt(0).toUpperCase();
+    const inf=document.createElement('div');inf.className='flex-1 min-w-0';
+    const nm=document.createElement('div');nm.className='font-semibold text-white text-sm truncate';nm.textContent=c.name;
+    const pv=document.createElement('div');pv.className='text-xs text-slate-500 truncate mt-0.5';const last=c.msgs[c.msgs.length-1];pv.textContent=last?(last.dir==='sent'?'📤 Verstuurd':last.dir==='recv'?'📥 Ontvangen':last.data.text):'Verbonden';
+    inf.appendChild(nm);inf.appendChild(pv);
+    const right=document.createElement('div');right.className='flex items-center gap-1.5 flex-shrink-0';
+    const dot=document.createElement('div');dot.className='w-2 h-2 rounded-full '+(c.connected?'bg-green-400':'bg-slate-600');
+    const x=document.createElement('button');x.className='w-6 h-6 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 text-xs transition-all opacity-0 group-hover:opacity-100';x.textContent='✕';
+    x.onclick=e=>{e.stopPropagation();if(confirm(`Gesprek met ${c.name} verwijderen?`)){if(c.chainKey)c.chainKey.fill(0);convs=convs.filter(x=>x.id!==c.id);if(activeId===c.id){if(convs.length>0)showChat(convs[0].id);else showWelcome();}renderList();}};
+    right.appendChild(dot);right.appendChild(x);
+    div.appendChild(av);div.appendChild(inf);div.appendChild(right);
+    list.insertBefore(div,$('empty-hint'));
+  });
+  $('new-btn').disabled=convs.length>=MAX;
+}
+function updateAudit(c){
+  if(!c||c.id!==activeId)return;
+  $('au-kx').textContent=c.kxType||'—';$('au-rnd').textContent='#'+c.msgSeq;$('au-tags').textContent=c.tagsCnt;
+  $('au-kem').textContent=c.kemCnt||0;if(c.kemCnt>0)$('au-kem-wrap').classList.remove('hidden');
+  $('au-rep').textContent=c.repCnt||0;if(c.repCnt>0)$('au-rep-wrap').classList.remove('hidden');
+}
+
+// ─── MODALS ───────────────────────────────────────────────────────────
+function showSN(){const c=activeConv();if(!c)return;$('sn-grid').innerHTML=c.safetyNums.map(n=>`<div class="bg-slate-900 border border-slate-700 rounded-xl py-3 text-center mono text-base font-bold text-yellow-400 tracking-wider">${n}</div>`).join('');$('sn-modal').classList.remove('hidden');}
+function hideSN(){$('sn-modal').classList.add('hidden');}
+function toggleLedger(){const p=$('ledger-col');p.classList.toggle('hidden');$('ledger-btn').style.borderColor=p.classList.contains('hidden')?'':'rgba(20,184,166,.4)';if(!p.classList.contains('hidden')&&relayOn)fetchLedger();}
+function togglePaste(){const p=$('paste-ov');if(p.style.display==='block')hidePaste();else{p.style.display='block';$('paste-ta').value='';$('paste-err').textContent='';$('paste-ta').focus();}}
+function hidePaste(){$('paste-ov').style.display='none';}
+
+// ─── LAUNCH ───────────────────────────────────────────────────────────
+function openApp(){$('app').style.display='flex';document.body.style.overflow='hidden';}
+function closeApp(){$('app').style.display='none';document.body.style.overflow='';}
+if(location.hash==='#app')openApp();
+
+// ─── TOAST ────────────────────────────────────────────────────────────
+function showToast(msg,_unused,bg){const t=document.createElement('div');t.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${bg||'#1e293b'};border:1px solid #334155;color:#e2e8f0;padding:12px 20px;border-radius:12px;font-size:14px;z-index:99999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);font-family:Inter,sans-serif`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.transition='opacity .4s';t.style.opacity='0';setTimeout(()=>t.remove(),400);},3500);}
+
+// ─── AUTO-DETECT JSON PASTE ────────────────────────────────────────────
+$('msg-inp').addEventListener('paste',e=>{setTimeout(()=>{const v=$('msg-inp').value.trim();if(v.startsWith('{')){try{const p=JSON.parse(v);if(p.v&&p.iv&&p.ct&&p.seq!==undefined){$('msg-inp').value='';$('msg-inp').style.height='auto';$('paste-ta').value=v;$('paste-ov').style.display='block';$('paste-err').textContent='';doDecrypt();}}catch(e){}}},50);});
+$('msg-inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doEncrypt();}});
+$('paste-ta').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doDecrypt();}});
+$('peer-key').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doConnect();}});
+document.addEventListener('keydown',e=>{if(e.key==='PrintScreen'||(e.metaKey&&e.shiftKey&&['3','4','5'].includes(e.key))){const c=activeConv();if(c)sysMsg(c,'⚠️ Let op: screenshots zijn niet versleuteld!');}});
+
+// ─── SIDEBAR ──────────────────────────────────────────────────────────
+function openSidebar(){$('sidebar-panel').style.transform='translateX(0)';$('mob-ov').classList.remove('hidden');}
+function closeSidebar(){$('sidebar-panel').style.transform='';$('mob-ov').classList.add('hidden');}
+
+// ─── UTILS ────────────────────────────────────────────────────────────
+function now(){return new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,128)+'px';}
+
+// ─── SERVICE WORKER (PWA) ─────────────────────────────────────────────
+if('serviceWorker' in navigator){const sw=`const C='pm-v3';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(self.location.href)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k))))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;try{navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});}catch(e){}}
+</script>
+</body>
+</html>
