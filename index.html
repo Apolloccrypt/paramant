@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PARAMANT — Veiliger dan Signal. Geen account.</title>
-<meta name="description" content="Post-quantum versleuteld appen. Geen account. Geen server die meekijkt. Beter dan Signal en WhatsApp. Gratis voor altijd.">
+<meta name="description" content="Post-quantum versleuteld appen zonder account. ML-KEM-768 + ECDH P-256 + AES-256-GCM. Optionele relay ziet alleen hash-prefix. Gratis voor altijd.">
 <meta name="theme-color" content="#0f172a">
 <meta property="og:title" content="PARAMANT — Veiliger dan Signal. Geen account.">
 <meta property="og:description" content="Quantum-safe berichten. Niemand kan meelezen — ook wij niet.">
@@ -192,8 +192,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <h3 class="text-white font-bold text-lg mb-3">Appen maar!</h3>
         <p class="text-slate-400 text-sm leading-relaxed">Typ, spreek of sleep bestanden. Elk bericht wordt versleuteld — je kunt het pakket sturen via elk kanaal. Alleen jij en je amice kunnen het lezen.</p>
         <div class="mt-4 flex gap-2">
-          <span class="text-lg">🎤</span><span class="text-lg">📎</span><span class="text-lg">📋</span>
-          <span class="text-xs text-slate-500 self-center">spraak · bestanden · copy-paste</span>
+          <span class="text-lg">📎</span><span class="text-lg">📋</span><span class="text-lg">📷</span>
+          <span class="text-xs text-slate-500 self-center">bestanden · copy-paste · QR-code</span>
         </div>
       </div>
     </div>
@@ -243,7 +243,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Meta-servers</div></td>
             <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-slate-500">Signal-servers</div></td>
             <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telegram cloud</div></td>
-            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Geen server</div></td>
+            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Optionele relay</div></td>
           </tr>
           <tr class="hover:bg-slate-800/30 transition-colors">
             <td class="p-4 text-slate-300 font-medium text-left">Quantum-proof?</td>
@@ -532,7 +532,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             </button>
             <button onclick="dlPage()"
               class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-500 hover:text-slate-300">
-              ⬇ Download app
+              ⬇ Download voor USB/offline
             </button>
           </div>
 
@@ -572,8 +572,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div id="relay-welcome-hint" class="w-full max-w-sm mb-4 p-3 bg-teal-500/8 border border-teal-500/20 rounded-xl flex items-start gap-2.5 text-left">
           <span class="text-teal-400 text-lg flex-shrink-0">💡</span>
           <div>
-            <div class="text-teal-300 font-medium text-sm">Eerste keer? Klik op "Offline" (rechtsboven)</div>
-            <div class="text-teal-500 text-xs mt-0.5">→ Wordt 🟢 Relay actief. Dit duurt maximaal 30 seconden.</div>
+            <div class="relay-hint-title text-teal-300 font-medium text-sm">Eerste keer? Klik op "Offline" (rechtsboven)</div>
+            <div class="relay-hint-sub text-teal-500 text-xs mt-0.5">→ Wordt 🟢 Relay actief. Dit duurt maximaal 30 seconden.</div>
+            <div class="text-slate-600 text-xs mt-1.5 leading-relaxed">ℹ️ De relay herverbindt automatisch als de verbinding wegvalt.</div>
           </div>
         </div>
 
@@ -740,9 +741,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <button onclick="document.getElementById('file-inp').click()"
           class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all"
           title="📎 Bestand versturen — max 10 MB, wordt automatisch versleuteld">📎</button>
-        <button id="voice-btn" onclick="toggleVoice()"
-          class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all"
-          title="🎤 Inspreken — klik, spreek, klik opnieuw om te stoppen">🎤</button>
+
         <button onclick="togglePaste()"
           class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all"
           title="📥 Bericht ontvangen van je amice? Klik hier en plak het versleutelde pakket">📥</button>
@@ -1085,33 +1084,74 @@ const RELAY_API = (!IS_ONION && RELAY_WS)
 let relayWS=null,relayOn=false,relayWant=false;
 const presenceMap=new Map();
 
+// ── Relay connection countdown ──────────────────────────────────
+let relayCountdownTimer = null;
+function startRelayCountdown(){
+  clearInterval(relayCountdownTimer);
+  let secs = 30;
+  const l = $('rl-lbl');
+  const wHint = $('relay-welcome-hint');
+  relayCountdownTimer = setInterval(()=>{
+    secs--;
+    if(l && !relayOn) l.textContent = `⏳ Verbinden… ${secs}s`;
+    if(wHint && !relayOn){
+      const sub = wHint.querySelector('.relay-hint-sub');
+      if(sub) sub.textContent = `→ Server wekt op… nog ~${Math.max(0,secs)} seconden`;
+    }
+    if(secs <= 0 || relayOn){ clearInterval(relayCountdownTimer); relayCountdownTimer=null; }
+  }, 1000);
+}
+function stopRelayCountdown(){ clearInterval(relayCountdownTimer); relayCountdownTimer=null; }
+
 function setRelayUI(s){
   const d=$('rl-dot'),l=$('rl-lbl'),hint=$('relay-hint');
   const wHint=$('relay-welcome-hint'), wPres=$('welcome-presence');
   d.className='w-2 h-2 rounded-full flex-shrink-0 transition-all ';
   if(s==='on'){
+    stopRelayCountdown();
     d.classList.add(IS_ONION?'bg-purple-400':'bg-green-400');
     l.textContent=IS_ONION?'🧅 Tor relay':'🟢 Relay actief';
     if(hint)hint.style.display='none';
     if(wHint)wHint.style.display='none';
     if(wPres)wPres.classList.remove('hidden');
-    // Direct fetch stats + broadcast
     setTimeout(fetchStats,500);
     setTimeout(broadcastPresence,1000);
   }else if(s==='con'){
     d.classList.add('bg-yellow-400');
     l.textContent=IS_ONION?'🧅 Tor…':'⏳ Verbinden…';
     if(hint)hint.style.display='none';
+    startRelayCountdown();
+    // Update welcome hint text
+    if(wHint){
+      wHint.style.display='';
+      const title=wHint.querySelector('.relay-hint-title');
+      if(title)title.textContent='Relay verbindt… even geduld';
+    }
   }else if(s==='err'){
+    stopRelayCountdown();
     d.classList.add('bg-red-500');
     l.textContent='❌ Relay fout';
     if(hint){hint.textContent='↑ klik opnieuw om te proberen';hint.style.display='';}
+    if(wHint){
+      wHint.style.display='';
+      const title=wHint.querySelector('.relay-hint-title');
+      const sub=wHint.querySelector('.relay-hint-sub');
+      if(title)title.textContent='Relay verbinding mislukt';
+      if(sub)sub.textContent='→ Klik op de relay-knop om opnieuw te proberen';
+    }
     if(wPres)wPres.classList.add('hidden');
   }else{
+    stopRelayCountdown();
     d.classList.add('bg-slate-600');
     l.textContent='Offline';
     if(hint){hint.textContent='↑ klik voor live modus';hint.style.display='';}
-    if(wHint)wHint.style.display='';
+    if(wHint){
+      wHint.style.display='';
+      const title=wHint.querySelector('.relay-hint-title');
+      const sub=wHint.querySelector('.relay-hint-sub');
+      if(title)title.textContent='Eerste keer? Klik op "Offline" (rechtsboven)';
+      if(sub)sub.textContent='→ Wordt 🟢 Relay actief. Dit duurt maximaal 30 seconden.';
+    }
     if(wPres)wPres.classList.add('hidden');
   }
 }
@@ -1533,10 +1573,7 @@ function downloadFile(meta){const bin=atob(meta.data);const bytes=new Uint8Array
 function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
 
 // ─── VOICE ────────────────────────────────────────────────────────────
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let recog=null,voiceOn=false;
-if(SR){recog=new SR();recog.lang='nl-NL';recog.onresult=e=>{$('msg-inp').value=e.results[0][0].transcript;autoResize($('msg-inp'));};recog.onend=()=>{voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';};recog.onerror=()=>{voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';};}
-function toggleVoice(){if(!recog){showToast('Inspreken werkt niet in deze browser.');return;}if(voiceOn){recog.stop();voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';}else{recog.start();voiceOn=true;$('voice-btn').style.borderColor='rgb(239 68 68 / .6)';$('voice-btn').style.color='rgb(239 68 68)';}}
+// Voice-to-text verwijderd — gebruik de kopieer/plak stroom
 
 // ─── SELF-DESTRUCT ────────────────────────────────────────────────────
 const DEST=[0,5,10,30];
