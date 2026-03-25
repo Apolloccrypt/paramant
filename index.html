@@ -1854,11 +1854,13 @@ async function encPayload(conv,payload,type){
 }
 async function doDecrypt(){const conv=activeConv();if(!conv?.chainKey)return;const raw=$('paste-ta').value.trim();$('paste-err').textContent='';try{let pkt;try{pkt=JSON.parse(raw);}catch(e){throw new Error('Ongeldig pakket — plak de volledige inhoud.');}await decryptPacket(conv,pkt);hidePaste();}catch(e){$('paste-err').textContent=e.message;}}
 async function decryptPacket(conv,pkt){
-  const{type='text',seq,iv:ivHex,ct:ctHex,kemCt,kemPub}=pkt;
+  const{type='text',seq,iv:ivHex,ct:ctHex,kemCt,kemPub,replayed}=pkt;
   if(!ivHex||!ctHex||seq===undefined)throw new Error('Pakket mist informatie.');
   if(!conv.recvChainKey)throw new Error('Geen ontvangst-keten. Verbind eerst opnieuw.');
   const niKey=`r:${seq}:${ivHex.slice(0,8)}`;
-  if(await NDB.has(niKey)){conv.repCnt++;updateAudit(conv);throw new Error('Dit pakket is al gelezen (replay-bescherming).');}
+  // Replay-bescherming: sla over als al gezien, TENZIJ relay het opnieuw stuurt (replayed)
+  if(!replayed && await NDB.has(niKey)){conv.repCnt++;updateAudit(conv);throw new Error('Dit pakket is al gelezen (replay-bescherming).');}
+  if(replayed && await NDB.has(niKey)) return; // al verwerkt, stil negeren
   let kemShared=null;
   if(kemCt&&conv.myRatchetKEM?.secretKey){kemShared=await kemDecap(kemCt,conv.myRatchetKEM.secretKey);conv.myRatchetKEM=null;if(kemShared)conv.kemCnt++;}
   if(kemPub)conv.peerMLKEM=kemPub;
