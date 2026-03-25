@@ -157,32 +157,46 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   </div>
 </section>
 
-<!-- HASH CHAIN TICKER — blockchain vibe -->
+<!-- HASH CHAIN TICKER — live relay data -->
 <div class="py-5 bg-slate-950 border-y border-slate-800 overflow-hidden">
-  <p class="text-center text-xs text-slate-600 mono mb-3 tracking-widest">ACTIEVE GEBRUIKERS — IEDEREEN ZIET DE HASH · NIEMAND LEEST DE INHOUD</p>
+  <p class="text-center text-xs text-slate-600 mono mb-3 tracking-widest">LIVE RELAY — IEDEREEN ZIET DE HASH · NIEMAND LEEST DE INHOUD</p>
   <div class="flex overflow-hidden">
-    <div class="chain-scroll flex gap-2 items-center">
-      <!-- Duplicate for seamless loop -->
-      <span class="hash-block">a3f8c2d1e7b4<span class="text-slate-600 mx-1">·</span>1.2KB<span class="text-slate-600 mx-1">·</span>14:23:41</span><span class="hash-link">→</span>
-      <span class="hash-block">7e9b1a4f2c8d<span class="text-slate-600 mx-1">·</span>2.8KB<span class="text-slate-600 mx-1">·</span>14:23:44</span><span class="hash-link">→</span>
-      <span class="hash-block">f1d7a2e9c3b5<span class="text-slate-600 mx-1">·</span>0.9KB<span class="text-slate-600 mx-1">·</span>14:24:18</span><span class="hash-link">→</span>
-      <span class="hash-block">3c8e5f2b9d1a<span class="text-slate-600 mx-1">·</span>14.1KB<span class="text-slate-600 mx-1">·</span>14:25:03</span><span class="hash-link">→</span>
-      <span class="hash-block">9a2d7c4e1f8b<span class="text-slate-600 mx-1">·</span>1.8KB<span class="text-slate-600 mx-1">·</span>14:25:44</span><span class="hash-link">→</span>
-      <span class="hash-block">5b8f1e3a6c7d<span class="text-slate-600 mx-1">·</span>3.3KB<span class="text-slate-600 mx-1">·</span>14:26:11</span><span class="hash-link">→</span>
-      <span class="hash-block">d4c9b2f7e1a8<span class="text-slate-600 mx-1">·</span>0.7KB<span class="text-slate-600 mx-1">·</span>14:26:58</span><span class="hash-link">→</span>
-      <span class="hash-block">2e7a5d9b3c4f<span class="text-slate-600 mx-1">·</span>2.1KB<span class="text-slate-600 mx-1">·</span>14:27:33</span><span class="hash-link">→</span>
-      <!-- Duplicate -->
-      <span class="hash-block">a3f8c2d1e7b4<span class="text-slate-600 mx-1">·</span>1.2KB<span class="text-slate-600 mx-1">·</span>14:23:41</span><span class="hash-link">→</span>
-      <span class="hash-block">7e9b1a4f2c8d<span class="text-slate-600 mx-1">·</span>2.8KB<span class="text-slate-600 mx-1">·</span>14:23:44</span><span class="hash-link">→</span>
-      <span class="hash-block">f1d7a2e9c3b5<span class="text-slate-600 mx-1">·</span>0.9KB<span class="text-slate-600 mx-1">·</span>14:24:18</span><span class="hash-link">→</span>
-      <span class="hash-block">3c8e5f2b9d1a<span class="text-slate-600 mx-1">·</span>14.1KB<span class="text-slate-600 mx-1">·</span>14:25:03</span><span class="hash-link">→</span>
-      <span class="hash-block">9a2d7c4e1f8b<span class="text-slate-600 mx-1">·</span>1.8KB<span class="text-slate-600 mx-1">·</span>14:25:44</span><span class="hash-link">→</span>
-      <span class="hash-block">5b8f1e3a6c7d<span class="text-slate-600 mx-1">·</span>3.3KB<span class="text-slate-600 mx-1">·</span>14:26:11</span><span class="hash-link">→</span>
-      <span class="hash-block">d4c9b2f7e1a8<span class="text-slate-600 mx-1">·</span>0.7KB<span class="text-slate-600 mx-1">·</span>14:26:58</span><span class="hash-link">→</span>
-      <span class="hash-block">2e7a5d9b3c4f<span class="text-slate-600 mx-1">·</span>2.1KB<span class="text-slate-600 mx-1">·</span>14:27:33</span><span class="hash-link">→</span>
+    <div id="chain-ticker" class="chain-scroll flex gap-2 items-center">
+      <!-- Gevuld via JS met live relay data -->
+      <span class="hash-block text-slate-700">Laden…</span>
     </div>
   </div>
 </div>
+<script>
+(function(){
+  const RELAY_HTTP = (window._PARAMANT_RELAY||'').replace('wss://','https://').replace('ws://','http://');
+  if(!RELAY_HTTP) return;
+  function fmtBytes(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
+  function fmtTime(ts){const d=new Date(ts);return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');}
+  function buildTicker(entries){
+    const el=document.getElementById('chain-ticker');
+    if(!el||!entries.length)return;
+    // Dubbel voor naadloze loop
+    const items=[...entries,...entries];
+    el.innerHTML=items.map(e=>`<span class="hash-block">${e.chatHash.replace('…','')}<span class="text-slate-600 mx-1">·</span>${fmtBytes(e.bytes)}<span class="text-slate-600 mx-1">·</span>${fmtTime(e.timestamp)}</span><span class="hash-link">→</span>`).join('');
+    // Reset animatie
+    el.style.animation='none';
+    void el.offsetWidth;
+    el.style.animation='';
+  }
+  fetch(RELAY_HTTP+'/api/ledger')
+    .then(r=>r.json())
+    .then(d=>{if(d.ok&&d.entries&&d.entries.length)buildTicker(d.entries.slice(0,12));})
+    .catch(()=>{});
+  // Ververs elke 30 seconden
+  setInterval(()=>{
+    fetch(RELAY_HTTP+'/api/ledger')
+      .then(r=>r.json())
+      .then(d=>{if(d.ok&&d.entries&&d.entries.length)buildTicker(d.entries.slice(0,12));})
+      .catch(()=>{});
+  }, 30000);
+})();
+</script>
 
 <!-- HOW IT WORKS -->
 <section id="hoe" class="py-20 px-5">
