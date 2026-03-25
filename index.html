@@ -568,8 +568,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <h2 class="text-2xl font-bold text-white mb-3">Welkom bij PARAMANT</h2>
         <p class="text-slate-400 max-w-xs mb-6 leading-relaxed text-sm">Volg deze 4 stappen om veilig te appen met je amice.</p>
 
-        <!-- Relay hint bovenaan -->
-        <div class="w-full max-w-sm mb-4 p-3 bg-teal-500/8 border border-teal-500/20 rounded-xl flex items-start gap-2.5 text-left">
+        <!-- Relay hint — verdwijnt zodra relay actief is -->
+        <div id="relay-welcome-hint" class="w-full max-w-sm mb-4 p-3 bg-teal-500/8 border border-teal-500/20 rounded-xl flex items-start gap-2.5 text-left">
           <span class="text-teal-400 text-lg flex-shrink-0">💡</span>
           <div>
             <div class="text-teal-300 font-medium text-sm">Eerste keer? Klik op "Offline" (rechtsboven)</div>
@@ -608,6 +608,25 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           </div>
         </div>
         <button onclick="showConnect()" class="px-8 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-base rounded-2xl transition-all hover:shadow-xl hover:shadow-teal-500/20 active:scale-95">🤝 Nieuw gesprek starten</button>
+
+        <!-- Live presence — zichtbaar in welkomscherm zodra relay aan is -->
+        <div id="welcome-presence" class="hidden w-full max-w-sm mt-6">
+          <div class="border border-teal-500/20 rounded-2xl overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-2.5 bg-teal-500/8 border-b border-teal-500/15">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                <span class="text-teal-400 text-xs font-mono font-semibold tracking-widest">LIVE NU ONLINE</span>
+              </div>
+              <span id="wl-presence-count" class="text-teal-600 text-xs font-mono">0 peers</span>
+            </div>
+            <div id="wl-presence-list" class="bg-slate-900/60 divide-y divide-slate-800/60">
+              <div id="wl-presence-empty" class="text-center py-4 text-slate-600 text-xs font-mono">
+                Wacht op andere gebruikers…
+              </div>
+            </div>
+          </div>
+          <div class="text-xs text-slate-600 text-center mt-2 font-mono">Klik op iemand om direct te verbinden</div>
+        </div>
       </div>
 
       <!-- Connect screen -->
@@ -1068,11 +1087,17 @@ const presenceMap=new Map();
 
 function setRelayUI(s){
   const d=$('rl-dot'),l=$('rl-lbl'),hint=$('relay-hint');
+  const wHint=$('relay-welcome-hint'), wPres=$('welcome-presence');
   d.className='w-2 h-2 rounded-full flex-shrink-0 transition-all ';
   if(s==='on'){
     d.classList.add(IS_ONION?'bg-purple-400':'bg-green-400');
     l.textContent=IS_ONION?'🧅 Tor relay':'🟢 Relay actief';
     if(hint)hint.style.display='none';
+    if(wHint)wHint.style.display='none';
+    if(wPres)wPres.classList.remove('hidden');
+    // Direct fetch stats + broadcast
+    setTimeout(fetchStats,500);
+    setTimeout(broadcastPresence,1000);
   }else if(s==='con'){
     d.classList.add('bg-yellow-400');
     l.textContent=IS_ONION?'🧅 Tor…':'⏳ Verbinden…';
@@ -1081,10 +1106,13 @@ function setRelayUI(s){
     d.classList.add('bg-red-500');
     l.textContent='❌ Relay fout';
     if(hint){hint.textContent='↑ klik opnieuw om te proberen';hint.style.display='';}
+    if(wPres)wPres.classList.add('hidden');
   }else{
     d.classList.add('bg-slate-600');
     l.textContent='Offline';
     if(hint){hint.textContent='↑ klik voor live modus';hint.style.display='';}
+    if(wHint)wHint.style.display='';
+    if(wPres)wPres.classList.add('hidden');
   }
 }
 
@@ -1174,8 +1202,11 @@ function showRelayConfigTip(){
 function relayJoin(room){if(!relayOn||!relayWS||relayWS.readyState!==1)return;relayWS.send(JSON.stringify({type:'join',chatHash:room,nick:myNick}));}
 function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyState!==1)return false;try{relayWS.send(JSON.stringify({type:'packet',chatHash:conv.chatId,seq:pkt.seq,payload:{iv:pkt.iv,ct:pkt.ct,type:pkt.type,kemCt:pkt.kemCt,kemPub:pkt.kemPub}}));return true;}catch(e){return false;}}
 function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
-setInterval(()=>{if(relayOn)broadcastPresence();},25000);
+// Broadcast presence elke 10s (was 25s — te traag voor peer discovery)
+setInterval(()=>{if(relayOn)broadcastPresence();},10000);
+// Stats elke 15s
 setInterval(()=>{if(relayOn)fetchStats();},15000);
+// Keep-alive ping elke 10 min (Render gratis tier)
 setInterval(()=>{if(RELAY_API)fetch(`${RELAY_API}/health`).catch(()=>{});},600000);
 
 function onRelayMsg(msg){if(msg.type==='packet'){const pay=msg.payload;
@@ -1187,13 +1218,69 @@ function onRelayMsg(msg){if(msg.type==='packet'){const pay=msg.payload;
   }
   const conv=convs.find(c=>c.chatId&&c.connected);if(!conv)return;const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};decryptPacket(conv,pkt).then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()})).catch(e=>sysMsg(conv,'⚠️ '+e.message));}else if(msg.type==='peer_left'){presenceMap.delete(msg.nick);renderPresence();}}
 
-function renderPresence(){const el=$('ledger-entries');if(!el)return;el.querySelectorAll('.pr-row').forEach(e=>e.remove());if(!presenceMap.size)return;const hdr=document.createElement('div');hdr.className='pr-row mono text-xs text-slate-500 px-2 py-1.5 tracking-widest';hdr.textContent='LIVE NU';el.insertBefore(hdr,el.firstChild);Array.from(presenceMap.values()).sort((a,b)=>b.ts-a.ts).forEach(p=>{const row=document.createElement('div');row.className='pr-row flex items-center gap-2 p-2 bg-teal-500/5 border border-teal-500/15 rounded-xl mb-1.5 cursor-pointer hover:border-teal-500/30 transition-all';row.onclick=()=>quickConnect(p);const av=document.createElement('div');av.className='w-8 h-8 rounded-full border border-teal-500/40 overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold text-teal-400 bg-slate-800';if(p.avatarHint){const cv=document.createElement('canvas');cv.width=32;cv.height=32;const fh=new Uint8Array(32);const hb=h2b(p.avatarHint)||new Uint8Array(8);fh.set(hb.slice(0,8));drawFractal(cv,fractalParams(fh));av.appendChild(cv);}else av.textContent=p.nick.charAt(0).toUpperCase();
-  // XSS fix: gebruik textContent, nooit innerHTML voor user-data
+function buildPresenceRow(p, compact=false){
+  const row=document.createElement('div');
+  row.className=compact
+    ? 'flex items-center gap-3 px-4 py-3 hover:bg-slate-800/60 cursor-pointer transition-all border-b border-slate-800/60 last:border-0'
+    : 'pr-row flex items-center gap-2 p-2 bg-teal-500/5 border border-teal-500/15 rounded-xl mb-1.5 cursor-pointer hover:border-teal-500/30 transition-all';
+  row.onclick=()=>quickConnect(p);
+  const av=document.createElement('div');
+  av.className=compact
+    ? 'w-10 h-10 rounded-full border-2 border-teal-500/40 overflow-hidden flex-shrink-0 flex items-center justify-center text-sm font-bold text-teal-400 bg-slate-800'
+    : 'w-8 h-8 rounded-full border border-teal-500/40 overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold text-teal-400 bg-slate-800';
+  if(p.avatarHint){
+    const cv=document.createElement('canvas');
+    const sz=compact?40:32; cv.width=sz;cv.height=sz;
+    const fh=new Uint8Array(32);const hb=h2b(p.avatarHint)||new Uint8Array(8);
+    fh.set(hb.slice(0,8));drawFractal(cv,fractalParams(fh));av.appendChild(cv);
+  }else av.textContent=p.nick.charAt(0).toUpperCase();
   const inf=document.createElement('div');inf.className='flex-1 min-w-0';
-  const nm=document.createElement('div');nm.className='text-xs font-medium text-white truncate';nm.textContent=p.nick;
+  const nm=document.createElement('div');
+  nm.className=compact?'font-semibold text-white text-sm truncate':'text-xs font-medium text-white truncate';
+  nm.textContent=p.nick;
   const st=document.createElement('div');st.className='text-xs text-green-400 mono';st.textContent='● online';
   inf.appendChild(nm);inf.appendChild(st);
-  const btn=document.createElement('button');btn.className='text-xs px-2 py-1 bg-teal-500/20 border border-teal-500/25 text-teal-400 rounded-lg hover:bg-teal-500/30 transition-all flex-shrink-0';btn.textContent='Verbind';btn.onclick=(e)=>{e.stopPropagation();quickConnect(p);};row.appendChild(av);row.appendChild(inf);row.appendChild(btn);el.insertBefore(row,el.children[1]||null);});}
+  const btn=document.createElement('button');
+  btn.className=compact
+    ? 'px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-xs rounded-xl transition-all active:scale-95 flex-shrink-0'
+    : 'text-xs px-2 py-1 bg-teal-500/20 border border-teal-500/25 text-teal-400 rounded-lg hover:bg-teal-500/30 transition-all flex-shrink-0';
+  btn.textContent='Verbind';
+  btn.onclick=e=>{e.stopPropagation();quickConnect(p);};
+  row.appendChild(av);row.appendChild(inf);row.appendChild(btn);
+  return row;
+}
+
+function renderPresence(){
+  const peers=Array.from(presenceMap.values()).sort((a,b)=>b.ts-a.ts);
+
+  // ── Ledger column (hidden by default, secondary) ──
+  const el=$('ledger-entries');
+  if(el){
+    el.querySelectorAll('.pr-row').forEach(e=>e.remove());
+    if(peers.length){
+      const hdr=document.createElement('div');hdr.className='pr-row mono text-xs text-slate-500 px-2 py-1.5 tracking-widest';hdr.textContent='LIVE NU';el.insertBefore(hdr,el.firstChild);
+      peers.forEach(p=>el.insertBefore(buildPresenceRow(p,false),el.children[1]||null));
+    }
+  }
+
+  // ── Welcome screen panel (ALWAYS visible when relay is on) ──
+  const wList=$('wl-presence-list');
+  const wEmpty=$('wl-presence-empty');
+  const wCount=$('wl-presence-count');
+  if(!wList)return;
+  wList.querySelectorAll('.pr-welcome-row').forEach(e=>e.remove());
+  if(wCount)wCount.textContent=peers.length+' peer'+(peers.length===1?'':'s');
+  if(!peers.length){
+    if(wEmpty)wEmpty.style.display='';
+    return;
+  }
+  if(wEmpty)wEmpty.style.display='none';
+  peers.forEach(p=>{
+    const row=buildPresenceRow(p,true);
+    row.classList.add('pr-welcome-row');
+    wList.appendChild(row);
+  });
+}
 function quickConnect(p){showConnect();setTimeout(()=>{$('peer-key').value=p.bundle||'';try{const b=JSON.parse(p.bundle);if(b.nick)$('peer-name').value=b.nick;}catch(e){}},60);}
 async function fetchStats(){if(!RELAY_API)return;try{const r=await fetch(`${RELAY_API}/api/stats`);const d=await r.json();if(d.ok){const fmt=n=>Number(n).toLocaleString('nl-NL');$('counter').textContent=fmt(d.messages);$('ls-msgs').textContent=fmt(d.messages);$('ls-chats').textContent=fmt(d.chats);if($('ls-online'))$('ls-online').textContent=fmt(d.online||0);}}catch(e){}}
 async function fetchLedger(){
