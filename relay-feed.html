@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PARAMANT Relay Feed — Live</title>
-<script>window._PARAMANT_RELAY='wss://paramant-relay.onrender.com'</script>
+<script>window._PARAMANT_RELAY='wss://relay.paramant.app'</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0a0f1e;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
@@ -172,7 +172,7 @@ aside{background:#080d1a;border-left:1px solid #1e293b;overflow-y:auto;padding:1
     <!-- Disclaimer -->
     <div class="disclaimer" style="color:#64748b">
       <strong>PARAMANT relay</strong><br>
-      paramant-relay.onrender.com<br>
+      relay.paramant.app<br>
       Zero plaintext · Hash-prefix only<br>
       NIST FIPS 203 · ML-KEM-768
     </div>
@@ -180,7 +180,7 @@ aside{background:#080d1a;border-left:1px solid #1e293b;overflow-y:auto;padding:1
 </main>
 
 <script>
-const RELAY = (window._PARAMANT_RELAY||'wss://paramant-relay.onrender.com')
+const RELAY = (window._PARAMANT_RELAY||'wss://relay.paramant.app')
   .replace('wss://','https://').replace('ws://','http://');
 
 let allEntries = [];
