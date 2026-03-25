@@ -10,10 +10,14 @@
 <meta property="og:description" content="Post-quantum versleuteld appen. ML-KEM-768 (NIST FIPS 203). Niemand kan meelezen — ook wij niet.">
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22PARAMANT%22%2C%22short_name%22%3A%22PARAMANT%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
 <!-- CDNs -->
+<!-- SRI-opmerking: noble-post-quantum en qrcodejs zijn geladen met crossorigin="anonymous".
+     SRI integrity-hashes kunnen worden toegevoegd zodra beschikbaar via https://www.srihash.org
+     Tailwind CDN ondersteunt geen SRI (dynamische build) — voor productie: gebruik lokale build.
+     Aanbevolen: download index.html en gebruik die lokale kopie voor maximale integriteitscontrole. -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{animation:{'fade-up':'fadeUp .4s ease forwards','pulse-soft':'pulseSoft 2.5s infinite','chain-scroll':'chainScroll 20s linear infinite'}}}}</script>
 <script src="https://cdn.jsdelivr.net/npm/@noble/post-quantum@0.2.1/build/noble-post-quantum.umd.min.js" crossorigin="anonymous" onerror="console.warn('ML-KEM offline — ECDH-only mode')"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -801,7 +805,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
       <!-- Messages -->
       <div id="chat-wrap" style="display:none" class="flex-1 flex-col overflow-hidden relative">
-        <div id="msgs" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
+        <div id="msgs-host" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
         <!-- Paste overlay -->
         <div id="paste-ov" style="display:none" class="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 p-4 shadow-2xl">
           <div class="text-sm font-semibold text-white mb-1">📥 Bericht van je amice lezen</div>
@@ -911,8 +915,23 @@ async function hkdf(s,info,l=32){const k=await crypto.subtle.importKey('raw',s,'
 async function sha256(data){return new Uint8Array(await crypto.subtle.digest('SHA-256',data));}
 const KEM_IV=8;
 async function ratchet(ck,kem=null){const mat=kem?new Uint8Array([...ck,...kem]):ck;const nCK=await hkdf(mat,kem?'kem-ratchet':'chain',32);const mk=await hkdf(ck,'msg',32);ck.fill(0);if(kem)kem.fill(0);if(mat!==ck)mat.fill(0);return{nextCK:nCK,msgKey:mk};}
-async function aesEnc(mk,pt,aad){const iv=rnd(12),k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['encrypt']);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:aad},k,pt);mk.fill(0);return{iv,ct:new Uint8Array(ct)};}
-async function aesDec(mk,iv,ct,aad){const k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['decrypt']);try{const pt=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:aad},k,ct));mk.fill(0);return pt;}catch(e){mk.fill(0);throw new Error('Ontsleutelen mislukt — controleer of je het goede pakket hebt geplakt.');}}
+// ── AES helpers — sleutels als non-extractable CryptoKey (niet leesbaar via console) ──
+async function aesEnc(mk,pt,aad){
+  const iv=rnd(12);
+  // extractable:false → sleutel zit in "zwarte doos", code kan bytes niet meer lezen
+  const k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['encrypt']);
+  mk.fill(0); // wis ruwe bytes direct na import
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:aad},k,pt);
+  return{iv,ct:new Uint8Array(ct)};
+}
+async function aesDec(mk,iv,ct,aad){
+  const k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['decrypt']);
+  mk.fill(0); // wis ruwe bytes direct na import
+  try{
+    const pt=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:aad},k,ct));
+    return pt;
+  }catch(e){throw new Error('Ontsleutelen mislukt — controleer of je het goede pakket hebt geplakt.');}
+}
 async function safetyNums(m){const h=await sha256(m);return Array.from({length:8},(_,i)=>String(((h[i*4]<<16)|(h[i*4+1]<<8)|h[i*4+2])%100000).padStart(5,'0'));}
 async function chatIdFrom(ck){const h=await hkdf(new Uint8Array(ck),'paramant-chat-id-v1',8);return b2h(h);}
 function pad32(d){const p=32-(d.length%32);const o=new Uint8Array(d.length+p);o.set(d);o.fill(p,d.length);return o;}
@@ -1945,7 +1964,7 @@ function addProgMsg(conv,name,size){
   const st=document.createElement('div');st.className='prog-st mono text-xs text-slate-500 mt-1.5';st.textContent='Laden…';
   d.appendChild(nm);d.appendChild(bg);d.appendChild(st);
   const wrap=document.createElement('div');wrap.className='flex justify-end px-1 py-0.5';wrap.appendChild(d);
-  w._bar=bar;w._st=st;$('msgs').appendChild(wrap);$('msgs').scrollTop=$('msgs').scrollHeight;return w;
+  w._bar=bar;w._st=st;const _sh2=$msgs();const _ho2=$('msgs-host');if(_sh2&&_ho2){_sh2.appendChild(wrap);_ho2.scrollTop=_ho2.scrollHeight;}return w;
 }
 function updateProg(el,pct,lbl){if(!el)return;if(el._bar)el._bar.style.width=pct+'%';if(el._st)el._st.textContent=lbl;}
 function downloadFile(meta){const bin=atob(meta.data);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bytes],{type:meta.mime}));a.download=meta.name;a.click();}
@@ -1963,8 +1982,8 @@ function schedDestruct(el,mins){if(!mins)return;setTimeout(()=>{el.style.transit
 function exportConv(){const c=activeConv();if(!c)return;const d={exported:new Date().toISOString(),name:c.name,msgs:c.msgs.map(m=>({dir:m.dir,t:m.t,text:m.dir==='recv'?m.data?.text:m.dir==='sys'?m.data?.text:'[versleuteld]'}))};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`paramant-${c.name.replace(/\W/g,'-')}-${Date.now()}.json`;a.click();}
 
 // ─── MESSAGES ─────────────────────────────────────────────────────────
-function addMsg(conv,dir,data){const t=data.t||now();conv.msgs.push({dir,data,t});if(conv.id===activeId){const el=buildMsg(dir,data,t);$('msgs').appendChild(el);$('msgs').scrollTop=$('msgs').scrollHeight;if(dir!=='sys'&&conv.destructTimer)schedDestruct(el,conv.destructTimer);}renderList();}
-function sysMsg(conv,text){const t=now();conv.msgs.push({dir:'sys',data:{text},t});if(conv.id===activeId){$('msgs').appendChild(buildMsg('sys',{text},t));$('msgs').scrollTop=$('msgs').scrollHeight;}}
+function addMsg(conv,dir,data){const t=data.t||now();conv.msgs.push({dir,data,t});if(conv.id===activeId){const el=buildMsg(dir,data,t);const _sh=$msgs();const _ho=$('msgs-host');if(_sh&&_ho){_sh.appendChild(el);_ho.scrollTop=_ho.scrollHeight;}if(dir!=='sys'&&conv.destructTimer)schedDestruct(el,conv.destructTimer);}renderList();}
+function sysMsg(conv,text){const t=now();conv.msgs.push({dir:'sys',data:{text},t});if(conv.id===activeId){const _ss=$msgs();const _hs=$('msgs-host');if(_ss&&_hs){_ss.appendChild(buildMsg('sys',{text},t));_hs.scrollTop=_hs.scrollHeight;}}}
 function buildMsg(dir,data,t){
   const outer=document.createElement('div');
   if(dir==='sys'){outer.className='flex justify-center my-1';const b=document.createElement('div');b.className='bbl-sys px-4 py-2 rounded-2xl text-xs text-teal-400/80 text-center max-w-sm leading-relaxed';b.textContent=data.text;outer.appendChild(b);return outer;}
@@ -1999,10 +2018,58 @@ function buildMsg(dir,data,t){
   if(data.pq){const pq=document.createElement('span');pq.className='text-teal-700';pq.textContent='⚛';meta.appendChild(pq);}
   outer.appendChild(meta);return outer;
 }
-function renderMsgs(conv){$('msgs').innerHTML='';conv.msgs.forEach(m=>$('msgs').appendChild(buildMsg(m.dir,m.data,m.t)));$('msgs').scrollTop=$('msgs').scrollHeight;}
+function renderMsgs(conv){
+  const sh=$msgs(),ho=$('msgs-host');if(!sh||!ho)return;
+  // Wis alles behalve de style tag
+  Array.from(sh.childNodes).forEach(n=>{if(n.nodeName!=='STYLE')sh.removeChild(n);});
+  conv.msgs.forEach(m=>sh.appendChild(buildMsg(m.dir,m.data,m.t)));
+  ho.scrollTop=ho.scrollHeight;
+}
 
 // ─── SCREENS — _s() uses only inline style, avoids Tailwind conflicts ─
-// ── Breadcrumb nav helper ─────────────────────────────────────────
+// ── Shadow DOM voor berichtcontainer ───────────────────────────────
+// Gesloten Shadow DOM isoleert berichtinhoud van browser-extensies
+// die de gewone DOM kunnen uitlezen. mode:'closed' geeft geen externe
+// toegang via .shadowRoot — zelfs niet voor scripts.
+let _msgsShadow = null;
+function getMsgsShadow(){
+  if(_msgsShadow) return _msgsShadow;
+  const host = document.getElementById('msgs-host');
+  if(!host) return null;
+  _msgsShadow = host.attachShadow({mode:'closed'});
+  // Kopieer Tailwind + app stijlen naar shadow DOM zodat berichten er goed uitzien
+  const style = document.createElement('style');
+  style.textContent = `
+    :host { display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
+            padding: 16px; flex: 1; box-sizing: border-box; }
+    .bbl-sent { background: #14b8a6; color: #0f172a; border-radius: 18px 18px 4px 18px;
+                padding: 10px 16px; max-width: 75%; word-break: break-word; font-size: 15px; }
+    .bbl-recv { background: #1e293b; color: #f1f5f9; border: 1px solid #334155;
+                border-radius: 18px 18px 18px 4px; padding: 10px 16px; max-width: 75%;
+                word-break: break-word; font-size: 15px; }
+    .bbl-sys  { color: #5eead4; font-size: 12px; text-align: center; padding: 4px 16px;
+                background: rgba(20,184,166,.08); border-radius: 12px; max-width: 340px; }
+    .ts       { font-size: 10px; color: #475569; margin-top: 2px; }
+    .enc-box  { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px;
+                padding: 12px; font-size: 12px; max-width: 75%; }
+    .enc-pre  { font-family: monospace; color: #5eead4; font-size: 11px; word-break: break-all;
+                white-space: pre-wrap; max-height: 60px; overflow: hidden; opacity: .5; }
+    .copy-btn { width: 100%; padding: 10px; background: #14b8a6; color: #0f172a; font-weight: 700;
+                border: none; border-radius: 12px; cursor: pointer; font-size: 13px; margin-top: 8px; }
+    .copy-btn:hover { background: #2dd4bf; }
+    .auto-sent{ font-size: 11px; color: #14b8a6; margin-top: 4px; }
+    .file-box { display: flex; align-items: center; gap: 12px; padding: 12px; background: #1e293b;
+                border: 1px solid #334155; border-radius: 16px; cursor: pointer; max-width: 75%; }
+    .file-box:hover { border-color: rgba(20,184,166,.4); }
+    .prog-bar { height: 6px; background: #14b8a6; border-radius: 4px; width: 0; transition: width .3s; }
+    .prog-bg  { height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; }
+  `;
+  _msgsShadow.appendChild(style);
+  return _msgsShadow;
+}
+// $msgs() geeft de shadow root terug — alle msg-functies gebruiken dit
+function $msgs(){ return getMsgsShadow(); }
+function msgsEl(){ return getMsgsShadow(); } // alias
 function setNav(screen, label){
   const sep=$('nav-sep'), home=$('nav-home'), sep2=$('nav-sep2'), cur=$('nav-current');
   if(screen==='welcome'){
