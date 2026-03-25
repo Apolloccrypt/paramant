@@ -6,8 +6,8 @@
 
 [![Live Demo](https://img.shields.io/badge/🔐_Live_Demo-paramant--e27c.vercel.app-14b8a6?style=for-the-badge)](https://paramant-e27c.vercel.app)
 [![Relay](https://img.shields.io/badge/📡_Relay-onrender.com-0d9488?style=for-the-badge)](https://paramant-relay.onrender.com/health)
-[![NIST FIPS 203](https://img.shields.io/badge/NIST-FIPS_203_·_ML--KEM--768-334155?style=for-the-badge)](#cryptografie)
-[![ECDH P-256](https://img.shields.io/badge/NIST-SP_800--186_·_ECDH_P--256-334155?style=for-the-badge)](#cryptografie)
+[![ML-KEM-768](https://img.shields.io/badge/ML--KEM--768-NIST_FIPS_203-334155?style=for-the-badge)](#de-versleuteling)
+[![ECDH P-256](https://img.shields.io/badge/ECDH_P--256-NIST_SP_800--186-334155?style=for-the-badge)](#de-versleuteling)
 [![Doneer](https://img.shields.io/badge/☕_Doneer-buymeacoffee.com/mickbeer-FFDD00?style=for-the-badge)](https://buymeacoffee.com/mickbeer)
 
 ---

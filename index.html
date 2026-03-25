@@ -7,7 +7,7 @@
 <meta name="description" content="Post-quantum versleuteld appen zonder account. ML-KEM-768 + ECDH P-256 + AES-256-GCM. Optionele relay ziet alleen hash-prefix. Gratis voor altijd.">
 <meta name="theme-color" content="#0f172a">
 <meta property="og:title" content="PARAMANT — Niemand kan meelezen. Letterlijk niemand.">
-<meta property="og:description" content="Quantum-safe berichten. Niemand kan meelezen — ook wij niet.">
+<meta property="og:description" content="Post-quantum versleuteld appen. ML-KEM-768 (NIST FIPS 203). Niemand kan meelezen — ook wij niet.">
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22PARAMANT%22%2C%22short_name%22%3A%22PARAMANT%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
 <!-- CDNs -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -105,7 +105,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
     <div class="inline-flex items-center gap-2 px-4 py-2 mb-7 bg-teal-500/10 border border-teal-500/25 rounded-full text-sm text-teal-400 font-medium">
       <span class="w-2 h-2 rounded-full bg-teal-400 pulse-badge flex-shrink-0"></span>
-      NIST-gecertificeerd · ML-KEM-768 · Quantum-proof
+      ML-KEM-768 (NIST FIPS 203) · Post-quantum
     </div>
 
     <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-5">
@@ -122,7 +122,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <div class="flex flex-wrap justify-center gap-2.5 mb-10">
       <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">🔒 Eind-tot-eind versleuteld</div>
       <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">📵 Nul account, nul telefoon</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 border border-teal-500/30 rounded-full text-sm text-teal-400">⚛ Quantum-proof</div>
+      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 border border-teal-500/30 rounded-full text-sm text-teal-400">⚛ Post-quantum (NIST FIPS 203)</div>
       <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">🌐 Werkt ook offline</div>
     </div>
 
@@ -250,7 +250,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Optionele relay</div></td>
           </tr>
           <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="p-4 text-slate-300 font-medium text-left">Quantum-proof?</td>
+            <td class="p-4 text-slate-300 font-medium text-left">Post-quantum?</td>
             <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Niet bestand</div></td>
             <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-slate-500">Deels (PQXDH)</div></td>
             <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Niet bestand</div></td>
@@ -536,7 +536,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <div class="flex-1 min-w-0">
               <div id="my-nick" class="font-bold text-white mono text-base truncate">…</div>
               <div class="text-xs text-slate-500 mt-0.5">Jouw naam (uit jouw sleutel)</div>
-              <span id="pq-badge" class="hidden mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 bg-teal-500/15 border border-teal-500/25 rounded-full text-teal-400 text-xs">⚛ Quantum-proof</span>
+              <span id="pq-badge" class="hidden mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 bg-teal-500/15 border border-teal-500/25 rounded-full text-teal-400 text-xs">⚛ Post-quantum (NIST FIPS 203)</span>
             </div>
           </div>
 
