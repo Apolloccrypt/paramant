@@ -61,6 +61,7 @@ nav a:hover{color:#2dd4bf}
 /* Canvas pixelated for fractals */
 canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 </style>
+<script>window._PARAMANT_RELAY='wss://paramant-relay.onrender.com'</script>
 </head>
 <body>
 
@@ -477,35 +478,62 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <div id="mob-ov" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden" onclick="closeSidebar()"></div>
 
     <!-- Sidebar -->
-    <div id="sidebar-panel" class="fixed md:relative inset-y-0 left-0 z-50 md:z-auto w-72 flex flex-col bg-slate-900 border-r border-slate-800 -translate-x-full md:translate-x-0 transition-transform duration-250 overflow-hidden">
+    <div id="sidebar-panel" class="fixed md:relative inset-y-0 left-0 z-50 md:z-auto w-80 flex flex-col bg-slate-900 border-r border-slate-800 -translate-x-full md:translate-x-0 transition-transform duration-250 overflow-hidden">
 
       <!-- Identity card -->
       <div class="p-4 border-b border-slate-800 flex-shrink-0">
         <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4">
+          <!-- Avatar + naam -->
           <div class="flex items-center gap-3 mb-4">
             <div class="w-14 h-14 rounded-full border-2 border-teal-500/60 overflow-hidden flex-shrink-0 shadow-lg shadow-teal-500/10">
               <canvas id="my-avatar" width="56" height="56"></canvas>
             </div>
             <div class="flex-1 min-w-0">
-              <div id="my-nick" class="font-bold text-white mono text-sm truncate">…</div>
+              <div id="my-nick" class="font-bold text-white mono text-base truncate">…</div>
               <div class="text-xs text-slate-500 mt-0.5">Jouw naam (uit jouw sleutel)</div>
               <span id="pq-badge" class="hidden mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 bg-teal-500/15 border border-teal-500/25 rounded-full text-teal-400 text-xs">⚛ Quantum-proof</span>
             </div>
           </div>
+
+          <!-- Adres — leesbaar, volledig zichtbaar -->
           <div class="mb-3">
-            <div class="mono text-xs text-slate-500 tracking-widest uppercase mb-1.5">Jouw adres — deel dit met je vriend</div>
-            <div id="my-key-prev" class="mono text-xs text-teal-400 leading-relaxed break-all bg-slate-900 rounded-xl p-2.5 border border-slate-700 max-h-10 overflow-hidden">Genereren…</div>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="mono text-xs text-slate-400 tracking-widest uppercase font-semibold">Jouw adres</div>
+              <div class="text-xs text-slate-500">deel dit met je vriend</div>
+            </div>
+            <!-- Adres box: hoogte vergroot, scrollbaar, leesbaar -->
+            <div id="my-key-prev"
+              class="mono text-xs text-teal-300 leading-relaxed break-all bg-slate-950 rounded-xl p-3 border border-teal-500/20 overflow-y-auto"
+              style="max-height:80px;word-break:break-all;font-size:10px;line-height:1.7">
+              Genereren…
+            </div>
           </div>
+
+          <!-- Knoppen -->
           <div class="grid grid-cols-2 gap-2 mb-2">
-            <button id="copy-key-btn" onclick="copyMyKey()" class="py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-semibold text-sm rounded-xl transition-all active:scale-95">📋 Kopieer</button>
-            <button onclick="toggleQR()" class="py-2.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-sm rounded-xl transition-all">📷 QR-code</button>
+            <button id="copy-key-btn" onclick="copyMyKey()"
+              class="py-3 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm rounded-xl transition-all active:scale-95">
+              📋 Kopieer adres
+            </button>
+            <button onclick="toggleQR()"
+              class="py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 text-sm rounded-xl transition-all">
+              📷 QR-code
+            </button>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            <button onclick="regenIdentity()" class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-600">↺ Nieuw adres</button>
-            <button onclick="dlPage()" class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-600">⬇ Download</button>
+            <button onclick="regenIdentity()"
+              class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-500 hover:text-slate-300">
+              ↺ Nieuw adres
+            </button>
+            <button onclick="dlPage()"
+              class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-500 hover:text-slate-300">
+              ⬇ Download app
+            </button>
           </div>
+
+          <!-- QR Panel -->
           <div id="qr-panel" class="hidden mt-3 text-center">
-            <div id="qr-box" class="inline-block"></div>
+            <div id="qr-box" class="inline-block bg-white p-2 rounded-xl"></div>
             <div class="text-xs text-slate-500 mt-2">Laat je vriend dit scannen</div>
           </div>
         </div>
@@ -743,11 +771,12 @@ async function initIdentity(){
   try{
     await buildIdentity();
     $('my-nick').textContent=myNick;
-    $('my-key-prev').textContent=myBundle.slice(0,80)+'…';
+    // Toon volledig adres — box is nu scrollbaar
+    $('my-key-prev').textContent=myBundle;
     $('my-key-prev').dataset.full=myBundle;
     if(myMLK)$('pq-badge').classList.remove('hidden');
     drawFractal($('my-avatar'),myFractalParams);
-    if(!myMLK){setTimeout(async()=>{if(!mlOK()||!myKP)return;try{const ml=getML();myMLK=ml.keygen();const rawPub=new Uint8Array(await crypto.subtle.exportKey('raw',myKP.publicKey));const b=JSON.parse(myBundle);b.mlkem=b2h(myMLK.publicKey);myBundle=JSON.stringify(b);$('my-key-prev').textContent=myBundle.slice(0,80)+'…';$('my-key-prev').dataset.full=myBundle;$('pq-badge').classList.remove('hidden');}catch(e){}},2500);}
+    if(!myMLK){setTimeout(async()=>{if(!mlOK()||!myKP)return;try{const ml=getML();myMLK=ml.keygen();const rawPub=new Uint8Array(await crypto.subtle.exportKey('raw',myKP.publicKey));const b=JSON.parse(myBundle);b.mlkem=b2h(myMLK.publicKey);myBundle=JSON.stringify(b);$('my-key-prev').textContent=myBundle;$('my-key-prev').dataset.full=myBundle;$('pq-badge').classList.remove('hidden');}catch(e){}},2500);}
   }catch(e){$('my-key-prev').textContent='Herlaad pagina';}
 }
 initIdentity();
