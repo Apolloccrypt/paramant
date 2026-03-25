@@ -1395,14 +1395,32 @@ function onRelayMsg(msg){
       const myHashHex=b2h(myIdentityHash.slice(0,8));
       if(pay.targetHash!==myHashHex)return;
       // Heb ik al een verbinding met deze peer?
-      let existing;try{const b=JSON.parse(pay.bundle);existing=convs.find(c=>c.connected);}catch{return;}
-      if(existing)return; // al verbonden, negeer
-      // Valideer bundle
-      try{const b=JSON.parse(pay.bundle);if(!b?.ecdh||!isHex(b.ecdh,130))return;}catch{return;}
+      let bparsed;try{bparsed=JSON.parse(pay.bundle);}catch{return;}
+      if(!bparsed?.ecdh||!isHex(bparsed.ecdh,130))return;
+      if(convs.find(c=>c.connected))return; // al verbonden, negeer
+
+      // ── Pre-join de relay room zodat berichten van de afzender
+      //    direct aankomen, ook vóórdat doConnect voltooid is ──
+      // Bereken dezelfde chatId die de afzender heeft via ECDH
+      (async()=>{
+        try{
+          const eb=h2b(bparsed.ecdh.replace(/\s+/g,''));
+          if(!eb||eb.length!==65)return;
+          const theirKey=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
+          const bits=await crypto.subtle.deriveBits({name:'ECDH',public:theirKey},myKP.privateKey,256);
+          const shared=new Uint8Array(bits);
+          const master=await hkdf(shared,'paramant-master-v1',32);
+          const chatCK=await hkdf(master,'paramant-chat-id-v2',32);
+          const chatId=await chatIdFrom(chatCK);
+          shared.fill(0);master.fill(0);chatCK.fill(0);
+          // Join de room — relay levert nu berichten aan ons ook al bestaat conv nog niet
+          relayJoin(chatId);
+        }catch(e){}
+      })();
+
       // Sla op in presenceMap zodat quickConnect werkt
       presenceMap.set(pay.nick,{nick:pay.nick,bundle:pay.bundle,avatarHint:pay.avatarHint||'',ts:Date.now()});
       renderPresence();
-      // Toon inkomend verzoek notification
       showIncomingRequest(pay.nick,pay.bundle,pay.avatarHint||'');
       return;
     }
