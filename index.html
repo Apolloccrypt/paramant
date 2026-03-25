@@ -1311,29 +1311,58 @@ function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyS
 function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
 
 // Broadcast verbindingsverzoek — de andere partij ziet een inkomend verzoek
+// ── Early-packet buffer ───────────────────────────────────────────
+// Pakketten die aankomen vóórdat de conv bestaat worden gebufferd
+// en opnieuw afgespeeld zodra de conv is aangemaakt
+const earlyPacketBuffer = new Map(); // chatHash → [{msg}]
+function bufferEarlyPacket(hash, msg){
+  const buf = earlyPacketBuffer.get(hash) || [];
+  if(buf.length < 20) buf.push(msg); // max 20 buffered
+  earlyPacketBuffer.set(hash, buf);
+}
+function replayBuffered(conv){
+  const key = conv.chatId ? conv.chatId.slice(0,16) : '';
+  if(!key) return;
+  // Check all buffer keys that start with our chatId prefix
+  earlyPacketBuffer.forEach((msgs, hash)=>{
+    if(key.startsWith(hash.replace('…','').slice(0,8)) || hash.startsWith(key.slice(0,8))){
+      earlyPacketBuffer.delete(hash);
+      msgs.forEach(msg=>{
+        const pay=msg.payload;
+        if(!pay||pay.pType)return;
+        const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};
+        decryptPacket(conv,pkt)
+          .then(()=>addLedgerEntry({h:key,s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()}))
+          .catch(()=>{}); // silently skip if can't decrypt
+      });
+    }
+  });
+}
+
 function broadcastConnRequest(theirBundle){
   if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;
-  let targetHash='';
-  try{
-    const b=JSON.parse(theirBundle||'{}');
-    if(b.ecdh){
-      // Bereken target hash van hun publieke sleutel
+  const sendReq = () => {
+    try{
+      const b=JSON.parse(theirBundle||'{}');
+      if(!b.ecdh)return;
       const eb=h2b(b.ecdh.replace(/\s+/g,''));
-      if(eb&&eb.length===65){
-        sha256(eb).then(h=>{
-          const hint=b2h(h.slice(0,8));
+      if(!eb||eb.length!==65)return;
+      sha256(eb).then(h=>{
+        const hint=b2h(h.slice(0,8));
+        if(relayWS&&relayWS.readyState===1){
           relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{
-            pType:'conn_request',
-            nick:myNick,
-            bundle:myBundle,
+            pType:'conn_request',nick:myNick,bundle:myBundle,
             avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',
-            targetHash:hint,
-            ts:Date.now()
+            targetHash:hint,ts:Date.now()
           }}));
-        }).catch(()=>{});
-      }
-    }
-  }catch(e){}
+        }
+      }).catch(()=>{});
+    }catch(e){}
+  };
+  // Stuur direct + herhaal 3x met 2s tussentijd voor betrouwbaarheid
+  sendReq();
+  setTimeout(sendReq, 2000);
+  setTimeout(sendReq, 5000);
 }
 // Broadcast presence elke 10s (was 25s — te traag voor peer discovery)
 setInterval(()=>{if(relayOn)broadcastPresence();},10000);
@@ -1381,14 +1410,20 @@ function onRelayMsg(msg){
     // ── Normaal versleuteld pakket — zoek de juiste conv op chatHash ──
     // Gooi alle payload weg die een pType hebben maar niet encrypted zijn
     if(pay?.pType)return; // presence/conn_request etc. al afgehandeld of niet voor ons
-    const incomingHash=msg.chatHash||'';
+    const incomingHash=(msg.chatHash||'').replace('…','');
     let conv=null;
     if(incomingHash){
-      conv=convs.find(c=>c.chatId&&c.chatId.startsWith(incomingHash.replace('…','').slice(0,8)));
+      conv=convs.find(c=>c.chatId&&(
+        c.chatId.startsWith(incomingHash.slice(0,8)) ||
+        incomingHash.startsWith(c.chatId.slice(0,8))
+      ));
     }
-    // Fallback: eerste verbonden conv
     if(!conv) conv=convs.find(c=>c.chatId&&c.connected);
-    if(!conv)return;
+    if(!conv){
+      // Conv bestaat nog niet — buffer het pakket voor replay na verbinding
+      if(incomingHash) bufferEarlyPacket(incomingHash, msg);
+      return;
+    }
     const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};
     decryptPacket(conv,pkt)
       .then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()}))
@@ -1760,6 +1795,8 @@ async function doConnect(){
         broadcastConnRequest(bundle);
       }
       renderList();showChat(id);
+      // Speel eventueel gebufferde pakketten af die vóór verbinding aankwamen
+      setTimeout(()=>replayBuffered(conv), 100);
       $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
     }finally{
       shared.fill(0);
