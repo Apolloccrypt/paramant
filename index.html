@@ -1,1169 +1,695 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PARAMANT — Veiliger dan Signal. Geen account.</title>
-<meta name="description" content="Post-quantum versleuteld appen. Geen account. Geen server die meekijkt. Beter dan Signal en WhatsApp. Gratis voor altijd.">
-<meta name="theme-color" content="#0f172a">
-<meta property="og:title" content="PARAMANT — Veiliger dan Signal. Geen account.">
-<meta property="og:description" content="Quantum-safe berichten. Niemand kan meelezen — ook wij niet.">
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22PARAMANT%22%2C%22short_name%22%3A%22PARAMANT%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
-<!-- CDNs -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{animation:{'fade-up':'fadeUp .4s ease forwards','pulse-soft':'pulseSoft 2.5s infinite','chain-scroll':'chainScroll 20s linear infinite'}}}}</script>
-<script src="https://cdn.jsdelivr.net/npm/@noble/post-quantum@0.2.1/build/noble-post-quantum.umd.min.js" crossorigin onerror="console.warn('ML-KEM offline — ECDH-only mode')"></script>
+<title>PARAMANT — Post-Quantum Messaging</title>
+<meta name="description" content="Hybrid post-quantum messenger. ML-KEM-768 + ECDH P-256 + AES-256-GCM.">
+<!-- Plausible: replace paramant.chat with your domain -->
+<script defer data-domain="paramant.chat" src="https://plausible.io/js/script.js"></script>
+<!-- ML-KEM-768 NIST FIPS 203 — @noble/post-quantum -->
+<script src="https://unpkg.com/@noble/post-quantum@1.2.0/mlkem.js" onerror="window._mlkemFailed=true"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* ═══════════════════════════════════════════
+   PARAMANT DESIGN SYSTEM
+   Bold · Geometric · Industrial · Quantum
+═══════════════════════════════════════════ */
+:root{
+  --void:#060a10;--bg:#0a0f18;--sf:#101828;--sf2:#16202e;
+  --bd:#1c2d42;--bd2:#243650;--tx:#e4eef8;--mu:#4a6888;--dm:#162030;
+  --q:#0066ff;--qb:#4499ff;--qg:rgba(0,102,255,.12);
+  --ok:#00d97a;--am:#ffaa00;--ro:#ff3355;--li:#33ff77;
+  --ff:'Barlow',sans-serif;--ffc:'Barlow Condensed',sans-serif;--ffm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:hidden}
-.mono{font-family:'JetBrains Mono',monospace}
-
-/* App overlay */
-#app{display:none;position:fixed;inset:0;flex-direction:column;background:#0f172a;z-index:9999;overflow:hidden}
-
-/* Scrollbar */
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
-
-/* Animations */
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes pulseSoft{0%,100%{box-shadow:0 0 0 0 rgba(20,184,166,.35)}70%{box-shadow:0 0 0 8px rgba(20,184,166,0)}}
-@keyframes chainScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-@keyframes blink{50%{opacity:.3}}
-@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-@keyframes glow{0%,100%{text-shadow:0 0 10px rgba(20,184,166,.4)}50%{text-shadow:0 0 20px rgba(20,184,166,.8),0 0 40px rgba(20,184,166,.3)}}
-
-.fade-up{animation:fadeUp .4s ease forwards}
-.pulse-badge{animation:pulseSoft 2.5s infinite}
-.chain-scroll{animation:chainScroll 22s linear infinite}
-.slide-in{animation:slideIn .3s ease forwards}
-
-/* Bubble styles */
-.bbl-sent{background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.22);border-bottom-right-radius:4px}
-.bbl-recv{background:#1e293b;border:1px solid #334155;border-bottom-left-radius:4px}
-.bbl-sys{background:rgba(20,184,166,.05);border:1px solid rgba(20,184,166,.12)}
-
-/* Step indicators */
-.step-done{background:#0d9488;color:#fff;border-color:#0d9488}
-.step-curr{background:#14b8a6;color:#0f172a;border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.2)}
-.step-next{background:transparent;color:#475569;border-color:#334155}
-
-/* Landing nav */
-nav a{transition:color .15s}
-nav a:hover{color:#2dd4bf}
-
-/* Hash chain visual */
-.hash-block{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.15);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(20,184,166,.7);white-space:nowrap}
-.hash-link{color:rgba(20,184,166,.3);font-size:14px;padding:0 4px}
-
-/* Canvas pixelated for fractals */
-canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+body{background:var(--void);color:var(--tx);font-family:var(--ff);min-height:100vh;overflow-x:hidden;cursor:none}
+#cr{position:fixed;width:6px;height:6px;background:var(--qb);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .08s}
+#cr2{position:fixed;width:26px;height:26px;border:1px solid rgba(68,153,255,.3);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:left .18s cubic-bezier(.25,.46,.45,.94),top .18s cubic-bezier(.25,.46,.45,.94)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--void)}::-webkit-scrollbar-thumb{background:var(--bd2)}
+/* scan line */
+@keyframes sl{0%{top:-1px}100%{top:100vh}}
+.sl{position:fixed;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,102,255,.1),transparent);animation:sl 12s linear infinite;pointer-events:none;z-index:50}
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,10,16,.93);border-bottom:1px solid var(--bd);backdrop-filter:blur(10px)}
+.nlogo{display:flex;align-items:center;gap:10px}
+.nw{font-family:var(--ffc);font-size:22px;font-weight:900;letter-spacing:5px;color:var(--tx);text-transform:uppercase}
+.nb{font-family:var(--ffm);font-size:7px;letter-spacing:2px;color:var(--qb);background:var(--qg);border:1px solid rgba(0,102,255,.3);border-radius:2px;padding:2px 7px}
+.nlinks{display:flex;gap:28px;align-items:center}
+.nlinks a{font-family:var(--ffm);font-size:10px;letter-spacing:3px;color:var(--mu);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.nlinks a:hover{color:var(--tx)}
+.ncta{padding:8px 20px;background:var(--q);color:#fff!important;border-radius:3px;font-weight:600!important;letter-spacing:2px;transition:all .2s!important}
+.ncta:hover{background:#0055dd!important;box-shadow:0 4px 20px rgba(0,102,255,.4)!important}
+/* ── HERO ── */
+#hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:80px 60px 60px;gap:80px;position:relative;overflow:hidden}
+#hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,102,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,102,255,.03) 1px,transparent 1px);background-size:56px 56px}
+#hero::after{content:'';position:absolute;right:-5%;top:50%;width:640px;height:640px;transform:translateY(-50%);background:radial-gradient(circle,rgba(0,102,255,.07) 0%,transparent 65%);pointer-events:none}
+.hl{position:relative;z-index:2}
+.hbrand{font-family:var(--ffc);font-size:clamp(56px,9vw,108px);font-weight:900;letter-spacing:6px;line-height:.88;color:var(--tx);text-transform:uppercase;margin-bottom:4px}
+.hsub{font-family:var(--ffc);font-size:clamp(16px,2.5vw,28px);font-weight:300;letter-spacing:14px;color:var(--mu);text-transform:uppercase;margin-bottom:28px}
+.htags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px}
+.ht{font-family:var(--ffm);font-size:8px;letter-spacing:3px;padding:3px 9px;border-radius:2px;border:1px solid}
+.ht-q{border-color:rgba(0,102,255,.4);color:var(--qb);background:var(--qg)}
+.ht-ok{border-color:rgba(0,217,122,.3);color:var(--ok);background:rgba(0,217,122,.05)}
+.ht-am{border-color:rgba(255,170,0,.3);color:var(--am);background:rgba(255,170,0,.05)}
+.hdesc{font-size:14px;line-height:1.9;color:var(--mu);max-width:440px;margin-bottom:32px;font-weight:300}
+.hdesc strong{color:var(--tx);font-weight:600}
+.hbtns{display:flex;gap:10px;flex-wrap:wrap}
+.hb{padding:13px 28px;border-radius:3px;font-family:var(--ff);font-size:11px;letter-spacing:3px;font-weight:700;text-transform:uppercase;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;border:none}
+.hbq{background:var(--q);color:#fff}
+.hbq:hover{background:#0055dd;box-shadow:0 8px 28px rgba(0,102,255,.4);transform:translateY(-1px)}
+.hbg{background:transparent;color:var(--tx);border:1px solid var(--bd2)}
+.hbg:hover{border-color:var(--tx)}
+/* quantum toggle */
+.qtoggle{display:flex;align-items:center;gap:10px;margin-top:24px;padding:12px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:4px;cursor:pointer;transition:border-color .2s;width:fit-content}
+.qtoggle:hover{border-color:var(--q)}
+.tt{width:36px;height:20px;background:var(--bd2);border-radius:10px;position:relative;transition:background .3s;flex-shrink:0}
+.tt.on{background:var(--q)}
+.th{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:left .2s}
+.tt.on .th{left:18px}
+.ql{font-family:var(--ffm);font-size:8px;letter-spacing:2px;color:var(--mu)}
+.qv{font-family:var(--ffm);font-size:9px;letter-spacing:1px;color:var(--qb)}
+.qv.cl{color:var(--am)}
+.hstats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:28px;background:var(--bd)}
+.hs{background:var(--void);padding:14px;text-align:center}
+.hsv{font-family:var(--ffc);font-size:18px;font-weight:900;color:var(--qb)}
+.hsl{font-family:var(--ffm);font-size:7px;letter-spacing:2px;color:var(--mu);margin-top:2px}
+/* hero canvas */
+.hr{position:relative;z-index:2}
+.cf{border:1px solid var(--bd);border-radius:5px;overflow:hidden;position:relative;box-shadow:0 0 50px rgba(0,102,255,.07)}
+#hcv{display:block;width:100%;aspect-ratio:1;max-height:480px}
+.co{position:absolute;width:18px;height:18px;border-color:rgba(68,153,255,.6);border-style:solid}
+.ctl{top:8px;left:8px;border-width:2px 0 0 2px}
+.ctr{top:8px;right:8px;border-width:2px 2px 0 0}
+.cbl{bottom:8px;left:8px;border-width:0 0 2px 2px}
+.cbr{bottom:8px;right:8px;border-width:0 2px 2px 0}
+.ci{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-end}
+.cib{background:rgba(6,10,16,.85);border:1px solid var(--bd2);border-radius:2px;padding:5px 9px;font-family:var(--ffm);font-size:7px;letter-spacing:2px;color:var(--mu)}
+.cib span{display:block;color:var(--qb);font-size:8px}
+/* ── QUANTUM SECTION ── */
+#quantum{padding:90px 60px;background:var(--bg)}
+.seye{font-family:var(--ffm);font-size:9px;letter-spacing:4px;color:var(--qb);text-transform:uppercase;margin-bottom:10px}
+.sh{font-family:var(--ffc);font-size:clamp(30px,5vw,52px);font-weight:900;letter-spacing:2px;line-height:.95;margin-bottom:16px;text-transform:uppercase}
+.sh span{color:var(--qb)}
+.tt-wrap{overflow-x:auto;margin:32px 0}
+table.qt{width:100%;border-collapse:collapse;font-family:var(--ffm);font-size:11px}
+table.qt th{background:var(--sf);padding:11px 14px;text-align:left;font-size:8px;letter-spacing:3px;color:var(--mu);font-weight:400;border:1px solid var(--bd)}
+table.qt td{padding:11px 14px;border:1px solid var(--bd);line-height:1.6}
+table.qt tr:hover td{background:var(--sf)}
+.ok{color:var(--ok)}.am{color:var(--am)}.ro{color:var(--ro)}.bold{color:var(--tx);font-weight:600}
+/* hybrid flow */
+.hflow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;margin:32px 0;background:var(--sf);border:1px solid var(--bd);border-radius:5px;overflow:hidden}
+.hfs{padding:22px 18px}
+.hfa{padding:0 10px;display:flex;align-items:center;font-size:20px;color:var(--bd2)}
+.hfn{font-family:var(--ffc);font-size:28px;font-weight:900;color:var(--bd);margin-bottom:6px}
+.hft{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:5px}
+.hfd{font-family:var(--ffm);font-size:9px;color:var(--mu);line-height:1.7}
+.hfb{display:inline-block;font-family:var(--ffm);font-size:7px;letter-spacing:2px;padding:2px 6px;border-radius:2px;margin-top:5px}
+.hfq{background:var(--qg);border:1px solid rgba(0,102,255,.3);color:var(--qb)}
+.hfc{background:rgba(0,217,122,.05);border:1px solid rgba(0,217,122,.2);color:var(--ok)}
+/* ── AUDIT ── */
+.a10{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);margin-top:32px}
+.ai{background:var(--bg);padding:14px;transition:background .2s}
+.ai:hover{background:var(--sf)}
+.an{font-family:var(--ffm);font-size:8px;letter-spacing:2px;margin-bottom:5px}
+.at{font-size:11px;font-weight:700;margin-bottom:3px}
+.ad{font-family:var(--ffm);font-size:9px;color:var(--mu);line-height:1.6}
+.aok .an,.aok .at{color:var(--ok)}
+.aq .an,.aq .at{color:var(--qb)}
+/* ── APP ── */
+#app{padding:80px 60px}
+.apphead{margin-bottom:28px}
+.apphead h2{font-family:var(--ffc);font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:2px;text-transform:uppercase}
+.apphead h2 span{color:var(--qb)}
+/* qbanner */
+#qbanner{padding:10px 14px;background:var(--qg);border:1px solid rgba(0,102,255,.3);border-radius:3px;display:flex;align-items:center;gap:10px;margin-bottom:12px;font-family:var(--ffm);font-size:9px;color:var(--qb);letter-spacing:2px}
+#qbanner.cl{background:rgba(255,170,0,.05);border-color:rgba(255,170,0,.2);color:var(--am)}
+.qbd{width:7px;height:7px;border-radius:50%;background:var(--qb);box-shadow:0 0 7px var(--qb);animation:p 2s infinite;flex-shrink:0}
+.qbd.cl{background:var(--am);box-shadow:0 0 7px var(--am)}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+.qmbtns{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+/* stepper */
+.steps{display:flex;border:1px solid var(--bd);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.step{flex:1;padding:8px 4px;text-align:center;font-family:var(--ffm);font-size:7px;letter-spacing:2px;color:var(--dm);border-right:1px solid var(--bd);transition:all .2s}
+.step:last-child{border-right:none}
+.step.done{color:var(--ok)}.step.done .sn::before{content:'✓ '}
+.step.active{background:rgba(0,102,255,.06);color:var(--qb)}
+.sn{display:block;font-size:12px;margin-bottom:1px;font-family:var(--ffc)}
+/* card */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:18px;margin-bottom:10px}
+.chd{font-family:var(--ffm);font-size:8px;letter-spacing:4px;color:var(--mu);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+label{font-family:var(--ffm);font-size:8px;letter-spacing:3px;color:var(--mu);display:block;margin-bottom:4px;text-transform:uppercase}
+input,textarea{background:#060a10;border:1px solid var(--bd);color:var(--tx);border-radius:3px;padding:8px 10px;font-family:var(--ffm);font-size:11px;width:100%;outline:none;transition:border-color .2s}
+input:focus,textarea:focus{border-color:var(--q)}
+textarea{resize:none;line-height:1.6}
+.btn{padding:7px 14px;border-radius:3px;border:1px solid var(--bd);background:transparent;color:var(--mu);font-family:var(--ffm);font-size:8px;letter-spacing:3px;cursor:pointer;transition:all .15s;text-transform:uppercase}
+.btn:hover{border-color:var(--q);color:var(--qb)}
+.btn.primary{background:rgba(0,102,255,.1);border-color:var(--q);color:var(--qb)}
+.btn.sm{padding:2px 8px;font-size:7px}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.pill{display:inline-block;padding:2px 7px;border-radius:2px;font-family:var(--ffm);font-size:7px;letter-spacing:2px;border:1px solid;text-transform:uppercase}
+.pok{border-color:var(--ok);color:var(--ok)}.pno{border-color:var(--ro);color:var(--ro)}.pq{border-color:var(--q);color:var(--qb)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kd{background:#060a10;border:1px solid var(--bd);border-radius:3px;padding:8px;font-family:var(--ffm);font-size:8px;word-break:break-all;line-height:1.7;color:var(--li);min-height:44px}
+/* safety */
+#snums{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:7px}
+.snb{background:#060a10;border:1px solid var(--bd2);border-radius:2px;text-align:center;padding:7px 3px;font-family:var(--ffc);font-size:13px;font-weight:700;color:var(--am);letter-spacing:2px}
+/* progress */
+#aec{width:100%;height:66px;border-radius:3px;display:block;cursor:crosshair;border:1px solid rgba(255,170,0,.25)}
+#aec.done{border-color:var(--ok);cursor:default}
+.pw{background:#060a10;border-radius:2px;height:3px;margin-top:5px;overflow:hidden}
+.pb{height:100%;width:0%;border-radius:2px;transition:width .1s;background:linear-gradient(90deg,var(--am),var(--ok))}
+.iog{display:grid;grid-template-columns:1fr 34px 1fr;gap:7px;align-items:start}
+.iolbl{font-family:var(--ffm);font-size:7px;letter-spacing:3px;color:var(--mu);margin-bottom:3px}
+.rcol{display:flex;align-items:center;justify-content:center;height:96px}
+.rbtn{width:32px;height:32px;border-radius:50%;border:1px solid var(--ok);background:rgba(0,217,122,.1);color:var(--ok);font-size:16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.rbtn:disabled{border-color:var(--dm);background:transparent;color:var(--dm);cursor:not-allowed}
+.rbtn:not(:disabled):hover{background:rgba(0,217,122,.2);box-shadow:0 0 10px rgba(0,217,122,.25)}
+.cpbtn{background:#060a10;border:1px solid var(--bd);color:var(--mu);font-family:var(--ffm);font-size:7px;padding:2px 6px;border-radius:2px;cursor:pointer;letter-spacing:1px;transition:all .15s;float:right;margin-bottom:3px}
+.cpbtn:hover{border-color:var(--ok);color:var(--ok)}
+.em{color:var(--ro);font-family:var(--ffm);font-size:10px;padding:7px 10px;background:rgba(255,51,85,.06);border-radius:3px;margin-top:6px;display:none;line-height:1.7}
+.ri{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.rc{background:#060a10;border:1px solid var(--bd);border-radius:3px;padding:6px 9px;font-size:10px;flex:1;min-width:100px}
+.rl{font-family:var(--ffm);font-size:6px;letter-spacing:3px;color:var(--mu);margin-bottom:2px;text-transform:uppercase}
+.rv{color:var(--qb);font-family:var(--ffm);word-break:break-all;font-size:9px}
+#nl{background:#060a10;border:1px solid var(--bd);border-radius:2px;max-height:65px;overflow-y:auto;padding:6px;font-family:var(--ffm);font-size:8px;color:var(--mu);line-height:1.9;margin-top:5px}
+.mb{padding:5px 12px;border-radius:3px;border:1px solid var(--bd);background:transparent;color:var(--mu);font-family:var(--ffm);font-size:8px;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.mb.active{background:rgba(0,102,255,.08);border-color:var(--q);color:var(--qb)}
+.note{padding:9px 12px;background:rgba(0,102,255,.04);border-left:2px solid var(--q);border-radius:0 3px 3px 0;font-family:var(--ffm);font-size:9px;color:var(--mu);line-height:1.8;margin-top:8px}
+.note strong{color:var(--qb)}
+#qrw{margin-top:8px;display:none}
+#qrb{background:#fff;display:inline-block;padding:7px;border-radius:3px;line-height:0}
+/* ── WAITLIST ── */
+/* waitlist removed */
+.wli{max-width:580px;margin:0 auto;text-align:center}
+.wli{max-width:580px;margin:0 auto;text-align:center}
+.wli h2{font-family:var(--ffc);font-size:clamp(30px,5vw,54px);font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
+.wli p{font-size:13px;color:var(--mu);line-height:1.85;margin-bottom:32px;font-weight:300}
+.wlf{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.wlf input{flex:1;min-width:200px;background:var(--sf);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;padding:13px 16px;font-family:var(--ffm);font-size:12px;outline:none;transition:border-color .2s}
+.wlf input:focus{border-color:var(--q)}
+.wlf input::placeholder{color:var(--dm)}
+.wls{padding:13px 28px;background:var(--q);color:#fff;border:none;border-radius:3px;font-family:var(--ff);font-size:11px;letter-spacing:3px;font-weight:700;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap}
+.wls:hover{background:#0055dd;box-shadow:0 5px 20px rgba(0,102,255,.4);transform:translateY(-1px)}
+#wlok{display:none;margin-top:14px;padding:12px 18px;background:rgba(0,217,122,.06);border:1px solid rgba(0,217,122,.2);border-radius:3px;font-family:var(--ffm);font-size:11px;color:var(--ok)}
+.wlt{margin-top:18px;font-family:var(--ffm);font-size:8px;letter-spacing:3px;color:var(--dm)}
+/* ── DEPLOY ── */
+#deploy{padding:80px 60px}
+/* deploy section removed */
+/* ── FOOTER ── */
+footer{padding:36px 60px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+.fb{font-family:var(--ffc);font-size:18px;font-weight:900;letter-spacing:5px;color:var(--tx);text-transform:uppercase}
+.fl{display:flex;gap:20px}
+.fl a{font-family:var(--ffm);font-size:8px;letter-spacing:2px;color:var(--mu);text-decoration:none;text-transform:uppercase;transition:color .2s}
+.fl a:hover{color:var(--tx)}
+.fn{font-family:var(--ffm);font-size:7px;letter-spacing:2px;color:var(--dm)}
+/* scroll fade */
+.fu{opacity:0;transform:translateY(18px);transition:opacity .55s,transform .55s}
+.fu.v{opacity:1;transform:translateY(0)}
+@media(max-width:860px){
+  #hero{grid-template-columns:1fr;padding:80px 22px 40px;gap:36px}
+  .hr{order:-1}
+  #quantum,#app,#deploy,footer{padding-left:22px;padding-right:22px}
+  .two,.iog,.hflow,.dg{grid-template-columns:1fr}
+  .hfa{display:none}
+  .a10{grid-template-columns:repeat(2,1fr)}
+  .rcol{height:auto;padding:7px 0;justify-content:flex-start}
+  nav{padding:0 18px}
+  .nlinks{display:none}
+  .hstats{grid-template-columns:repeat(2,1fr)}
+  .peer-steps{grid-template-columns:1fr 1fr!important}
+}
 </style>
-<script>window._PARAMANT_RELAY='wss://paramant-relay.onrender.com'</script>
 </head>
 <body>
-
-<!-- ═══════════════════════════ LANDING ═══════════════════════════ -->
-<div id="landing">
-
+<div id="cr"></div><div id="cr2"></div><div class="sl"></div>
 <!-- NAV -->
-<nav class="fixed top-0 left-0 right-0 z-50 flex items-center gap-3 px-5 md:px-10 h-16 bg-slate-900/90 border-b border-slate-800 backdrop-blur-xl">
-  <div class="flex items-center gap-2.5">
-    <div class="w-8 h-8 rounded-xl overflow-hidden border border-teal-500/40 flex-shrink-0">
-      <canvas id="hero-cv" width="32" height="32"></canvas>
-    </div>
-    <span class="font-bold text-lg text-white tracking-tight font-['Inter']">PARAMANT</span>
+<nav>
+  <div class="nlogo">
+    <div class="nw">PARAMANT</div>
+    <div class="nb">POST-QUANTUM</div>
   </div>
-  <div class="flex-1"></div>
-  <a href="#hoe" class="hidden md:block text-sm text-slate-400">Hoe werkt het?</a>
-  <a href="#vergelijk" class="hidden md:block text-sm text-slate-400">Vergelijking</a>
-  <a href="#ledger" class="hidden md:block text-sm text-slate-400">Publiek ledger</a>
-  <button onclick="openApp()" class="ml-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-semibold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-teal-500/20 active:scale-95">
-    Start gratis →
-  </button>
+  <div class="nlinks">
+    <a href="#quantum">Protocol</a>
+    <a href="#app" class="ncta">Try Demo</a>
+  </div>
 </nav>
-
 <!-- HERO -->
-<section class="relative min-h-screen flex flex-col items-center justify-center text-center px-5 pt-24 pb-16 overflow-hidden">
-  <!-- Grid -->
-  <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:44px_44px] opacity-[0.22]"></div>
-  <!-- Glow -->
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-  <div class="relative z-10 max-w-3xl mx-auto">
-    <!-- Logo canvas -->
-    <div class="w-20 h-20 rounded-2xl border-2 border-teal-500/40 overflow-hidden mx-auto mb-8 cursor-pointer hover:border-teal-500/70 transition-all shadow-xl shadow-teal-500/10" onclick="openApp()">
-      <canvas id="hero-main-cv" width="80" height="80"></canvas>
+<section id="hero">
+  <div class="hl">
+    <div class="hbrand">PARAM<br>ANT</div>
+    <div class="hsub">Post-Quantum Messenger</div>
+    <div class="htags">
+      <span class="ht ht-q">ML-KEM-768</span>
+      <span class="ht ht-q">NIST FIPS 203</span>
+      <span class="ht ht-ok">AES-256-GCM</span>
+      <span class="ht ht-ok">HKDF-SHA256</span>
+      <span class="ht ht-am">QUANTUM-SAFE</span>
     </div>
-
-    <!-- Badge -->
-    <div class="inline-flex items-center gap-2 px-4 py-2 mb-7 bg-teal-500/10 border border-teal-500/25 rounded-full text-sm text-teal-400 font-medium">
-      <span class="w-2 h-2 rounded-full bg-teal-400 pulse-badge flex-shrink-0"></span>
-      NIST-gecertificeerd · ML-KEM-768 · Quantum-proof
-    </div>
-
-    <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-5">
-      Veiliger dan Signal.<br>
-      <span class="text-teal-400" style="animation:glow 3s ease-in-out infinite">Geen account nodig.</span>
-    </h1>
-
-    <p class="text-lg md:text-xl text-slate-400 font-light max-w-xl mx-auto mb-10 leading-relaxed">
-      Berichten die letterlijk niemand kan lezen — ook geen enkele server.
-      Net als bitcoin openbaar aantoonbaar, maar volledig onleesbaar.
+    <p class="hdesc">
+      <strong>Hybrid post-quantum encrypted messaging.</strong>
+      PARAMANT combines classical <strong>ECDH P-256</strong> with NIST-standardised
+      <strong>ML-KEM-768 (Kyber)</strong> — resistant to both Shor's algorithm and
+      harvest-now/decrypt-later attacks.
     </p>
 
-    <!-- Trust pills -->
-    <div class="flex flex-wrap justify-center gap-2.5 mb-10">
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">🔒 Eind-tot-eind versleuteld</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">📵 Nul account, nul telefoon</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 border border-teal-500/30 rounded-full text-sm text-teal-400">⚛ Quantum-proof</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-sm text-slate-300">🌐 Werkt ook offline</div>
+    <div class="qtoggle" id="htoggle" onclick="toggleQMode()">
+      <div class="tt on" id="tt"><div class="th"></div></div>
+      <div>
+        <div class="ql">ENCRYPTION MODE</div>
+        <div class="qv" id="tlbl">QUANTUM HYBRID (ML-KEM-768 + ECDH P-256)</div>
+      </div>
     </div>
-
-    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-      <button onclick="openApp()" class="px-8 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-lg rounded-2xl transition-all hover:shadow-xl hover:shadow-teal-500/25 active:scale-95">
-        🔐 Nu veilig appen — gratis
-      </button>
-      <a href="#hoe" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold text-lg rounded-2xl transition-all text-center">
-        Hoe werkt het? ↓
-      </a>
+    <div class="hstats">
+      <div class="hs"><div class="hsv">768</div><div class="hsl">ML-KEM bits</div></div>
+      <div class="hs"><div class="hsv">256</div><div class="hsl">AES-GCM bits</div></div>
+      <div class="hs"><div class="hsv">10/10</div><div class="hsl">grok eisen</div></div>
+      <div class="hs"><div class="hsv">0</div><div class="hsl">servers read msgs</div></div>
     </div>
   </div>
-</section>
-
-<!-- HASH CHAIN TICKER — blockchain vibe -->
-<div class="py-5 bg-slate-950 border-y border-slate-800 overflow-hidden">
-  <p class="text-center text-xs text-slate-600 mono mb-3 tracking-widest">PUBLIEK LEDGER — IEDEREEN ZIET DE HASH · NIEMAND LEEST DE INHOUD</p>
-  <div class="flex overflow-hidden">
-    <div class="chain-scroll flex gap-2 items-center">
-      <!-- Duplicate for seamless loop -->
-      <span class="hash-block">a3f8c2d1e7b4<span class="text-slate-600 mx-1">·</span>1.2KB<span class="text-slate-600 mx-1">·</span>14:23:41</span><span class="hash-link">→</span>
-      <span class="hash-block">7e9b1a4f2c8d<span class="text-slate-600 mx-1">·</span>2.8KB<span class="text-slate-600 mx-1">·</span>14:23:44</span><span class="hash-link">→</span>
-      <span class="hash-block">f1d7a2e9c3b5<span class="text-slate-600 mx-1">·</span>0.9KB<span class="text-slate-600 mx-1">·</span>14:24:18</span><span class="hash-link">→</span>
-      <span class="hash-block">3c8e5f2b9d1a<span class="text-slate-600 mx-1">·</span>14.1KB<span class="text-slate-600 mx-1">·</span>14:25:03</span><span class="hash-link">→</span>
-      <span class="hash-block">9a2d7c4e1f8b<span class="text-slate-600 mx-1">·</span>1.8KB<span class="text-slate-600 mx-1">·</span>14:25:44</span><span class="hash-link">→</span>
-      <span class="hash-block">5b8f1e3a6c7d<span class="text-slate-600 mx-1">·</span>3.3KB<span class="text-slate-600 mx-1">·</span>14:26:11</span><span class="hash-link">→</span>
-      <span class="hash-block">d4c9b2f7e1a8<span class="text-slate-600 mx-1">·</span>0.7KB<span class="text-slate-600 mx-1">·</span>14:26:58</span><span class="hash-link">→</span>
-      <span class="hash-block">2e7a5d9b3c4f<span class="text-slate-600 mx-1">·</span>2.1KB<span class="text-slate-600 mx-1">·</span>14:27:33</span><span class="hash-link">→</span>
-      <!-- Duplicate -->
-      <span class="hash-block">a3f8c2d1e7b4<span class="text-slate-600 mx-1">·</span>1.2KB<span class="text-slate-600 mx-1">·</span>14:23:41</span><span class="hash-link">→</span>
-      <span class="hash-block">7e9b1a4f2c8d<span class="text-slate-600 mx-1">·</span>2.8KB<span class="text-slate-600 mx-1">·</span>14:23:44</span><span class="hash-link">→</span>
-      <span class="hash-block">f1d7a2e9c3b5<span class="text-slate-600 mx-1">·</span>0.9KB<span class="text-slate-600 mx-1">·</span>14:24:18</span><span class="hash-link">→</span>
-      <span class="hash-block">3c8e5f2b9d1a<span class="text-slate-600 mx-1">·</span>14.1KB<span class="text-slate-600 mx-1">·</span>14:25:03</span><span class="hash-link">→</span>
-      <span class="hash-block">9a2d7c4e1f8b<span class="text-slate-600 mx-1">·</span>1.8KB<span class="text-slate-600 mx-1">·</span>14:25:44</span><span class="hash-link">→</span>
-      <span class="hash-block">5b8f1e3a6c7d<span class="text-slate-600 mx-1">·</span>3.3KB<span class="text-slate-600 mx-1">·</span>14:26:11</span><span class="hash-link">→</span>
-      <span class="hash-block">d4c9b2f7e1a8<span class="text-slate-600 mx-1">·</span>0.7KB<span class="text-slate-600 mx-1">·</span>14:26:58</span><span class="hash-link">→</span>
-      <span class="hash-block">2e7a5d9b3c4f<span class="text-slate-600 mx-1">·</span>2.1KB<span class="text-slate-600 mx-1">·</span>14:27:33</span><span class="hash-link">→</span>
-    </div>
-  </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<section id="hoe" class="py-20 px-5">
-  <div class="max-w-4xl mx-auto text-center">
-    <div class="inline-block px-4 py-1.5 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-sm font-medium mono mb-4">Zo simpel is het</div>
-    <h2 class="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">Klaar in 3 stappen</h2>
-    <p class="text-slate-400 text-lg mb-14 max-w-xl mx-auto">Geen app te installeren. Geen wachtwoord te onthouden. Gewoon veilig appen.</p>
-
-    <div class="grid md:grid-cols-3 gap-6 text-left">
-      <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 hover:border-teal-500/40 transition-all group">
-        <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-teal-500/25 transition-all">📋</div>
-        <div class="mono text-teal-400 text-xs font-semibold tracking-widest mb-2">STAP 1</div>
-        <h3 class="text-white font-bold text-lg mb-3">Kopieer jouw adres</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">Je krijgt automatisch een uniek adres. Dit is jouw "deur" — stuur het naar je vriend via WhatsApp, sms of e-mail.</p>
-        <div class="mt-4 p-3 bg-slate-900 rounded-xl border border-slate-700">
-          <p class="text-xs text-teal-400/70 mono">{"ecdh":"04a3f9…","nick":"Stil-Wolf21"}</p>
-        </div>
-      </div>
-      <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 hover:border-teal-500/40 transition-all group">
-        <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-teal-500/25 transition-all">🤝</div>
-        <div class="mono text-teal-400 text-xs font-semibold tracking-widest mb-2">STAP 2</div>
-        <h3 class="text-white font-bold text-lg mb-3">Verbind met je vriend</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">Plak het adres van je vriend en klik "Verbind". Direct een beveiligde, quantum-veilige verbinding — zonder server ertussen.</p>
-        <div class="mt-4 p-3 bg-slate-900 rounded-xl border border-teal-500/20">
-          <p class="text-xs text-teal-400 mono flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-teal-400 flex-shrink-0"></span>Verbonden · quantum-veilig 🔒</p>
-        </div>
-      </div>
-      <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 hover:border-teal-500/40 transition-all group">
-        <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-teal-500/25 transition-all">💬</div>
-        <div class="mono text-teal-400 text-xs font-semibold tracking-widest mb-2">STAP 3</div>
-        <h3 class="text-white font-bold text-lg mb-3">Appen maar!</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">Typ, spreek of sleep bestanden. Elk bericht wordt versleuteld — je kunt het pakket sturen via elk kanaal. Alleen jij en je vriend kunnen het lezen.</p>
-        <div class="mt-4 flex gap-2">
-          <span class="text-lg">🎤</span><span class="text-lg">📎</span><span class="text-lg">📋</span>
-          <span class="text-xs text-slate-500 self-center">spraak · bestanden · copy-paste</span>
-        </div>
+  <div class="hr">
+    <div class="cf">
+      <canvas id="hcv" width="480" height="480"></canvas>
+      <div class="co ctl"></div><div class="co ctr"></div>
+      <div class="co cbl"></div><div class="co cbr"></div>
+      <div class="ci">
+        <div class="cib"><span id="hc">c = —</span>MANDELBROT KEYSPACE (VISUEEL)</div>
+        <div class="cib" id="hqb"><span style="color:var(--qb)">● QUANTUM HYBRID</span>ML-KEM-768</div>
       </div>
     </div>
   </div>
 </section>
-
-<!-- COMPARISON TABLE -->
-<section id="vergelijk" class="py-20 px-5 bg-slate-900 border-y border-slate-800">
-  <div class="max-w-3xl mx-auto text-center">
-    <div class="inline-block px-4 py-1.5 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-sm font-medium mono mb-4">Het eerlijke verhaal</div>
-    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">PARAMANT vs de rest</h2>
-    <p class="text-slate-400 mb-10 text-lg">Andere apps zijn goed. Maar PARAMANT is beter.</p>
-
-    <div class="overflow-hidden rounded-2xl border border-slate-700">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-slate-800 border-b border-slate-700">
-            <th class="text-left p-4 text-slate-400 font-medium">Eigenschap</th>
-            <th class="p-3 text-center">
-              <div class="text-slate-400 font-medium text-xs">💬</div>
-              <div class="text-slate-300 font-medium">WhatsApp</div>
-            </th>
-            <th class="p-3 text-center">
-              <div class="text-slate-400 font-medium text-xs">🔵</div>
-              <div class="text-slate-300 font-medium">Signal</div>
-            </th>
-            <th class="p-3 text-center">
-              <div class="text-slate-400 font-medium text-xs">✈️</div>
-              <div class="text-slate-300 font-medium">Telegram</div>
-            </th>
-            <th class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20">
-              <div class="text-teal-400 text-xs">🔐</div>
-              <div class="text-teal-400 font-bold">PARAMANT</div>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-800">
-          <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="p-4 text-slate-300 font-medium text-left">Account nodig?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telefoonnummer</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telefoonnummer</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telefoonnummer</div></td>
-            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Helemaal niets</div></td>
-          </tr>
-          <tr class="bg-slate-900/40 hover:bg-slate-800/30 transition-colors">
-            <td class="p-4 text-slate-300 font-medium text-left">Server leest mee?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Meta-servers</div></td>
-            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-slate-500">Signal-servers</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Telegram cloud</div></td>
-            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Geen server</div></td>
-          </tr>
-          <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="p-4 text-slate-300 font-medium text-left">Quantum-proof?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Niet bestand</div></td>
-            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-slate-500">Deels (PQXDH)</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Niet bestand</div></td>
-            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">ML-KEM-768</div></td>
-          </tr>
-          <tr class="bg-slate-900/40 hover:bg-slate-800/30 transition-colors">
-            <td class="p-4 text-slate-300 font-medium text-left">Metadata bewaard?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Wie, wanneer, wie</div></td>
-            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-slate-500">Minimaal</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Volledig</div></td>
-            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Nul metadata</div></td>
-          </tr>
-          <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="p-4 text-slate-300 font-medium text-left">Offline werking?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
-            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Altijd</div></td>
-          </tr>
-          <tr class="bg-slate-900/40 hover:bg-slate-800/30 transition-colors">
-            <td class="p-4 text-slate-300 font-medium text-left">App installeren?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Verplicht</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Verplicht</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-slate-500">Verplicht</div></td>
-            <td class="p-3 text-center bg-teal-500/5 border-l border-teal-500/20"><span class="text-teal-400 font-bold text-base">✓</span><div class="text-xs text-teal-500">Browser, klaar</div></td>
-          </tr>
+<!-- QUANTUM -->
+<section id="quantum" class="fu">
+  <div style="max-width:1060px;margin:0 auto">
+    <div class="seye">Why post-quantum?</div>
+    <div class="sh">Shor's algoritme<br><span>breekt ECDH P-256.</span></div>
+    <p style="font-size:13px;color:var(--mu);max-width:600px;margin-bottom:0;line-height:1.9;font-weight:300">
+      Een krachtige kwantumcomputer kan ECDH P-256 in uren kraken.
+      "Harvest now, decrypt later" verzamelt <em>vandaag</em> versleuteld verkeer.
+      PARAMANT gebruikt ML-KEM-768 + ECDH gecombineerd via HKDF — veilig voor beide dreigingen.
+    </p>
+    <div class="tt-wrap">
+      <table class="qt">
+        <thead><tr><th>AANVAL</th><th>ECDH ONLY</th><th>PARAMANT HYBRID</th><th>AES-256-GCM</th></tr></thead>
+        <tbody>
+          <tr><td class="bold">Shor's algoritme (kwantum)</td><td class="ro">❌ GEBROKEN</td><td class="ok">✓ ML-KEM-768</td><td class="ok">✓ N.v.t.</td></tr>
+          <tr><td class="bold">Grover's algoritme</td><td class="am">⚠ 128-bit eff.</td><td class="ok">✓ 256-bit eff.</td><td class="ok">✓ Ok</td></tr>
+          <tr><td class="bold">Harvest now / decrypt later</td><td class="ro">❌ Kwetsbaar</td><td class="ok">✓ Toekomstbestendig</td><td class="ok">✓ Veilig</td></tr>
+          <tr><td class="bold">Klassieke brute force</td><td class="ok">✓ Veilig</td><td class="ok">✓ Veilig</td><td class="ok">✓ 2²⁵⁶ ops</td></tr>
+          <tr><td class="bold">MITM key exchange</td><td class="am">⚠ Zonder SN</td><td class="ok">✓ Safety numbers</td><td class="ok">✓ AAD auth</td></tr>
         </tbody>
       </table>
     </div>
-  </div>
-</section>
-
-<!-- BLOCKCHAIN LEDGER SECTION -->
-<section id="ledger" class="py-20 px-5">
-  <div class="max-w-4xl mx-auto">
-    <div class="text-center mb-14">
-      <div class="inline-block px-4 py-1.5 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-sm font-medium mono mb-4">Net als blockchain</div>
-      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Openbaar. Encrypted.<br>Transparant maar onleesbaar.</h2>
-      <p class="text-slate-400 text-lg max-w-xl mx-auto">Iedereen kan zien <em class="text-slate-300 not-italic font-medium">dát</em> er een gesprek plaatsvond. Maar niemand kan zien <em class="text-slate-300 not-italic font-medium">wie</em>, <em class="text-slate-300 not-italic font-medium">wat</em> of <em class="text-slate-300 not-italic font-medium">met wie</em>.</p>
+    <div class="seye">Hybrid Key Exchange Flow</div>
+    <div class="hflow">
+      <div class="hfs"><div class="hfn">01</div><div class="hft">Sleutelpaar genereren</div><div class="hfd">ECDH P-256 keypair + ML-KEM-768 keypair. Beide publieke sleutels worden als JSON bundle gedeeld.</div><span class="hfb hfq">ML-KEM-768</span> <span class="hfb hfc">ECDH P-256</span></div>
+      <div class="hfa">→</div>
+      <div class="hfs"><div class="hfn">02</div><div class="hft">Hybrid secret afleiden</div><div class="hfd">ECDH → ecdhShared. ML-KEM encapsulate(theirPub) → kemShared. Gecombineerd: HKDF(ecdhShared ‖ kemShared).</div><span class="hfb hfq">encapsulate()</span></div>
+      <div class="hfa">→</div>
+      <div class="hfs"><div class="hfn">03</div><div class="hft">Chain key + AES-GCM</div><div class="hfd"><code style="font-family:var(--ffm);font-size:8px;color:var(--li)">masterKey = HKDF(ecdh‖kem)</code><br>Symmetric ratchet + AES-256-GCM per bericht.</div><span class="hfb hfc">AES-256-GCM</span></div>
     </div>
-
-    <div class="grid md:grid-cols-2 gap-8 items-start">
-      <!-- What the relay sees -->
-      <div>
-        <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
-          <span class="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center text-sm">📬</span>
-          Wat de relay ziet
-        </h3>
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden">
-          <div class="px-4 py-2 bg-slate-800 border-b border-slate-700 mono text-xs text-slate-400 flex justify-between">
-            <span>PUBLIEK LEDGER</span><span class="text-teal-500">LIVE</span>
-          </div>
-          <div class="p-4 space-y-2 mono text-xs">
-            <div class="flex justify-between items-center py-2 border-b border-slate-800">
-              <span class="text-teal-600">a3f8c2d1e7b4…</span>
-              <span class="text-slate-500">1.2 KB</span>
-              <span class="text-slate-600">14:23:41</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b border-slate-800">
-              <span class="text-teal-600">7e9b1a4f2c8d…</span>
-              <span class="text-slate-500">2.8 KB</span>
-              <span class="text-slate-600">14:23:44</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b border-slate-800">
-              <span class="text-teal-600">a3f8c2d1e7b4…</span>
-              <span class="text-slate-500">1.1 KB</span>
-              <span class="text-slate-600">14:24:02</span>
-            </div>
-            <div class="flex justify-between items-center py-2">
-              <span class="text-teal-600">f1d7a2e9c3b5…</span>
-              <span class="text-slate-500">10.3 KB</span>
-              <span class="text-slate-600">14:24:18</span>
-            </div>
-          </div>
-          <div class="px-4 py-3 bg-slate-800/50 border-t border-slate-700 text-xs text-slate-500 mono">
-            Hash-prefix · pakketgrootte · tijdstempel
-          </div>
-        </div>
-        <div class="mt-3 flex items-start gap-2 text-sm text-teal-400">
-          <span class="mt-0.5 flex-shrink-0">✓</span>
-          <span>Dit is alles. De relay is als een openbare postbus — hij ziet alleen verzegelde enveloppen met een serienummer.</span>
-        </div>
-      </div>
-
-      <!-- What nobody sees -->
-      <div>
-        <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
-          <span class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center text-sm">🚫</span>
-          Wat niemand ziet
-        </h3>
-        <div class="space-y-3">
-          <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
-            <span class="text-2xl">👤</span>
-            <div>
-              <div class="text-white font-medium text-sm">Namen en identiteiten</div>
-              <div class="text-slate-500 text-xs mt-0.5">Wie het stuurde is onbekend. Adressen zijn wiskundige sleutels, geen namen.</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
-            <span class="text-2xl">💬</span>
-            <div>
-              <div class="text-white font-medium text-sm">De inhoud van berichten</div>
-              <div class="text-slate-500 text-xs mt-0.5">Versleuteld met AES-256-GCM. Zonder de sleutel is het onleesbare ruis.</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
-            <span class="text-2xl">🌐</span>
-            <div>
-              <div class="text-white font-medium text-sm">IP-adressen en locatie</div>
-              <div class="text-slate-500 text-xs mt-0.5">Geen logs. Geen registratie. De server weet niet wie verbinding maakt.</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
-            <span class="text-2xl">🕐</span>
-            <div>
-              <div class="text-white font-medium text-sm">Met wie, wanneer, hoe lang</div>
-              <div class="text-slate-500 text-xs mt-0.5">De hash koppelt niet terug naar personen. Twee berichten met dezelfde hash — dat is alles.</div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="seye" style="margin-top:40px">Grok audit — 10/10 eisen voldaan</div>
+    <div class="a10">
+      <div class="ai aok"><div class="an">EIS 01</div><div class="at">AES-256-GCM</div><div class="ad">AEAD, 16B tag, tamper-proof</div></div>
+      <div class="ai aok"><div class="an">EIS 02</div><div class="at">256-bit security</div><div class="ad">HKDF-SHA256, niet float-paar</div></div>
+      <div class="ai aok"><div class="an">EIS 03</div><div class="at">F + PC Secrecy</div><div class="ad">Symmetric ratchet, MK gewist</div></div>
+      <div class="ai aok"><div class="an">EIS 04</div><div class="at">Replay (IndexedDB)</div><div class="ad">Persistent, herstart-proof</div></div>
+      <div class="ai aok"><div class="an">EIS 05</div><div class="at">CSPRNG</div><div class="ad">getRandomValues() only</div></div>
+      <div class="ai aok"><div class="an">EIS 06</div><div class="at">PKCS7 Padding</div><div class="ad">32-byte blocks, lengte hidden</div></div>
+      <div class="ai aok"><div class="an">EIS 07</div><div class="at">Safety Numbers</div><div class="ad">SHA-256 fingerprint, MITM detectie</div></div>
+      <div class="ai aok"><div class="an">EIS 08</div><div class="at">NIST Only</div><div class="ad">Mandelbrot visueel, geen custom crypto</div></div>
+      <div class="ai aok"><div class="an">EIS 09</div><div class="at">Timing Resistance</div><div class="ad">WebCrypto constant-time</div></div>
+      <div class="ai aq"><div class="an">EIS 10+</div><div class="at">Quantum Ready</div><div class="ad">ML-KEM-768 + ECDH hybrid (NIST FIPS 203)</div></div>
     </div>
   </div>
 </section>
+<!-- APP -->
+<section id="app" class="fu">
+  <div style="max-width:880px;margin:0 auto">
+    <div class="apphead">
+      <div class="seye">Live demo</div>
+      <h2>Try <span>PARAMANT.</span></h2>
+    </div>
 
-<!-- SECURITY FEATURES -->
-<section class="py-20 px-5 bg-slate-900 border-t border-slate-800">
-  <div class="max-w-5xl mx-auto text-center">
-    <div class="inline-block px-4 py-1.5 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-sm font-medium mono mb-4">De beveiliging</div>
-    <h2 class="text-3xl font-bold text-white mb-4 tracking-tight">Zes lagen bescherming</h2>
-    <p class="text-slate-400 mb-12 max-w-xl mx-auto">U hoeft dit niet te begrijpen. Maar het is er. Allemaal.</p>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-left">
-      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
-        <div class="text-3xl mb-3">⚛️</div>
-        <div class="text-white font-semibold mb-1.5">Quantum-bestendig</div>
-        <div class="text-slate-400 text-sm leading-relaxed">ML-KEM-768 + ECDH P-256. Beschermt ook als kwantumcomputers ooit beschikbaar worden.</div>
-        <div class="mt-3 mono text-xs text-teal-600">NIST FIPS 203</div>
+    <!-- PEER DEMO INSTRUCTIONS -->
+    <div style="background:var(--sf);border:1px solid var(--bd2);border-radius:5px;padding:18px 20px;margin-bottom:16px">
+      <div style="font-family:var(--ffm);font-size:8px;letter-spacing:4px;color:var(--qb);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bd)">
+        📡 HOW TO DEMO WITH A PEER — OPEN TWO TABS OR TWO DEVICES
       </div>
-      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
-        <div class="text-3xl mb-3">🔑</div>
-        <div class="text-white font-semibold mb-1.5">Elke bericht eigen sleutel</div>
-        <div class="text-slate-400 text-sm leading-relaxed">AES-256-GCM ratchet. Oude berichten blijven veilig zelfs als iets later uitlekt.</div>
-        <div class="mt-3 mono text-xs text-teal-600">Forward secrecy</div>
+      <div class="peer-steps" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--bd)">
+        <div style="background:var(--sf2);padding:14px 12px">
+          <div style="font-family:var(--ffc);font-size:24px;font-weight:900;color:var(--bd);margin-bottom:6px">01</div>
+          <div style="font-size:11px;font-weight:700;color:var(--tx);margin-bottom:5px">Beide openen</div>
+          <div style="font-family:var(--ffm);font-size:9px;color:var(--mu);line-height:1.7">
+            Jij én je peer openen<br>
+            <span style="color:var(--qb)">paramant.vercel.app</span><br>
+            Werkt ook op mobiel
+          </div>
+        </div>
+        <div style="background:var(--sf2);padding:14px 12px">
+          <div style="font-family:var(--ffc);font-size:24px;font-weight:900;color:var(--bd);margin-bottom:6px">02</div>
+          <div style="font-size:11px;font-weight:700;color:var(--tx);margin-bottom:5px">Sleutels uitwisselen</div>
+          <div style="font-family:var(--ffm);font-size:9px;color:var(--mu);line-height:1.7">
+            Klik <span style="color:var(--li)">📋 Kopieer</span> of<br>
+            <span style="color:var(--li)">📷 QR</span> om je sleutel<br>
+            te delen. Peer doet hetzelfde.
+          </div>
+        </div>
+        <div style="background:var(--sf2);padding:14px 12px">
+          <div style="font-family:var(--ffc);font-size:24px;font-weight:900;color:var(--bd);margin-bottom:6px">03</div>
+          <div style="font-size:11px;font-weight:700;color:var(--tx);margin-bottom:5px">Verbind</div>
+          <div style="font-family:var(--ffm);font-size:9px;color:var(--mu);line-height:1.7">
+            Plak de sleutel van je<br>
+            peer → klik <span style="color:var(--qb)">⚡ Verbind</span><br>
+            Beide kanten doen dit.
+          </div>
+        </div>
+        <div style="background:var(--sf2);padding:14px 12px">
+          <div style="font-family:var(--ffc);font-size:24px;font-weight:900;color:var(--bd);margin-bottom:6px">04</div>
+          <div style="font-size:11px;font-weight:700;color:var(--tx);margin-bottom:5px">Versleutel &amp; stuur</div>
+          <div style="font-family:var(--ffm);font-size:9px;color:var(--mu);line-height:1.7">
+            Typ tekst → <span style="color:var(--ok)">→</span> versleutelt.<br>
+            Kopieer het JSON pakket<br>
+            → stuur via chat/mail.
+          </div>
+        </div>
       </div>
-      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
-        <div class="text-3xl mb-3">🔄</div>
-        <div class="text-white font-semibold mb-1.5">Zelf-herstellend</div>
-        <div class="text-slate-400 text-sm leading-relaxed">Elke 8 berichten een nieuwe kwantumsleutel. Een aanval op één bericht raakt nooit de rest.</div>
-        <div class="mt-3 mono text-xs text-teal-600">KEM-injectie</div>
+      <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap">
+        <div style="font-family:var(--ffm);font-size:9px;color:var(--mu)">
+          <span style="color:var(--ok)">✓</span> Geen account · geen server · werkt offline
+        </div>
+        <div style="font-family:var(--ffm);font-size:9px;color:var(--mu)">
+          <span style="color:var(--ok)">✓</span> Kopieer de sleutel via WhatsApp, e-mail of QR-scan
+        </div>
+        <div style="font-family:var(--ffm);font-size:9px;color:var(--mu)">
+          <span style="color:var(--ok)">✓</span> Versleuteld JSON pakket stuur je daarna via elk kanaal
+        </div>
       </div>
-      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
-        <div class="text-3xl mb-3">🛡️</div>
-        <div class="text-white font-semibold mb-1.5">Geen herhaling mogelijk</div>
-        <div class="text-slate-400 text-sm leading-relaxed">Elk bericht heeft een uniek nonce. Hetzelfde pakket twee keer? Geblokkeerd.</div>
-        <div class="mt-3 mono text-xs text-teal-600">Replay-bescherming</div>
+    </div>
+    <div id="qbanner">
+      <div class="qbd" id="qbdot"></div>
+      <span id="qbtxt">QUANTUM HYBRID ACTIEF — ML-KEM-768 + ECDH P-256 + AES-256-GCM</span>
+    </div>
+    <div class="qmbtns">
+      <button class="mb active" id="qmon" onclick="setQMode(true)">⚛ Quantum Hybrid</button>
+      <button class="mb" id="qmoff" onclick="setQMode(false)">🔒 Classic (ECDH)</button>
+      <span style="font-family:var(--ffm);font-size:8px;color:var(--mu);margin-left:4px" id="qdiff">Pakket +~1.2KB voor ML-KEM ciphertext</span>
+    </div>
+    <div class="steps">
+      <div class="step active" id="step1"><span class="sn">1</span>KEY EXCHANGE</div>
+      <div class="step" id="step2"><span class="sn">2</span>RATCHET</div>
+      <div class="step" id="step3"><span class="sn">3</span>AES-GCM</div>
+      <div class="step" id="step4"><span class="sn">4</span>AUDIT</div>
+    </div>
+    <!-- ECDH card -->
+    <div class="card" id="cecdh">
+      <div class="chd">
+        🔑 <span id="kxlbl">quantum hybrid — ml-kem-768 + ecdh p-256</span>
+        <span id="cpill"><span class="pill pno">NIET VERBONDEN</span></span>
       </div>
-      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
-        <div class="text-3xl mb-3">🔢</div>
-        <div class="text-white font-semibold mb-1.5">Verifieer de verbinding</div>
-        <div class="text-slate-400 text-sm leading-relaxed">Bel je vriend en vergelijk veiligheidsnummers. Gelijk? Niemand luistert mee.</div>
-        <div class="mt-3 mono text-xs text-teal-600">Safety numbers</div>
+      <div class="two">
+        <div>
+          <label>MIJN PUBLIEKE SLEUTEL(S)</label>
+          <div class="kd" id="mypk" style="font-size:7px">Genereren…</div>
+          <div style="margin-top:7px;display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn sm primary" onclick="copyMyKey()">📋 Kopieer</button>
+            <button class="btn sm" onclick="toggleQR()" id="qrbtn">📷 QR</button>
+            <button class="btn sm" onclick="regenKey()">↺ Nieuw</button>
+            <button class="btn sm" onclick="downloadPage()">⬇ Download</button>
+          </div>
+          <div id="qrw"><div style="font-family:var(--ffm);font-size:7px;letter-spacing:2px;color:var(--mu);margin:7px 0 4px">QR — PUBLIEKE SLEUTEL</div><div id="qrb"></div></div>
+        </div>
+        <div>
+          <label>PUBLIEKE SLEUTEL(S) ANDERE PARTIJ</label>
+          <textarea id="theirk" rows="5" placeholder="JSON bundle (quantum) of 130-char hex (classic)…"></textarea>
+          <div style="margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <button class="btn primary" id="cbtn" onclick="connectKeys()">⚡ Verbind</button>
+            <span id="cstat" style="font-family:var(--ffm);font-size:9px;color:var(--mu)"></span>
+          </div>
+        </div>
       </div>
-      <div class="bg-slate-800/40 border border-slate-700 rounded-2xl p-5 hover:border-teal-500/30 transition-all">
-        <div class="text-3xl mb-3">🌊</div>
-        <div class="text-white font-semibold mb-1.5">Wiskundig uniek avatar</div>
-        <div class="text-slate-400 text-sm leading-relaxed">Jouw fractal-avatar én naam worden afgeleid van je sleutel via SHA-256. Altijd hetzelfde voor dezelfde sleutel.</div>
-        <div class="mt-3 mono text-xs text-teal-600">SHA-256(pubKey)</div>
+      <div id="snwrap" style="display:none;margin-top:12px">
+        <div style="font-family:var(--ffm);font-size:7px;letter-spacing:3px;color:var(--am);margin-bottom:5px">⚠ SAFETY NUMBERS — VERIFIEER PER TELEFOON OF IN PERSOON</div>
+        <div id="snums"></div>
+        <div style="font-family:var(--ffm);font-size:8px;color:var(--mu);margin-top:4px">Zelfde bij beiden = <strong style="color:var(--ok)">geen MITM</strong> · Gebaseerd op HKDF(masterKey) incl. ML-KEM component</div>
       </div>
+      <div id="dinfo" style="display:none;margin-top:9px">
+        <div class="three" style="background:#060a10;border:1px solid var(--bd);border-radius:3px;padding:9px">
+          <div><div style="font-family:var(--ffm);font-size:6px;letter-spacing:2px;color:var(--mu);margin-bottom:2px">MASTER KEY</div><div style="font-family:var(--ffm);font-size:8px;color:var(--ok);word-break:break-all" id="ckprev">—</div></div>
+          <div><div style="font-family:var(--ffm);font-size:6px;letter-spacing:2px;color:var(--mu);margin-bottom:2px">KEY EXCHANGE TYPE</div><div style="font-family:var(--ffm);font-size:8px;word-break:break-all" id="kxtd">—</div></div>
+          <div><div style="font-family:var(--ffm);font-size:6px;letter-spacing:2px;color:var(--mu);margin-bottom:2px">FRACTAAL (VISUEEL)</div><canvas id="afc" width="180" height="65" style="width:100%;border-radius:2px"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <!-- Ratchet card -->
+    <div class="card" id="cratchet" style="opacity:.4;pointer-events:none">
+      <div class="chd">⛓ pq symmetric ratchet — kem-injected per 10 berichten (forward + post-compromise)<span style="font-family:var(--ffm);font-size:8px;color:var(--qb)">ronde #<span id="rnum">0</span></span></div>
+      <div class="three">
+        <div class="rc" style="min-width:0"><div class="rl">CHAIN KEY</div><div class="rv" id="ckd">—</div><div style="font-family:var(--ffm);font-size:6px;color:var(--dm);margin-top:2px">CK[n+1] = HKDF(CK[n],"chain")</div></div>
+        <div class="rc" style="min-width:0"><div class="rl">MSG KEY → AES-GCM</div><div class="rv" id="mkd">—</div><div style="font-family:var(--ffm);font-size:6px;color:var(--dm);margin-top:2px">MK gewist na gebruik</div></div>
+        <div class="rc" style="min-width:0"><div class="rl">RATCHET FLOW</div><div style="font-family:var(--ffm);font-size:9px;color:var(--mu);line-height:1.9;margin-top:2px">CK₀→<span style="color:var(--qb)">MK₀</span>→CK₁→…<br><span style="color:var(--ok)">Forward:</span> MK gewist<br><span style="color:var(--am)">Post-comp:</span> CK one-way</div></div>
+      </div>
+    </div>
+    <!-- Cipher card -->
+    <div class="card" id="ccipher" style="opacity:.4;pointer-events:none">
+      <div class="chd">🔒 aes-256-gcm + pkcs7 padding (32-byte blocks)</div>
+      <div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+        <button class="mb active" id="benc" onclick="setMode('enc')">🔒 Versleutelen</button>
+        <button class="mb" id="bdec" onclick="setMode('dec')">🔓 Ontsleutelen</button>
+        <div style="flex:1"></div>
+        <span id="rkinfo" style="font-family:var(--ffm);font-size:8px;color:var(--mu)">—</span>
+      </div>
+      <div class="iog">
+        <div><div class="iolbl" id="ilbl">▸ PLAINTEXT</div><textarea id="itxt" rows="4" placeholder="Voer tekst in…"></textarea><div style="font-family:var(--ffm);font-size:8px;color:var(--mu);margin-top:2px" id="icnt">0</div></div>
+        <div class="rcol"><button class="rbtn" id="rbtn" disabled onclick="runCipher()">→</button></div>
+        <div>
+          <div style="overflow:hidden"><button class="cpbtn" id="cpout" style="display:none" onclick="copyOut()">KOPIEER</button><div class="iolbl" id="olbl">▸ AES-GCM PAKKET</div></div>
+          <textarea id="otxt" rows="4" readonly placeholder="Resultaat…" style="color:#33ff77;font-size:10px"></textarea>
+          <div style="font-family:var(--ffm);font-size:8px;color:var(--mu);margin-top:2px" id="ocnt"></div>
+        </div>
+      </div>
+      <div class="em" id="em"></div>
+    </div>
+    <!-- Audit card -->
+    <div class="card">
+      <div class="chd">📊 live audit</div>
+      <div class="ri">
+        <div class="rc"><div class="rl">KEY EXCHANGE</div><div class="rv" id="stkx">—</div></div>
+        <div class="rc"><div class="rl">ALGORITME</div><div class="rv">AES-256-GCM</div></div>
+        <div class="rc"><div class="rl">RATCHET</div><div class="rv" id="strd">#0</div></div>
+        <div class="rc"><div class="rl">GCM TAGS OK</div><div class="rv" id="sttg">0</div></div>
+        <div class="rc"><div class="rl">KEM RATCHETS</div><div class="rv" id="stkr" style="color:var(--qb)">0 (elke 10 msgs)</div></div>
+        <div class="rc"><div class="rl">REPLAYS</div><div class="rv" id="strp">0</div></div>
+        <div class="rc"><div class="rl">NONCES (IDB)</div><div class="rv" id="stnc">0</div></div>
+      </div>
+      <div style="margin-top:8px"><div style="font-family:var(--ffm);font-size:7px;letter-spacing:3px;color:var(--mu);margin-bottom:4px">NONCE LOG (INDEXEDDB — PERSISTENT)</div><div id="nl">Geen berichten.</div></div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<section class="py-24 px-5 text-center relative overflow-hidden">
-  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-teal-900/8 to-transparent pointer-events-none"></div>
-  <div class="relative z-10 max-w-xl mx-auto">
-    <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-5 tracking-tight">Klaar voor echte privacy?</h2>
-    <p class="text-slate-400 text-lg mb-8">Geen download. Geen registratie. Klik en je bent beveiligd.</p>
-    <button onclick="openApp()" class="w-full sm:w-auto px-10 py-5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-xl rounded-2xl transition-all hover:shadow-2xl hover:shadow-teal-500/25 active:scale-95">
-      🔐 Nu veilig appen — gratis
-    </button>
-    <div class="mt-6 mono text-xs text-slate-600 tracking-widest">POST-QUANTUM · GEEN ACCOUNT · GEEN SERVER · GEEN COMPROMIS</div>
-  </div>
-</section>
-
-<footer class="py-8 px-6 bg-slate-900 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
-  <div class="font-bold text-white text-lg tracking-tight">PARAMANT</div>
-  <div class="flex gap-5 text-sm text-slate-500">
-    <a href="#hoe" class="hover:text-teal-400 transition-colors">Hoe werkt het?</a>
-    <a href="#vergelijk" class="hover:text-teal-400 transition-colors">Vergelijking</a>
-    <a href="#ledger" class="hover:text-teal-400 transition-colors">Ledger</a>
-    <a href="javascript:openApp()" class="hover:text-teal-400 transition-colors">Open app</a>
-  </div>
-  <div class="mono text-xs text-slate-600">ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</div>
+<footer>
+  <div class="fb">PARAMANT</div>
+  <div class="fl"><a href="#quantum">Protocol</a></div>
+  <div class="fn">ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</div>
 </footer>
-
-</div><!-- /landing -->
-
-
-<!-- ════════════════════════════ APP ════════════════════════════ -->
-<div id="app">
-
-  <!-- Top bar -->
-  <div class="flex items-center gap-3 px-4 h-14 bg-slate-900 border-b border-slate-800 flex-shrink-0">
-    <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400">☰</button>
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 rounded-lg overflow-hidden border border-teal-500/40"><canvas id="app-logo-cv" width="28" height="28"></canvas></div>
-      <span class="font-bold text-white text-sm tracking-tight">PARAMANT</span>
-    </div>
-    <div class="flex-1"></div>
-    <!-- Relay toggle -->
-    <button onclick="toggleRelay()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs mono text-slate-400 transition-all">
-      <div id="rl-dot" class="w-2 h-2 rounded-full bg-slate-600 flex-shrink-0 transition-all"></div>
-      <span id="rl-lbl">Offline</span>
-    </button>
-    <div class="hidden md:flex items-center gap-1.5 mono text-xs text-slate-500">
-      <span>📡</span><span id="counter">—</span>
-    </div>
-    <button onclick="toggleLedger()" id="ledger-btn" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs text-slate-400 transition-all">
-      📊 Ledger
-    </button>
-    <button onclick="closeApp()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-400 hover:text-white transition-all">← Site</button>
-  </div>
-
-  <!-- App body -->
-  <div id="app-body" class="flex flex-1 overflow-hidden min-h-0">
-
-    <!-- Mobile overlay -->
-    <div id="mob-ov" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden" onclick="closeSidebar()"></div>
-
-    <!-- Sidebar -->
-    <div id="sidebar-panel" class="fixed md:relative inset-y-0 left-0 z-50 md:z-auto w-80 flex flex-col bg-slate-900 border-r border-slate-800 -translate-x-full md:translate-x-0 transition-transform duration-250 overflow-hidden">
-
-      <!-- Identity card -->
-      <div class="p-4 border-b border-slate-800 flex-shrink-0">
-        <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4">
-          <!-- Avatar + naam -->
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-14 h-14 rounded-full border-2 border-teal-500/60 overflow-hidden flex-shrink-0 shadow-lg shadow-teal-500/10">
-              <canvas id="my-avatar" width="56" height="56"></canvas>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div id="my-nick" class="font-bold text-white mono text-base truncate">…</div>
-              <div class="text-xs text-slate-500 mt-0.5">Jouw naam (uit jouw sleutel)</div>
-              <span id="pq-badge" class="hidden mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 bg-teal-500/15 border border-teal-500/25 rounded-full text-teal-400 text-xs">⚛ Quantum-proof</span>
-            </div>
-          </div>
-
-          <!-- Adres — leesbaar, volledig zichtbaar -->
-          <div class="mb-3">
-            <div class="flex items-center justify-between mb-1.5">
-              <div class="mono text-xs text-slate-400 tracking-widest uppercase font-semibold">Jouw adres</div>
-              <div class="text-xs text-slate-500">deel dit met je vriend</div>
-            </div>
-            <!-- Adres box: hoogte vergroot, scrollbaar, leesbaar -->
-            <div id="my-key-prev"
-              class="mono text-xs text-teal-300 leading-relaxed break-all bg-slate-950 rounded-xl p-3 border border-teal-500/20 overflow-y-auto"
-              style="max-height:80px;word-break:break-all;font-size:10px;line-height:1.7">
-              Genereren…
-            </div>
-          </div>
-
-          <!-- Knoppen -->
-          <div class="grid grid-cols-2 gap-2 mb-2">
-            <button id="copy-key-btn" onclick="copyMyKey()"
-              class="py-3 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm rounded-xl transition-all active:scale-95">
-              📋 Kopieer adres
-            </button>
-            <button onclick="toggleQR()"
-              class="py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 text-sm rounded-xl transition-all">
-              📷 QR-code
-            </button>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="regenIdentity()"
-              class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-500 hover:text-slate-300">
-              ↺ Nieuw adres
-            </button>
-            <button onclick="dlPage()"
-              class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-500 hover:text-slate-300">
-              ⬇ Download app
-            </button>
-          </div>
-
-          <!-- QR Panel -->
-          <div id="qr-panel" class="hidden mt-3 text-center">
-            <div id="qr-box" class="inline-block bg-white p-2 rounded-xl"></div>
-            <div class="text-xs text-slate-500 mt-2">Laat je vriend dit scannen</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Conversations -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 flex-shrink-0">
-        <div class="mono text-xs font-semibold text-slate-500 tracking-widest uppercase">Gesprekken</div>
-        <button id="new-btn" onclick="showConnect()" class="w-7 h-7 flex items-center justify-center bg-teal-500 hover:bg-teal-400 rounded-lg text-slate-900 font-bold text-xl transition-all">+</button>
-      </div>
-      <div id="conv-list" class="flex-1 overflow-y-auto py-2 px-2">
-        <div id="empty-hint" class="text-center py-8 text-slate-500 text-sm leading-loose mono">
-          Klik <strong class="text-slate-300">+</strong> om te verbinden
-        </div>
-      </div>
-    </div>
-
-    <!-- Main area -->
-    <div id="main" class="flex-1 flex flex-col overflow-hidden">
-
-      <!-- Welcome -->
-      <div id="welcome" class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
-        <button onclick="openSidebar()" class="md:hidden absolute top-16 left-4 w-9 h-9 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 text-lg">☰</button>
-        <div class="w-20 h-20 rounded-2xl border border-teal-500/40 overflow-hidden mb-6 shadow-lg shadow-teal-500/10 mx-auto">
-          <canvas id="wl-cv" width="80" height="80"></canvas>
-        </div>
-        <h2 class="text-2xl font-bold text-white mb-3">Welkom bij PARAMANT</h2>
-        <p class="text-slate-400 max-w-xs mb-8 leading-relaxed text-sm">Kopieer jouw adres links en stuur het naar je vriend. Daarna klik je op <strong class="text-white">+</strong> om te verbinden.</p>
-        <div class="w-full max-w-sm space-y-2.5 mb-8">
-          <div class="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl p-3 text-left">
-            <div class="w-8 h-8 rounded-lg bg-teal-500/20 border border-teal-500/25 flex items-center justify-center text-teal-400 font-bold text-sm flex-shrink-0">1</div>
-            <div><div class="text-white font-medium text-sm">Kopieer jouw adres</div><div class="text-slate-500 text-xs">Gebruik de 📋 knop links</div></div>
-          </div>
-          <div class="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl p-3 text-left">
-            <div class="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-sm flex-shrink-0">2</div>
-            <div><div class="text-white font-medium text-sm">Stuur het aan je vriend</div><div class="text-slate-500 text-xs">Via WhatsApp, mail of QR-code</div></div>
-          </div>
-          <div class="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl p-3 text-left">
-            <div class="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-sm flex-shrink-0">3</div>
-            <div><div class="text-white font-medium text-sm">Verbind via + knop</div><div class="text-slate-500 text-xs">Plak het adres van je vriend</div></div>
-          </div>
-        </div>
-        <button onclick="showConnect()" class="px-8 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-base rounded-2xl transition-all hover:shadow-xl hover:shadow-teal-500/20 active:scale-95">🤝 Nieuw gesprek starten</button>
-      </div>
-
-      <!-- Connect screen -->
-      <div id="conn-scr" style="display:none" class="flex-1 flex items-center justify-center px-4 py-6">
-        <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-6 relative">
-          <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-teal-500 to-transparent rounded-t-2xl"></div>
-          <!-- Step indicator -->
-          <div class="flex items-center gap-2 mb-6">
-            <div class="step-done w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold">✓</div>
-            <div class="flex-1 h-0.5 bg-teal-500"></div>
-            <div class="step-curr w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold">2</div>
-            <div class="flex-1 h-0.5 bg-slate-700"></div>
-            <div class="step-next w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold">3</div>
-          </div>
-          <h2 class="text-xl font-bold text-white mb-1">Verbind met je vriend</h2>
-          <p class="text-slate-400 text-sm mb-5 leading-relaxed">Plak het adres van je vriend. Geef hem ook jouw adres zodat hij hetzelfde kan doen.</p>
-          <div class="space-y-4">
-            <div>
-              <label class="mono text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 block">Naam (optioneel)</label>
-              <input id="peer-name" type="text" maxlength="30" placeholder="bijv. Karin, Papa, Collega Jan…"
-                class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 text-white rounded-xl px-4 py-3 text-base outline-none transition-colors placeholder-slate-600">
-            </div>
-            <div>
-              <label class="mono text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 block">Adres van je vriend</label>
-              <textarea id="peer-key" rows="4" placeholder="Plak hier het adres van je vriend…"
-                class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 text-teal-300 mono rounded-xl px-4 py-3 text-xs outline-none resize-none transition-colors placeholder-slate-600 placeholder:font-sans placeholder:text-sm leading-relaxed"></textarea>
-            </div>
-          </div>
-          <div id="conn-err" style="display:none" class="mt-3 px-4 py-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 text-sm mono"></div>
-          <div class="flex gap-3 mt-5">
-            <button id="conn-btn" onclick="doConnect()" class="flex-1 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-base rounded-xl transition-all active:scale-95">⚡ Verbinden</button>
-            <button onclick="cancelConnect()" class="px-5 py-4 bg-slate-700 border border-slate-600 text-slate-300 font-medium rounded-xl transition-all hover:bg-slate-600">← Terug</button>
-          </div>
-          <div class="mt-4 p-3 bg-teal-500/5 border border-teal-500/15 rounded-xl flex items-start gap-2">
-            <span class="text-teal-400 flex-shrink-0">🔒</span>
-            <p class="text-teal-400/80 text-xs leading-relaxed">Verbinding is eind-tot-eind versleuteld. Niemand kan meelezen — ook wij niet.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chat header -->
-      <div id="chat-head" style="display:none" class="items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-800 flex-shrink-0">
-        <button onclick="openSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-lg text-slate-400">☰</button>
-        <div id="ch-av" class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 border-2 border-teal-500/40 flex items-center justify-center font-bold text-teal-400"></div>
-        <div class="flex-1 min-w-0">
-          <div id="ch-nm" class="font-bold text-white text-base truncate">—</div>
-          <div id="ch-st" class="text-xs text-teal-400 mono mt-0.5">Verbonden · quantum-veilig 🔒</div>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <button onclick="showSN()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-lg text-xs text-slate-400 mono transition-all">🔢 Verifieer</button>
-          <button id="destruct-btn" onclick="cycleDestruct()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-orange-500/30 rounded-lg text-xs text-slate-400 mono transition-all">⏱ Auto-wis</button>
-          <button onclick="exportConv()" class="hidden sm:block px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-400 mono transition-all hover:border-slate-600">⬇ Export</button>
-          <button onclick="endConv()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-red-500/30 rounded-lg text-xs text-slate-400 mono transition-all">✕</button>
-        </div>
-      </div>
-
-      <!-- Audit bar (subtle, not scary) -->
-      <div id="audit-bar" style="display:none" class="px-4 py-2 bg-slate-950/80 border-b border-slate-800 flex-shrink-0">
-        <div class="flex items-center gap-3 mono text-xs text-slate-600 flex-wrap">
-          <span>🛡️ <b id="au-kx" class="text-slate-500">—</b></span>
-          <span>Ronde <b id="au-rnd" class="text-slate-500">#0</b></span>
-          <span>✓ <b id="au-tags" class="text-teal-700">0</b></span>
-          <span id="au-kem-wrap" class="hidden">⚛ <b id="au-kem" class="text-teal-700">0</b> KEM</span>
-          <span id="au-rep-wrap" class="hidden text-red-600">🚫 <b id="au-rep">0</b></span>
-          <span id="au-cid-wrap" class="hidden">ID: <b id="au-cid" class="text-slate-600">—</b></span>
-        </div>
-      </div>
-
-      <!-- Messages -->
-      <div id="chat-wrap" style="display:none" class="flex-1 flex-col overflow-hidden relative">
-        <div id="msgs" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
-        <!-- Paste overlay -->
-        <div id="paste-ov" style="display:none" class="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 p-4 shadow-2xl">
-          <div class="text-sm font-semibold text-white mb-3">📥 Ontvangen bericht — plak het hier:</div>
-          <textarea id="paste-ta" rows="4" placeholder="Plak hier het versleutelde pakket dat je hebt ontvangen (het lange stuk tekst)…"
-            class="w-full bg-slate-800 border border-slate-600 focus:border-teal-500 text-teal-300 mono rounded-xl px-4 py-3 text-xs outline-none resize-none placeholder-slate-600 placeholder:font-sans placeholder:text-sm leading-relaxed"></textarea>
-          <div class="flex items-center gap-3 mt-3 flex-wrap">
-            <button onclick="doDecrypt()" class="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold rounded-xl transition-all active:scale-95">🔓 Lezen</button>
-            <button onclick="hidePaste()" class="px-4 py-3 bg-slate-700 border border-slate-600 text-slate-300 rounded-xl transition-all">Annuleer</button>
-            <span id="paste-err" class="text-red-400 text-sm mono flex-1"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Input row -->
-      <div id="input-row" style="display:none" class="items-end gap-2 px-3 py-3 bg-slate-900 border-t border-slate-800 flex-shrink-0">
-        <input type="file" id="file-inp" multiple style="display:none" onchange="handleFiles(this)">
-        <button onclick="document.getElementById('file-inp').click()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all" title="Bestand">📎</button>
-        <button id="voice-btn" onclick="toggleVoice()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all" title="Inspreken">🎤</button>
-        <button onclick="togglePaste()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all" title="Ontvangen pakket plakken">📥</button>
-        <textarea id="msg-inp" rows="1" placeholder="Typ een bericht…"
-          class="flex-1 bg-slate-800 border border-slate-700 focus:border-teal-500 text-white rounded-xl px-4 py-3 text-base outline-none resize-none max-h-32 leading-normal transition-colors placeholder-slate-600"
-          oninput="autoResize(this)"></textarea>
-        <button onclick="doEncrypt()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-teal-500 hover:bg-teal-400 rounded-xl text-slate-900 text-xl font-bold transition-all active:scale-95">➤</button>
-      </div>
-    </div>
-
-    <!-- Ledger column -->
-    <div id="ledger-col" class="hidden w-56 flex-shrink-0 bg-slate-950 border-l border-slate-800 flex-col overflow-hidden">
-      <div class="p-4 border-b border-slate-800 flex-shrink-0">
-        <div class="mono text-xs text-teal-400 tracking-widest mb-1">PUBLIEK LEDGER</div>
-        <div class="text-xs text-slate-500 leading-relaxed mb-3">Hash + grootte + tijd.<br>Niemand leest de inhoud.</div>
-        <div class="flex gap-2">
-          <div class="flex-1 bg-slate-800 border border-slate-700 rounded-lg p-2 text-center">
-            <div id="ls-msgs" class="mono font-bold text-teal-400 text-sm">—</div>
-            <div class="text-slate-500 text-xs">pakketten</div>
-          </div>
-          <div class="flex-1 bg-slate-800 border border-slate-700 rounded-lg p-2 text-center">
-            <div id="ls-chats" class="mono font-bold text-teal-400 text-sm">—</div>
-            <div class="text-slate-500 text-xs">chats</div>
-          </div>
-        </div>
-      </div>
-      <div id="ledger-entries" class="flex-1 overflow-y-auto p-2">
-        <div class="text-center py-8 text-slate-600 mono text-xs leading-loose">📡 Verbind relay<br>voor live data</div>
-      </div>
-    </div>
-
-  </div><!-- /app-body -->
-</div><!-- /app -->
-
-<!-- Safety numbers modal -->
-<div id="sn-modal" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
-  <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm relative">
-    <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-teal-500 to-transparent rounded-t-2xl"></div>
-    <h3 class="text-lg font-bold text-white mb-2">🔢 Veiligheidsnummers</h3>
-    <p class="text-slate-400 text-sm mb-4 leading-relaxed">Bel je vriend en vergelijk deze nummers hardop. Zijn ze hetzelfde? Dan is niemand aan het meelezen.</p>
-    <div id="sn-grid" class="grid grid-cols-4 gap-2 mb-4"></div>
-    <div class="p-3 bg-teal-500/8 border border-teal-500/18 rounded-xl mb-4">
-      <p class="text-teal-400 text-xs leading-relaxed">✅ Zelfde nummers = veilige verbinding<br>❌ Andere nummers = verbreek de verbinding</p>
-    </div>
-    <button onclick="hideSN()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white font-semibold rounded-xl transition-all">Sluiten</button>
-  </div>
-</div>
-
 <script>
 'use strict';
-// ─── Helpers ────────────────────────────────────────────────────────
+const track=(n,p={})=>window.plausible&&window.plausible(n,{props:p});
+// cursor
+const cr=document.getElementById('cr'),cr2=document.getElementById('cr2');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cr.style.left=mx+'px';cr.style.top=my+'px';});
+(function ar(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;cr2.style.left=rx+'px';cr2.style.top=ry+'px';requestAnimationFrame(ar);})();
+document.querySelectorAll('a,button,.btn,.mb,.wls,.hb,.qtoggle').forEach(el=>{el.addEventListener('mouseenter',()=>cr.style.transform='translate(-50%,-50%) scale(2.5)');el.addEventListener('mouseleave',()=>cr.style.transform='translate(-50%,-50%) scale(1)');});
+// scroll fade
+const ob=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('v');}),{threshold:.06});
+document.querySelectorAll('.fu').forEach(el=>ob.observe(el));
+// hero canvas
+(function(){const cv=document.getElementById('hcv');if(!cv)return;const ctx=cv.getContext('2d');const pts=[[-0.7269,0.1889],[-0.4,0.6],[-0.12,0.74],[-1.7548,0.0001],[-0.8,0.156]];let wi=0,wt=0;function lr(a,b,t){return a+(b-a)*t;}function draw(){wt+=0.003;if(wt>=1){wt=0;wi=(wi+1)%pts.length;}const c=pts[wi],n=pts[(wi+1)%pts.length];const tx=lr(c[0],n[0],wt),ty=lr(c[1],n[1],wt);const W=cv.width,H=cv.height,sc=3,mx2=60;const img=ctx.createImageData(W,H);for(let py=0;py<H;py+=2){for(let px=0;px<W;px++){const re=tx+(px/W-.5)*sc,im=ty+(py/H-.5)*sc;let zx=0,zy=0,it=0;while(zx*zx+zy*zy<4&&it<mx2){const x2=zx*zx,y2=zy*zy;zy=2*zx*zy+im;zx=x2-y2+re;it++;}const i=(py*W+px)*4,i2=((py+1)*W+px)*4;if(it===mx2){img.data[i]=4;img.data[i+1]=7;img.data[i+2]=16;img.data[i+3]=255;img.data[i2]=4;img.data[i2+1]=7;img.data[i2+2]=16;img.data[i2+3]=255;}else{const t=it/mx2;const r=Math.floor(t*5),g=Math.floor(t*110*(1-t*.4)),b=Math.floor(15+t*220*(1-t*.3));img.data[i]=r;img.data[i+1]=g;img.data[i+2]=b;img.data[i+3]=255;img.data[i2]=r;img.data[i2+1]=g;img.data[i2+2]=b;img.data[i2+3]=255;}}}ctx.putImageData(img,0,0);ctx.strokeStyle='rgba(0,102,255,.4)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(W/2,H/2,5,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(W/2-12,H/2);ctx.lineTo(W/2+12,H/2);ctx.moveTo(W/2,H/2-12);ctx.lineTo(W/2,H/2+12);ctx.stroke();const el=document.getElementById('hc');if(el)el.textContent=`c = ${tx.toFixed(4)} + ${ty.toFixed(4)}i`;requestAnimationFrame(draw);}draw();})();
+// quantum mode
+let quantumMode=true;
+function toggleQMode(){setQMode(!quantumMode);}
+function setQMode(on){
+  quantumMode=on;
+  document.getElementById('tt').className='tt'+(on?' on':'');
+  document.getElementById('tlbl').textContent=on?'QUANTUM HYBRID (ML-KEM-768 + ECDH P-256)':'CLASSIC (ECDH P-256 ONLY)';
+  document.getElementById('tlbl').className='qv'+(on?'':' cl');
+  document.getElementById('hqb').innerHTML=on?'<span style="color:var(--qb)">● QUANTUM HYBRID</span>ML-KEM-768':'<span style="color:var(--am)">● CLASSIC MODE</span>ECDH ONLY';
+  document.getElementById('qmon').className='mb'+(on?' active':'');
+  document.getElementById('qmoff').className='mb'+(!on?' active':'');
+  document.getElementById('kxlbl').textContent=on?'quantum hybrid — ml-kem-768 + ecdh p-256':'classic — ecdh p-256 only';
+  document.getElementById('qdiff').textContent=on?'Pakket +~1.2KB voor ML-KEM ciphertext':'Kleiner pakket, niet quantum-safe';
+  const b=document.getElementById('qbanner'),d=document.getElementById('qbdot');
+  if(on){b.className='';d.className='qbd';document.getElementById('qbtxt').textContent='QUANTUM HYBRID ACTIEF — ML-KEM-768 + ECDH P-256 + AES-256-GCM';}
+  else{b.className='cl';d.className='qbd cl';document.getElementById('qbtxt').textContent='CLASSIC MODE — ECDH P-256 + AES-256-GCM (NIET QUANTUM-SAFE)';}
+  if(chainKey){chainKey=null;msgSeq=0;document.getElementById('cpill').innerHTML='<span class="pill pno">MODUS GEWISSELD — HERVERBIND</span>';}
+}
+// crypto helpers
 const $=id=>document.getElementById(id);
-const b2h=a=>Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');
-const h2b=h=>{h=h.replace(/\s+/g,'');const m=h.match(/.{2}/g);return m?new Uint8Array(m.map(x=>parseInt(x,16))):null;};
+const b2h=a=>Array.from(a).map(b=>b.toString(16).padStart(2,'0')).join('');
+const h2b=h=>{h=h.replace(/\s+/g,'');const a=h.match(/.{2}/g);if(!a)return null;return new Uint8Array(a.map(x=>parseInt(x,16)));};
 const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+async function hkdf(s,i,l=32){const k=await crypto.subtle.importKey('raw',s,'HKDF',false,['deriveBits']);const b=await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt:new Uint8Array(32),info:new TextEncoder().encode(i)},k,l*8);return new Uint8Array(b);}
 
-// ─── CRYPTO ENGINE — volledig intact ────────────────────────────────
-async function hkdf(s,info,l=32){const k=await crypto.subtle.importKey('raw',s,'HKDF',false,['deriveBits']);const b=await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt:new Uint8Array(32),info:new TextEncoder().encode(info)},k,l*8);return new Uint8Array(b);}
-async function sha256(data){return new Uint8Array(await crypto.subtle.digest('SHA-256',data));}
-const KEM_IV=8;
-async function ratchet(ck,kem=null){const mat=kem?new Uint8Array([...ck,...kem]):ck;const nCK=await hkdf(mat,kem?'kem-ratchet':'chain',32);const mk=await hkdf(ck,'msg',32);ck.fill(0);if(kem)kem.fill(0);if(mat!==ck)mat.fill(0);return{nextCK:nCK,msgKey:mk};}
-async function aesEnc(mk,pt,aad){const iv=rnd(12),k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['encrypt']);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:aad},k,pt);mk.fill(0);return{iv,ct:new Uint8Array(ct)};}
-async function aesDec(mk,iv,ct,aad){const k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['decrypt']);try{const pt=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:aad},k,ct));mk.fill(0);return pt;}catch(e){mk.fill(0);throw new Error('Ontsleutelen mislukt — controleer of je het goede pakket hebt geplakt.');}}
-async function safetyNums(m){const h=await sha256(m);return Array.from({length:8},(_,i)=>String(((h[i*4]<<16)|(h[i*4+1]<<8)|h[i*4+2])%100000).padStart(5,'0'));}
-async function chatIdFrom(ck){const h=await hkdf(new Uint8Array(ck),'paramant-chat-id-v1',8);return b2h(h);}
-function pad32(d){const p=32-(d.length%32);const o=new Uint8Array(d.length+p);o.set(d);o.fill(p,d.length);return o;}
-function unpad32(d){const p=d[d.length-1];if(p<1||p>32)throw new Error('Ongeldige padding');for(let i=d.length-p;i<d.length;i++)if(d[i]!==p)throw new Error('Padding corrupt');return d.slice(0,d.length-p);}
-function mlOK(){try{return!!(window.noblePostQuantum?.ml_kem768);}catch(e){return false;}}
-function getML(){return window.noblePostQuantum.ml_kem768;}
-async function kemEncap(pub){if(!mlOK()||!pub)return null;try{const{cipherText,sharedSecret}=getML().encapsulate(h2b(pub));return{ct:b2h(cipherText),ss:sharedSecret};}catch(e){return null;}}
-async function kemDecap(ct,sk){if(!mlOK()||!ct||!sk)return null;try{return getML().decapsulate(h2b(ct),sk);}catch(e){return null;}}
-const NDB=(()=>{let db=null;const q=[];const r=indexedDB.open('paramant-v4',1);r.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('n'))e.target.result.createObjectStore('n',{keyPath:'id'});};r.onsuccess=e=>{db=e.target.result;q.forEach(f=>f(db));q.length=0;};const g=()=>new Promise(res=>{if(db)res(db);else q.push(res);});return{async has(id){const d=await g();return new Promise(r=>{d.transaction('n','readonly').objectStore('n').get(id).onsuccess=e=>r(!!e.target.result);});},async add(id){const d=await g();return new Promise(r=>{const t=d.transaction('n','readwrite');t.objectStore('n').put({id,ts:Date.now()});t.oncomplete=r;});}};})();
+// ═══ PQ RATCHET — KEM-injected every 10 messages ════════════
+// chain[n+1] = HKDF(chain[n] ‖ kem_shared, "kem-ratchet")
+// Beats Signal PQXDH (init only). Matches Apple PQ3 but ~5x more frequent.
+const KEM_RATCHET_INTERVAL=10;
+let pendingKEMPub=null,myRatchetKEM=null,kemRatchetCnt=0;
 
-// ─── FRACTAL AVATAR — 100% hash-derived ─────────────────────────────
-const MB_REGIONS=[[-0.7269,0.1889,0.022],[-0.5252,0.5252,0.016],[0.2850,0.0100,0.038],[-0.7453,0.1127,0.007],[-0.1256,0.6440,0.012],[-1.7548,0.0001,0.009],[-0.8000,0.1560,0.028],[-0.4244,0.3578,0.011],[0.0000,0.6180,0.045],[-0.5890,-0.4250,0.014],[-1.3150,0.0740,0.007],[-0.5980,0.6630,0.006],[0.4295,0.1658,0.019],[-0.7780,0.1340,0.009],[-0.2340,-0.8270,0.013],[-1.4012,0.0000,0.011],[-0.1011,0.9532,0.008],[0.3690,0.6700,0.015],[-0.8650,0.2320,0.010],[-0.6890,-0.2780,0.017]];
-const MB_PAL=[[0,212,180],[0,122,255],[180,0,255],[255,107,53],[34,197,94],[255,200,0],[0,180,255],[200,0,120],[120,200,0],[0,255,200],[255,60,120],[60,120,255],[255,160,0],[0,255,100],[180,60,255]];
-function fractalParams(h){const ri=h[0]%MB_REGIONS.length;const[bx,by,sc]=MB_REGIONS[ri];const offX=((h[1]*256+h[2])/65535-.5)*sc*2.4;const offY=((h[3]*256+h[4])/65535-.5)*sc*2.4;const zoom=sc*(.4+(h[5]/255)*.6);const pal=MB_PAL[h[6]%MB_PAL.length];const maxIt=32+(h[7]%64);return{cx:bx+offX,cy:by+offY,zoom,pal,maxIt};}
-function drawFractal(cv,p){if(!cv||!p)return;const W=cv.width,H=cv.height,c=cv.getContext('2d'),img=c.createImageData(W,H);const{cx,cy,zoom,pal,maxIt}=p;const asp=H/W;const xm=cx-zoom,xM=cx+zoom,ym=cy-zoom*asp,yM=cy+zoom*asp;for(let py=0;py<H;py++)for(let px=0;px<W;px++){const re=xm+(px/W)*(xM-xm),im=ym+(py/H)*(yM-ym);let zx=0,zy=0,it=0;while(zx*zx+zy*zy<4&&it<maxIt){const x2=zx*zx,y2=zy*zy;zy=2*zx*zy+im;zx=x2-y2+re;it++;}const i=(py*W+px)*4;if(it===maxIt){img.data[i]=15;img.data[i+1]=23;img.data[i+2]=42;img.data[i+3]=255;}else{const t=it/maxIt;img.data[i]=Math.round(pal[0]*t);img.data[i+1]=Math.round(pal[1]*t*(1-t*.3));img.data[i+2]=Math.round(pal[2]*t*(1-t*.2));img.data[i+3]=255;}}c.putImageData(img,0,0);}
-
-// Animated logo (not identity-derived — fixed interesting region)
-let hfA=0;
-const LP=(()=>{const h=new Uint8Array(32);h[0]=3;h[5]=128;h[6]=4;h[7]=64;return fractalParams(h);})();
-(function animL(){hfA+=.003;const p={...LP,cx:LP.cx+Math.sin(hfA*.7)*.004,cy:LP.cy+Math.cos(hfA*.5)*.003};['hero-cv','hero-main-cv','app-logo-cv','wl-cv'].forEach(id=>{const cv=$(id);if(cv)drawFractal(cv,p);});requestAnimationFrame(animL);})();
-
-// ─── IDENTITY — SHA-256(pubKey) → avatar + nick ──────────────────
-const NADJ=['Stil','Snel','Slim','Wild','Koud','Vrij','Nacht','Diep','Scherp','Nevel','Vlug','Zwart','Goud','Stout','Zeker','Fel','Grijs','Hoog','Fijn','Raak','Koel','Helder','Ijzer','Sterk','Vast','Blauw','Rood','Flink','Handig','Rustig'];
-const NNOUN=['Vos','Kat','Wolf','Ster','Rots','Golf','Pijl','Haai','Lynx','Uil','Kraai','Maan','Kever','Tijger','Adelaar','Cobra','Arend','Zeehond','Ibis','Zalm','Beer','Das','Raaf','Eland','Slang','Haas','Aap','Krab','Mug','Gier'];
-const NSYM=['_','-','.','!','@','~','#','+'];
-const NPFX=['x','z','k','q','v','h','j','m','r',''];
-function nickFromHash(h){const s=h[16]%5;const adj=NADJ[((h[17]<<8)|h[18])%NADJ.length];const noun=NNOUN[((h[19]<<8)|h[20])%NNOUN.length];const sym=NSYM[h[21]%NSYM.length];const num=String(((h[22]<<8)|h[23])%900+100);const pfx=NPFX[h[24]%NPFX.length];if(s===0)return(adj+sym+noun+num.slice(0,2)).slice(0,15);if(s===1)return(pfx+noun+adj.slice(0,3)+num.slice(0,2)).slice(0,15);if(s===2)return(noun+sym+adj).slice(0,15);if(s===3)return(pfx+noun+num.slice(0,2)).slice(0,15);return(adj.slice(0,4)+noun+num.slice(0,2)).slice(0,15);}
-
-let myNick='',myKP=null,myMLK=null,myBundle='',myIdentityHash=null,myFractalParams=null;
-async function buildIdentity(){
-  myKP=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
-  const rawPub=new Uint8Array(await crypto.subtle.exportKey('raw',myKP.publicKey));
-  myIdentityHash=await sha256(rawPub);
-  myNick=nickFromHash(myIdentityHash);
-  myFractalParams=fractalParams(myIdentityHash);
-  const epub=b2h(rawPub);
-  const bundle={ecdh:epub,nick:myNick};
-  if(mlOK()){try{const ml=getML();myMLK=ml.keygen();bundle.mlkem=b2h(myMLK.publicKey);}catch(e){myMLK=null;}}
-  myBundle=JSON.stringify(bundle);
+async function ratchetStep(ck,kemShared=null){
+  const info=kemShared?'kem-ratchet':'chain';
+  const mat=kemShared?new Uint8Array([...ck,...kemShared]):ck;
+  const nc=await hkdf(mat,info,32);
+  const mk=await hkdf(ck,'msg',32);
+  ck.fill(0);if(kemShared){kemShared.fill(0);if(mat!==ck)mat.fill(0);}
+  return{nextCK:nc,msgKey:mk,wasKEM:!!kemShared};
 }
-async function initIdentity(){
+async function prepKEMRatchetKey(){
+  if(!mlkemOK())return null;
+  try{const ml=getMLKEM();myRatchetKEM=ml.keygen();return b2h(myRatchetKEM.publicKey);}catch(e){return null;}
+}
+async function encapRatchetKEM(theirHex){
+  if(!mlkemOK()||!theirHex)return null;
+  try{const{cipherText,sharedSecret}=getMLKEM().encapsulate(h2b(theirHex));return{ct:b2h(cipherText),ss:sharedSecret};}catch(e){return null;}
+}
+async function decapRatchetKEM(ctHex){
+  if(!mlkemOK()||!myRatchetKEM||!ctHex)return null;
+  try{const ss=getMLKEM().decapsulate(h2b(ctHex),myRatchetKEM.secretKey);myRatchetKEM=null;return ss;}catch(e){return null;}
+}
+
+async function aesEnc(mk,pb,aad){const iv=rnd(12);const k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['encrypt']);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:aad},k,pb);mk.fill(0);return{iv,ciphertext:new Uint8Array(ct)};}
+async function aesDec(mk,iv,cb,aad){const k=await crypto.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['decrypt']);try{const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:aad},k,cb);mk.fill(0);return new Uint8Array(pt);}catch(e){mk.fill(0);throw new Error('AES-GCM authenticatie mislukt');}}
+const BLK=32;
+function pad(d){const p=BLK-(d.length%BLK);const o=new Uint8Array(d.length+p);o.set(d);o.fill(p,d.length);return o;}
+function unpad(d){const p=d[d.length-1];if(p<1||p>BLK)throw new Error('Ongeldige padding');for(let i=d.length-p;i<d.length;i++)if(d[i]!==p)throw new Error('Padding corrupt');return d.slice(0,d.length-p);}
+async function safetyNums(s){const h=new Uint8Array(await crypto.subtle.digest('SHA-256',s));const r=[];for(let i=0;i<8;i++)r.push(String(((h[i*4]<<16)|(h[i*4+1]<<8)|h[i*4+2])%100000).padStart(5,'0'));return r;}
+function drawFV(cv,seed){const W=cv.width,H=cv.height,ctx=cv.getContext('2d'),img=ctx.createImageData(W,H),v=new DataView(seed.buffer);const cx=-2.5+(v.getUint32(0)/0xFFFFFFFF)*3,cy=-1.25+(v.getUint32(4)/0xFFFFFFFF)*2.5,xm=cx-2,xM=cx+1,ym=cy-1.2,yM=cy+1.2;for(let py=0;py<H;py++){for(let px=0;px<W;px++){const re=xm+(px/W)*(xM-xm),im=ym+(py/H)*(yM-ym);let zx=0,zy=0,it=0;while(zx*zx+zy*zy<4&&it<60){const x2=zx*zx,y2=zy*zy;zy=2*zx*zy+im;zx=x2-y2+re;it++;}const idx=(py*W+px)*4;if(it===60){img.data[idx]=4;img.data[idx+1]=7;img.data[idx+2]=16;img.data[idx+3]=255;}else{const t=it/60;img.data[idx]=Math.floor(t*6);img.data[idx+1]=Math.floor(t*100*(1-t*.4));img.data[idx+2]=Math.floor(15+t*210*(1-t*.3));img.data[idx+3]=255;}}}ctx.putImageData(img,0,0);}
+// IndexedDB
+const NDB=(()=>{let db=null;const q=[];const r=indexedDB.open('paramant-v2',1);r.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('n'))e.target.result.createObjectStore('n',{keyPath:'id'});};r.onsuccess=e=>{db=e.target.result;q.forEach(f=>f(db));q.length=0;};const g=()=>new Promise(res=>{if(db)res(db);else q.push(res);});return{async has(id){const d=await g();return new Promise(res=>{d.transaction('n','readonly').objectStore('n').get(id).onsuccess=e=>res(!!e.target.result);});},async add(id){const d=await g();return new Promise(res=>{const t=d.transaction('n','readwrite');t.objectStore('n').put({id,ts:Date.now()});t.oncomplete=()=>res();});},async count(){const d=await g();return new Promise(res=>{d.transaction('n','readonly').objectStore('n').count().onsuccess=e=>res(e.target.result);});},async recent(n=8){const d=await g();return new Promise(res=>{const it=[];const t=d.transaction('n','readonly');const c=t.objectStore('n').openCursor(null,'prev');c.onsuccess=e=>{const cur=e.target.result;if(cur&&it.length<n){it.push(cur.value.id);cur.continue();}else res(it);};});}}})();
+// ML-KEM helpers
+function mlkemOK(){try{return!!(window.noblePostQuantum?.ml_kem768||window.mlkem?.ml_kem768);}catch(e){return false;}}
+function getMLKEM(){return window.noblePostQuantum?.ml_kem768||window.mlkem?.ml_kem768;}
+// State
+let myKP=null,myMLK=null,chainKey=null,curMode='enc',msgSeq=0,repCnt=0,tagsCnt=0;
+(async()=>{const k=await genKey();$('mypk').textContent=typeof k==='string'&&k.startsWith('{')?k.slice(0,120)+'…':k.slice(0,80)+'…';$('mypk').dataset.full=k;updateNUI();})();
+async function genKey(){myKP=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);const epub=b2h(new Uint8Array(await crypto.subtle.exportKey('raw',myKP.publicKey)));if(quantumMode&&mlkemOK()){try{const ml=getMLKEM();myMLK=ml.keygen();return JSON.stringify({ecdh:epub,mlkem:b2h(myMLK.publicKey)});}catch(e){myMLK=null;return epub;}}return epub;}
+async function connectKeys(){
+  const inp=$('theirk').value.trim();if(!inp){$('cstat').textContent='⚠ Vul de sleutel in';return;}
+  $('cstat').textContent='⟳ Verbinden…';$('cbtn').disabled=true;
   try{
-    await buildIdentity();
-    $('my-nick').textContent=myNick;
-    // Toon volledig adres — box is nu scrollbaar
-    $('my-key-prev').textContent=myBundle;
-    $('my-key-prev').dataset.full=myBundle;
-    if(myMLK)$('pq-badge').classList.remove('hidden');
-    drawFractal($('my-avatar'),myFractalParams);
-    if(!myMLK){setTimeout(async()=>{if(!mlOK()||!myKP)return;try{const ml=getML();myMLK=ml.keygen();const rawPub=new Uint8Array(await crypto.subtle.exportKey('raw',myKP.publicKey));const b=JSON.parse(myBundle);b.mlkem=b2h(myMLK.publicKey);myBundle=JSON.stringify(b);$('my-key-prev').textContent=myBundle;$('my-key-prev').dataset.full=myBundle;$('pq-badge').classList.remove('hidden');}catch(e){}},2500);}
-  }catch(e){$('my-key-prev').textContent='Herlaad pagina';}
+    let ecdhShared,kemShared=null,kxType='ECDH P-256';
+    let bundle=null;try{bundle=JSON.parse(inp);}catch(e){}
+    if(bundle&&bundle.ecdh&&quantumMode&&mlkemOK()&&myMLK){
+      const eb=h2b(bundle.ecdh);if(!eb||eb.length!==65)throw new Error('Ongeldige ECDH sleutel');
+      const tk=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
+      const bits=await crypto.subtle.deriveBits({name:'ECDH',public:tk},myKP.privateKey,256);
+      ecdhShared=new Uint8Array(bits);
+      try{const ml=getMLKEM();const tm=h2b(bundle.mlkem);const{cipherText,sharedSecret}=ml.encapsulate(tm);kemShared=sharedSecret;kxType='ML-KEM-768 + ECDH P-256';}
+      catch(e){console.warn('ML-KEM fallback:',e);}
+    }else if(bundle&&bundle.ecdh){
+      const eb=h2b(bundle.ecdh);if(!eb||eb.length!==65)throw new Error('Ongeldige sleutel');
+      const tk=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
+      const bits=await crypto.subtle.deriveBits({name:'ECDH',public:tk},myKP.privateKey,256);
+      ecdhShared=new Uint8Array(bits);kxType='ECDH P-256 (klassiek)';
+    }else{
+      const eb=h2b(inp);if(!eb||eb.length!==65)throw new Error('Verwacht 130 hex tekens of JSON bundle');
+      const tk=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
+      const bits=await crypto.subtle.deriveBits({name:'ECDH',public:tk},myKP.privateKey,256);
+      ecdhShared=new Uint8Array(bits);kxType='ECDH P-256 (klassiek)';
+    }
+    const mat=kemShared?new Uint8Array([...ecdhShared,...kemShared]):ecdhShared;
+    const mk=await hkdf(mat,'paramant-master-v1',32);
+    mat.fill(0);ecdhShared.fill(0);if(kemShared)kemShared.fill(0);
+    const sn=await safetyNums(mk);
+    chainKey=await hkdf(mk,'paramant-chain-init',32);mk.fill(0);
+    $('snums').innerHTML=sn.map(n=>`<div class="snb">${n}</div>`).join('');
+    $('snwrap').style.display='block';
+    const vs=await hkdf(chainKey,'paramant-visual',8);drawFV($('afc'),vs);
+    $('cpill').innerHTML='<span class="pill pok">✓ VERBONDEN</span>';
+    $('cstat').textContent=`✓ ${kxType} — master gewist`;
+    $('ckprev').textContent='0x'+b2h(chainKey).slice(0,20)+'…';
+    $('kxtd').innerHTML=kxType.includes('ML-KEM')?`<span style="color:var(--qb)">${kxType}</span>`:`<span style="color:var(--am)">${kxType}</span>`;
+    $('dinfo').style.display='block';
+    $('stkx').textContent=kxType.includes('ML-KEM')?'ML-KEM-768+ECDH':'ECDH P-256';
+    $('stkx').style.color=kxType.includes('ML-KEM')?'var(--qb)':'var(--am)';
+    ['cratchet','ccipher'].forEach(id=>{$(id).style.opacity='1';$(id).style.pointerEvents='auto';});
+    $('rbtn').disabled=false;updateRD();setStep(2);
+    track('connected',{mode:kxType});
+  }catch(e){$('cstat').textContent='✗ '+e.message;$('cstat').style.color='var(--ro)';$('cbtn').disabled=false;}
 }
-initIdentity();
-
-function copyMyKey(){const k=$('my-key-prev').dataset.full||myBundle;navigator.clipboard.writeText(k).catch(()=>{});const btn=$('copy-key-btn');btn.textContent='✓ Gekopieerd!';setTimeout(()=>btn.textContent='📋 Kopieer',2000);}
-let qrShown=false;
-function toggleQR(){qrShown=!qrShown;const p=$('qr-panel');if(!qrShown){p.classList.add('hidden');return;}p.classList.remove('hidden');$('qr-box').innerHTML='';try{new QRCode($('qr-box'),{text:($('my-key-prev').dataset.full||myBundle).slice(0,200),width:160,height:160,correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
-async function regenIdentity(){if(convs.length>0&&!confirm('Nieuwe identiteit? Alle gesprekken worden beëindigd.'))return;convs.forEach(c=>{if(c.chainKey)c.chainKey.fill(0);});convs=[];activeId=null;renderList();showWelcome();await initIdentity();}
-function dlPage(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([document.documentElement.outerHTML],{type:'text/html'}));a.download='paramant.html';a.click();}
-
-// ─── RELAY ───────────────────────────────────────────────────────────
-// Stel jouw relay-URL in (optioneel — werkt ook offline):
-// window._PARAMANT_RELAY = 'wss://jouw-relay.onrender.com';
-// ── Relay — Tor-bewust, dual-mode (clearnet + .onion) ─────────────
-// Stel in:
-//   window._PARAMANT_RELAY       = 'wss://clearnet-relay.onrender.com'  (clearnet)
-//   window._PARAMANT_RELAY_ONION = 'ws://jouwrelay.onion'               (.onion)
-//
-// Automatische keuze:
-//   - Tor Browser gedetecteerd + .onion beschikbaar → .onion
-//   - Anders → clearnet relay
-//   - Geen van beide → offline copy-paste modus
-
-function isTorBrowser(){
-  // Tor Browser reageert op navigator.userAgent + window.screen afmetingen
-  // Beste heuristiek: probeer verbinding met .onion — slaagt alleen in Tor Browser
-  return !!(window._PARAMANT_RELAY_ONION);
-}
-
-const RELAY_ONION  = window._PARAMANT_RELAY_ONION || '';
-const RELAY_CLEAR  = (()=>{
-  if(window._PARAMANT_RELAY) return window._PARAMANT_RELAY;
-  if(location.hostname==='localhost'||location.hostname==='127.0.0.1') return 'ws://localhost:8080';
-  return '';
-})();
-
-// Gebruik .onion als beschikbaar en als we in Tor Browser zitten
-// anders clearnet; anders offline
-const RELAY_WS = RELAY_ONION || RELAY_CLEAR;
-const IS_ONION = RELAY_WS.includes('.onion');
-const RELAY_API = (!IS_ONION && RELAY_WS)
-  ? RELAY_WS.replace('wss://','https://').replace('ws://','http://')
-  : ''; // .onion heeft geen HTTP API via gewone browser
-
-let relayWS=null,relayOn=false,relayWant=false;
-const presenceMap=new Map();
-
-function setRelayUI(s){
-  const d=$('rl-dot'),l=$('rl-lbl');
-  d.className='w-2 h-2 rounded-full flex-shrink-0 transition-all ';
-  if(s==='on'){
-    d.classList.add(IS_ONION?'bg-purple-400':'bg-green-400');
-    l.textContent=IS_ONION?'🧅 Tor relay':'Relay actief';
-  }else if(s==='con'){
-    d.classList.add('bg-yellow-400');
-    l.textContent=IS_ONION?'🧅 Tor…':'Verbinden…';
-  }else if(s==='err'){
-    d.classList.add('bg-red-500');
-    l.textContent=IS_ONION?'Tor fout':'Relay fout';
+async function regenKey(){chainKey=null;msgSeq=0;repCnt=0;myMLK=null;$('cpill').innerHTML='<span class="pill pno">NIET VERBONDEN</span>';$('dinfo').style.display='none';$('snwrap').style.display='none';$('cstat').textContent='';$('cbtn').disabled=false;$('theirk').value='';['cratchet','ccipher'].forEach(id=>{$(id).style.opacity='.4';$(id).style.pointerEvents='none';});$('rbtn').disabled=true;setStep(1);const k=await genKey();$('mypk').textContent=k.length>120?k.slice(0,120)+'…':k;$('mypk').dataset.full=k;}
+function copyMyKey(){const k=$('mypk').dataset.full||$('mypk').textContent;navigator.clipboard.writeText(k).catch(()=>{});const b=document.querySelector('[onclick="copyMyKey()"]');b.textContent='✓ Gekopieerd';setTimeout(()=>b.textContent='📋 Kopieer',1500);track('pubkey_copied');}
+function downloadPage(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([document.documentElement.outerHTML],{type:'text/html'}));a.download='index.html';a.click();track('downloaded');}
+let qrV=false;
+function toggleQR(){const w=$('qrw');if(qrV){w.style.display='none';$('qrbtn').textContent='📷 QR';qrV=false;return;}w.style.display='block';$('qrbtn').textContent='✕ QR';qrV=true;$('qrb').innerHTML='';try{const t=($('mypk').dataset.full||$('mypk').textContent).slice(0,200);new QRCode($('qrb'),{text:t,width:150,height:150,correctLevel:QRCode.CorrectLevel.M});}catch(e){}track('qr_shown');}
+function setMode(m){curMode=m;$('benc').className='mb'+(m==='enc'?' active':'');$('bdec').className='mb'+(m==='dec'?' active':'');$('ilbl').textContent=m==='enc'?'▸ PLAINTEXT':'▸ AES-GCM PAKKET (JSON)';$('olbl').textContent=m==='enc'?'▸ AES-GCM PAKKET':'▸ HERSTELD';$('itxt').placeholder=m==='enc'?'Voer tekst in…':'JSON-pakket plakken…';$('otxt').style.color=m==='enc'?'#33ff77':'#4499ff';$('otxt').value='';$('ocnt').textContent='';$('em').style.display='none';$('cpout').style.display='none';}
+$('itxt').addEventListener('input',function(){$('icnt').textContent=this.value.length+' tekens';});
+async function runCipher(){
+  if(!chainKey)return;const txt=$('itxt').value;if(!txt.trim())return;$('em').style.display='none';
+  if(curMode==='enc'){
+    const seq=msgSeq;
+    // PQ RATCHET: on interval, generate new KEM keypair and embed pubkey
+    let kemPubToSend=null;
+    if(quantumMode&&mlkemOK()&&seq>0&&seq%KEM_RATCHET_INTERVAL===0){
+      kemPubToSend=await prepKEMRatchetKey();
+      kemRatchetCnt++;
+    }
+    // Consume pending KEM ciphertext from peer (if any) to inject into ratchet
+    let kemSharedToInject=null;
+    if(pendingKEMPub){
+      const res=await encapRatchetKEM(pendingKEMPub);
+      if(res){kemSharedToInject=res.ss;/* ct goes in packet */}
+      pendingKEMPub=null;
+    }
+    const{nextCK,msgKey,wasKEM}=await ratchetStep(chainKey,kemSharedToInject);
+    chainKey=nextCK;
+    const pb=new TextEncoder().encode(txt);const pd=pad(pb);
+    const aad=new TextEncoder().encode(`paramant:${seq}`);
+    const{iv,ciphertext}=await aesEnc(msgKey,pd,aad);
+    const ni=`${seq}:${b2h(iv).slice(0,8)}`;await NDB.add(ni);
+    const pkt={v:'paramant-v2',seq,ivHex:b2h(iv),cipherHex:b2h(ciphertext)};
+    if(kemPubToSend) pkt.kemRatchetPub=kemPubToSend; // peer should encap to this
+    const kemTag=wasKEM?` · ⚛ KEM-ratchet #${kemRatchetCnt}`:'';
+    $('otxt').value=JSON.stringify(pkt,null,2);
+    $('ocnt').textContent=`${ciphertext.length}B · GCM 16B tag · pad ${pd.length}B · ronde #${seq}${kemTag}`;
+    $('cpout').style.display='inline-block';msgSeq++;tagsCnt++;$('sttg').textContent=tagsCnt;$('rnum').textContent=msgSeq;
+    updateRD();await updateNUI();setStep(3);track('encrypted',{kem_ratchet:wasKEM});
   }else{
-    d.classList.add('bg-slate-600');
-    l.textContent='Offline';
+    let pkt;try{pkt=JSON.parse($('itxt').value);}catch(e){showE('Ongeldig JSON');return;}
+    const{seq,ivHex,cipherHex}=pkt;const ni=`${seq}:${ivHex?.slice(0,8)}`;
+    if(await NDB.has(ni)){repCnt++;$('strp').textContent=repCnt;showE('⚠ REPLAY GEBLOKKEERD (IndexedDB persistent)');return;}
+    // Store KEM pubkey from peer for next outgoing message ratchet step
+    if(pkt.kemRatchetPub) pendingKEMPub=pkt.kemRatchetPub;
+    // Decapsulate any KEM ciphertext from peer
+    let kemShared=null;
+    if(pkt.kemRatchetCt) kemShared=await decapRatchetKEM(pkt.kemRatchetCt);
+    let ck=chainKey;
+    for(let i=msgSeq;i<seq;i++){const{nextCK}=await ratchetStep(ck);ck=nextCK;}
+    const{nextCK,msgKey,wasKEM}=await ratchetStep(ck,kemShared);
+    chainKey=nextCK;msgSeq=seq+1;
+    const iv=h2b(ivHex),ct=h2b(cipherHex);const aad=new TextEncoder().encode(`paramant:${seq}`);
+    let pd;try{pd=await aesDec(msgKey,iv,ct,aad);}catch(e){showE('⛔ '+e.message);return;}
+    let plain;try{plain=new TextDecoder().decode(unpad(pd));}catch(e){showE('⛔ '+e.message);return;}
+    const kemTag=wasKEM?` · ⚛ KEM-ratchet`:'';
+    $('otxt').value=plain;$('otxt').style.color='#4499ff';
+    $('ocnt').textContent=`✓ AES-GCM ok · ${plain.length} tekens · ronde #${seq}${kemTag}`;
+    $('cpout').style.display='inline-block';tagsCnt++;$('sttg').textContent=tagsCnt;
+    await NDB.add(ni);updateRD();await updateNUI();setStep(4);track('decrypted');
   }
 }
+async function updateRD(){if(!chainKey)return;$('ckd').textContent='0x'+b2h(chainKey).slice(0,16)+'…';const cp=new Uint8Array(chainKey);const mk=await hkdf(cp,'msg');$('mkd').textContent='0x'+b2h(mk).slice(0,16)+'…';$('rkinfo').textContent=`CK #${msgSeq}: 0x${b2h(chainKey).slice(0,10)}… ${kemRatchetCnt>0?'⚛ KEM-ratchet: '+kemRatchetCnt:''}`;$('strd').textContent='#'+msgSeq;const kr=$('stkr');if(kr)kr.textContent=kemRatchetCnt>0?`${kemRatchetCnt}x uitgevoerd`:'0 (elke 10 msgs)';try{const vs=await hkdf(new Uint8Array([...new TextEncoder().encode('v'),msgSeq&0xff]),'display',8);drawFV($('afc'),vs);}catch(e){}}
+async function updateNUI(){const c=await NDB.count();$('stnc').textContent=c;const r=await NDB.recent();$('nl').innerHTML=r.length?r.map(n=>`<span style="color:var(--ok)">✓</span> <span style="color:var(--mu)">${n}</span>`).join('<br>'):'Geen berichten.';}
+function setStep(n){for(let i=1;i<=4;i++)$('step'+i).className='step'+(i<n?' done':i===n?' active':'');}
+function showE(m){const e=$('em');e.textContent=m;e.style.display='block';}
+function copyOut(){const v=$('otxt').value;if(!v)return;navigator.clipboard.writeText(v).catch(()=>{});$('cpout').textContent='✓ GEKOPIEERD';setTimeout(()=>$('cpout').textContent='KOPIEER',1500);}
+// end
 
-function wakeupRelay(){
-  // Geen wakeup nodig voor .onion (geen Render cold-start)
-  if(IS_ONION||!RELAY_API)return;
-  fetch(`${RELAY_API}/health`).catch(()=>{});
-  setTimeout(()=>fetch(`${RELAY_API}/health`).catch(()=>{}),15000);
-}
-
-function connectRelay(){
-  if(!RELAY_WS){
-    showToast('Geen relay geconfigureerd.\nOffline modus: kopieer pakketten handmatig.');
-    relayWant=false;
-    // Toon configuratie-tip
-    showRelayConfigTip();
-    return;
-  }
-  if(relayWS&&(relayWS.readyState===0||relayWS.readyState===1))return;
-  setRelayUI('con');
-  if(IS_ONION){
-    // .onion verbinding — werkt alleen in Tor Browser
-    // Geen wakeup, geen health check via http
-    console.log('[relay] Verbinden via Tor hidden service:', RELAY_WS);
-  }
-  try{
-    relayWS=new WebSocket(RELAY_WS);
-    relayWS.onopen=()=>{
-      relayOn=true;setRelayUI('on');
-      convs.forEach(c=>{if(c.connected&&c.chatId)relayJoin(c.chatId);});
-      broadcastPresence();
-      if(!IS_ONION)fetchStats();
-      if(IS_ONION)showToast('🧅 Verbonden via Tor — maximale anonimiteit',null,'#581c87');
-    };
-    relayWS.onclose=()=>{
-      relayOn=false;presenceMap.clear();renderPresence();
-      if(relayWant){setRelayUI('con');setTimeout(connectRelay,IS_ONION?8000:4000);}
-      else setRelayUI('off');
-    };
-    relayWS.onerror=()=>{
-      relayOn=false;setRelayUI('err');
-      if(IS_ONION){
-        // .onion werkt alleen in Tor Browser — geef duidelijke foutmelding
-        showToast('🧅 .onion verbinding mislukt. Gebruik Tor Browser.',null,'#7c3aed');
-        if(RELAY_CLEAR&&relayWant){
-          // Fallback naar clearnet als .onion faalt
-          setTimeout(()=>{
-            if(!relayOn&&relayWant&&RELAY_CLEAR){
-              console.log('[relay] .onion fallback naar clearnet');
-              // Clearnet fallback
-            }
-          },5000);
-        }
-      }
-      if(relayWant)setTimeout(connectRelay,8000);
-    };
-    relayWS.onmessage=e=>{try{onRelayMsg(JSON.parse(e.data));}catch(x){}}
-  }catch(e){setRelayUI('err');if(relayWant)setTimeout(connectRelay,8000);}
-}
-
-function disconnectRelay(){
-  relayWant=false;
-  if(relayWS){try{relayWS.close();}catch(e){}}
-  relayWS=null;relayOn=false;
-  presenceMap.clear();renderPresence();setRelayUI('off');
-}
-
-function toggleRelay(){
-  relayWant=!relayWant;
-  if(relayWant){wakeupRelay();connectRelay();}
-  else disconnectRelay();
-}
-
-function showRelayConfigTip(){
-  // Toon een subtiele tip hoe relay te configureren
-  const existing=$('relay-tip');if(existing)return;
-  const tip=document.createElement('div');tip.id='relay-tip';
-  tip.style.cssText='position:fixed;bottom:70px;right:16px;max-width:280px;background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:14px 16px;border-radius:14px;font-size:12px;z-index:9999;line-height:1.6;box-shadow:0 8px 32px rgba(0,0,0,.5)';
-  tip.innerHTML=`<div style="font-weight:600;color:#e2e8f0;margin-bottom:6px">📡 Relay instellen (optioneel)</div>
-<div style="color:#64748b;font-size:11px;margin-bottom:8px">Voeg toe aan HTML voor &lt;/head&gt;:</div>
-<div style="font-family:monospace;font-size:10px;background:#0f172a;padding:8px;border-radius:8px;color:#2dd4bf;word-break:break-all">window._PARAMANT_RELAY<br>= 'wss://relay.onrender.com'</div>
-<div style="font-family:monospace;font-size:10px;background:#0f172a;padding:8px;border-radius:8px;color:#a78bfa;margin-top:6px;word-break:break-all">// Via Tor (.onion):<br>window._PARAMANT_RELAY_ONION<br>= 'ws://xyz.onion'</div>
-<button onclick="this.parentElement.remove()" style="margin-top:10px;padding:4px 12px;background:#334155;border:none;color:#94a3b8;border-radius:8px;cursor:pointer;font-size:11px;width:100%">Sluiten</button>`;
-  document.body.appendChild(tip);
-  setTimeout(()=>{if(tip.parentElement){tip.style.transition='opacity .4s';tip.style.opacity='0';setTimeout(()=>tip.remove(),400);}},15000);
-}
-function relayJoin(room){if(!relayOn||!relayWS||relayWS.readyState!==1)return;relayWS.send(JSON.stringify({type:'join',chatHash:room,nick:myNick}));}
-function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyState!==1)return false;try{relayWS.send(JSON.stringify({type:'packet',chatHash:conv.chatId,seq:pkt.seq,payload:{iv:pkt.iv,ct:pkt.ct,type:pkt.type,kemCt:pkt.kemCt,kemPub:pkt.kemPub}}));return true;}catch(e){return false;}}
-function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
-setInterval(()=>{if(relayOn)broadcastPresence();},25000);
-setInterval(()=>{if(relayOn)fetchStats();},15000);
-setInterval(()=>{if(RELAY_API)fetch(`${RELAY_API}/health`).catch(()=>{});},600000);
-
-function onRelayMsg(msg){if(msg.type==='packet'){const pay=msg.payload;if(pay?.pType==='presence'&&pay.nick&&pay.bundle&&pay.nick!==myNick){presenceMap.set(pay.nick,{nick:pay.nick,bundle:pay.bundle,avatarHint:pay.avatarHint,ts:pay.ts});renderPresence();return;}const conv=convs.find(c=>c.chatId&&c.connected);if(!conv)return;const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};decryptPacket(conv,pkt).then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()})).catch(e=>sysMsg(conv,'⚠️ '+e.message));}else if(msg.type==='peer_left'){presenceMap.delete(msg.nick);renderPresence();}}
-
-function renderPresence(){const el=$('ledger-entries');if(!el)return;el.querySelectorAll('.pr-row').forEach(e=>e.remove());if(!presenceMap.size)return;const hdr=document.createElement('div');hdr.className='pr-row mono text-xs text-slate-500 px-2 py-1.5 tracking-widest';hdr.textContent='LIVE NU';el.insertBefore(hdr,el.firstChild);Array.from(presenceMap.values()).sort((a,b)=>b.ts-a.ts).forEach(p=>{const row=document.createElement('div');row.className='pr-row flex items-center gap-2 p-2 bg-teal-500/5 border border-teal-500/15 rounded-xl mb-1.5 cursor-pointer hover:border-teal-500/30 transition-all';row.onclick=()=>quickConnect(p);const av=document.createElement('div');av.className='w-8 h-8 rounded-full border border-teal-500/40 overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold text-teal-400 bg-slate-800';if(p.avatarHint){const cv=document.createElement('canvas');cv.width=32;cv.height=32;const fh=new Uint8Array(32);const hb=h2b(p.avatarHint)||new Uint8Array(8);fh.set(hb.slice(0,8));drawFractal(cv,fractalParams(fh));av.appendChild(cv);}else av.textContent=p.nick.charAt(0).toUpperCase();const inf=document.createElement('div');inf.className='flex-1 min-w-0';inf.innerHTML=`<div class="text-xs font-medium text-white truncate">${p.nick}</div><div class="text-xs text-green-400 mono">● online</div>`;const btn=document.createElement('button');btn.className='text-xs px-2 py-1 bg-teal-500/20 border border-teal-500/25 text-teal-400 rounded-lg hover:bg-teal-500/30 transition-all flex-shrink-0';btn.textContent='Verbind';btn.onclick=(e)=>{e.stopPropagation();quickConnect(p);};row.appendChild(av);row.appendChild(inf);row.appendChild(btn);el.insertBefore(row,el.children[1]||null);});}
-function quickConnect(p){showConnect();setTimeout(()=>{$('peer-key').value=p.bundle||'';try{const b=JSON.parse(p.bundle);if(b.nick)$('peer-name').value=b.nick;}catch(e){}},60);}
-async function fetchStats(){if(!RELAY_API)return;try{const r=await fetch(`${RELAY_API}/api/stats`);const d=await r.json();if(d.ok){$('counter').textContent=d.messages.toLocaleString('nl-NL');$('ls-msgs').textContent=d.messages.toLocaleString('nl-NL');$('ls-chats').textContent=d.chats;}}catch(e){}}
-async function fetchLedger(){if(!RELAY_API)return;try{const r=await fetch(`${RELAY_API}/api/ledger`);const d=await r.json();if(d.ok&&d.entries)d.entries.slice(0,20).forEach(e=>addLedgerEntry({h:e.chatHash.replace('…',''),s:e.seq,b:e.bytes,t:e.timestamp}));}catch(e){}}
-function addLedgerEntry(e){const el=$('ledger-entries');if(el.querySelector('.lc-empty-msg'))el.innerHTML='';const div=document.createElement('div');div.className='mono text-xs rounded-lg p-2 mb-1 bg-slate-800/50 border border-slate-700/50 slide-in';div.innerHTML=`<div class="text-teal-600 truncate">${e.h}…</div><div class="text-slate-600">${(e.b/1024).toFixed(1)}KB · ${new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;const fp=Array.from(el.children).find(c=>!c.classList.contains('pr-row'));el.insertBefore(div,fp||null);while(el.querySelectorAll('div:not(.pr-row)').length>40)el.querySelectorAll('div:not(.pr-row)')[el.querySelectorAll('div:not(.pr-row)').length-1].remove();}
-
-// ─── CONVERSATIONS ───────────────────────────────────────────────────
-const MAX=3;let convs=[],activeId=null;
-function newConv(id,name){return{id,name,chatId:null,chainKey:null,msgSeq:0,safetyNums:[],msgs:[],connected:false,tagsCnt:0,repCnt:0,kemCnt:0,kxType:'—',peerMLKEM:null,myRatchetKEM:null,destructTimer:0};}
-const getConv=id=>convs.find(c=>c.id===id);
-const activeConv=()=>getConv(activeId);
-
-// ─── CONNECT ─────────────────────────────────────────────────────────
-async function doConnect(){
-  const raw=$('peer-key').value.trim();
-  const name=$('peer-name').value.trim()||`Vriend ${convs.length+1}`;
-  $('conn-err').style.display='none';$('conn-btn').disabled=true;$('conn-btn').textContent='⟳ Verbinding maken…';
-  try{
-    let bundle={};try{bundle=JSON.parse(raw);}catch(e){bundle={ecdh:raw};}
-    const eb=h2b((bundle.ecdh||raw).replace(/\s+/g,''));
-    if(!eb||eb.length!==65)throw new Error('Ongeldig adres. Heb je het volledige adres geplakt?');
-    const theirKey=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
-    const bits=await crypto.subtle.deriveBits({name:'ECDH',public:theirKey},myKP.privateKey,256);
-    const shared=new Uint8Array(bits);
-    const master=await hkdf(shared,'paramant-master-v1',32);shared.fill(0);
-    const sn=await safetyNums(master);
-    const ck=await hkdf(master,'paramant-chain-init',32);master.fill(0);
-    const id=Date.now();
-    const conv=newConv(id,bundle.nick||name);
-    conv.chainKey=ck;conv.safetyNums=sn;conv.connected=true;
-    conv.kxType=myMLK&&bundle.mlkem?'ECDH P-256 + ML-KEM-768':'ECDH P-256';
-    if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
-    conv.chatId=await chatIdFrom(ck);
-    convs.push(conv);
-    sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
-    sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
-    if(relayOn)relayJoin(conv.chatId);
-    renderList();showChat(id);
-    $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
-  }catch(e){
-    $('conn-err').textContent=e.message;$('conn-err').style.display='block';
-    $('conn-btn').disabled=false;$('conn-btn').textContent='⚡ Verbinden';
-  }
-}
-$('peer-key').addEventListener('input',function(){try{const b=JSON.parse(this.value.trim());if(b.nick&&!$('peer-name').value)$('peer-name').value=b.nick;}catch(e){}});
-
-// ─── ENCRYPT / DECRYPT ────────────────────────────────────────────────
-async function doEncrypt(){const conv=activeConv();if(!conv?.chainKey)return;const txt=$('msg-inp').value.trim();if(!txt)return;$('msg-inp').value='';$('msg-inp').style.height='auto';await encPayload(conv,txt,'text');}
-async function encPayload(conv,payload,type){
-  try{
-    const seq=conv.msgSeq;
-    let kemShared=null,kemCt=null,newKEMPub=null;
-    if(mlOK()&&conv.peerMLKEM&&seq>0&&seq%KEM_IV===0){const res=await kemEncap(conv.peerMLKEM);if(res){kemShared=res.ss;kemCt=res.ct;conv.kemCnt++;}try{conv.myRatchetKEM=getML().keygen();newKEMPub=b2h(conv.myRatchetKEM.publicKey);}catch(e){}}
-    const{nextCK,msgKey}=await ratchet(conv.chainKey,kemShared);
-    conv.chainKey=nextCK;conv.msgSeq++;
-    const encoded=type==='text'?new TextEncoder().encode(payload):new TextEncoder().encode(JSON.stringify(payload));
-    const padded=pad32(encoded);
-    const aad=new TextEncoder().encode(`paramant:${seq}:${type}`);
-    const{iv,ct}=await aesEnc(msgKey,padded,aad);
-    const niKey=`${seq}:${b2h(iv).slice(0,8)}`;await NDB.add(niKey);
-    const pkt={v:'paramant-v2',type,seq,iv:b2h(iv),ct:b2h(ct)};
-    if(kemCt)pkt.kemCt=kemCt;if(newKEMPub)pkt.kemPub=newKEMPub;
-    conv.tagsCnt++;
-    const pktStr=JSON.stringify(pkt);
-    const relayed=relaySend(conv,pkt);
-    addMsg(conv,'sent',{pkt:pktStr,type,payload,seq,t:now(),relayed,pq:!!kemCt});
-    updateAudit(conv);
-    if(relayed){addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:seq,b:pktStr.length,t:Date.now()});fetchStats();}
-  }catch(e){const c=activeConv();if(c)sysMsg(c,'⛔ Fout: '+e.message);}
-}
-async function doDecrypt(){const conv=activeConv();if(!conv?.chainKey)return;const raw=$('paste-ta').value.trim();$('paste-err').textContent='';try{let pkt;try{pkt=JSON.parse(raw);}catch(e){throw new Error('Ongeldig pakket — plak de volledige inhoud.');}await decryptPacket(conv,pkt);hidePaste();}catch(e){$('paste-err').textContent=e.message;}}
-async function decryptPacket(conv,pkt){
-  const{type='text',seq,iv:ivHex,ct:ctHex,kemCt,kemPub}=pkt;
-  if(!ivHex||!ctHex||seq===undefined)throw new Error('Pakket mist informatie.');
-  const niKey=`${seq}:${ivHex.slice(0,8)}`;
-  if(await NDB.has(niKey)){conv.repCnt++;updateAudit(conv);throw new Error('Dit pakket is al gelezen (replay-bescherming).');}
-  let kemShared=null;
-  if(kemCt&&conv.myRatchetKEM?.secretKey){kemShared=await kemDecap(kemCt,conv.myRatchetKEM.secretKey);conv.myRatchetKEM=null;if(kemShared)conv.kemCnt++;}
-  if(kemPub)conv.peerMLKEM=kemPub;
-  let ck=conv.chainKey;
-  for(let i=conv.msgSeq;i<seq;i++){const r=await ratchet(ck);ck=r.nextCK;}
-  const{nextCK,msgKey}=await ratchet(ck,kemShared);
-  conv.chainKey=nextCK;conv.msgSeq=seq+1;
-  const iv=h2b(ivHex),ctBytes=h2b(ctHex),aad=new TextEncoder().encode(`paramant:${seq}:${type}`);
-  const padded=await aesDec(msgKey,iv,ctBytes,aad);
-  const plain=unpad32(padded);
-  await NDB.add(niKey);conv.tagsCnt++;
-  if(type==='text')addMsg(conv,'recv',{text:new TextDecoder().decode(plain),seq,t:now(),pq:!!kemShared});
-  else addMsg(conv,'recv',{type:'file',meta:JSON.parse(new TextDecoder().decode(plain)),seq,t:now()});
-  updateAudit(conv);
-}
-
-// ─── FILES ────────────────────────────────────────────────────────────
-let dragDepth=0;
-document.addEventListener('dragenter',e=>{if(!activeConv()?.chainKey)return;e.preventDefault();dragDepth++;});
-document.addEventListener('dragleave',()=>{dragDepth--;});
-document.addEventListener('dragover',e=>e.preventDefault());
-document.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;const conv=activeConv();if(!conv?.chainKey)return;Array.from(e.dataTransfer.files).slice(0,5).forEach(f=>processFile(conv,f));});
-async function handleFiles(inp){const conv=activeConv();if(!conv?.chainKey){inp.value='';return;}Array.from(inp.files).slice(0,5).forEach(f=>processFile(conv,f));inp.value='';}
-async function processFile(conv,file){if(file.size>10485760){sysMsg(conv,`⛔ ${file.name} is te groot (max 10 MB)`);return;}const pg=addProgMsg(conv,file.name,file.size);try{const buf=await file.arrayBuffer();const bytes=new Uint8Array(buf);let b64='';const chunk=8192;for(let i=0;i<bytes.length;i+=chunk){b64+=btoa(String.fromCharCode(...bytes.subarray(i,i+chunk)));updateProg(pg,Math.min(85,Math.round(i/bytes.length*85)),'Bezig…');}updateProg(pg,95,'Bijna…');await encPayload(conv,{name:file.name,mime:file.type||'application/octet-stream',size:file.size,data:b64},'file');updateProg(pg,100,'✓ Verstuurd!');setTimeout(()=>pg?.remove(),2500);}catch(e){updateProg(pg,0,'⛔ '+e.message);}}
-function addProgMsg(conv,name,size){const w=document.createElement('div');w.className='fade-up';const d=document.createElement('div');d.className='inline-block max-w-xs bg-slate-800 border border-slate-700 rounded-2xl p-3';d.innerHTML=`<div class="text-sm font-medium text-white mb-2">📎 ${name} (${fmtSize(size)})</div><div class="h-1.5 bg-slate-700 rounded-full overflow-hidden"><div class="prog-bar h-full bg-teal-500 rounded-full w-0 transition-all"></div></div><div class="prog-st mono text-xs text-slate-500 mt-1.5">Laden…</div>`;const wrap=document.createElement('div');wrap.className='flex justify-end px-1 py-0.5';wrap.appendChild(d);w._bar=d.querySelector('.prog-bar');w._st=d.querySelector('.prog-st');$('msgs').appendChild(wrap);$('msgs').scrollTop=$('msgs').scrollHeight;return w;}
-function updateProg(el,pct,lbl){if(!el)return;if(el._bar)el._bar.style.width=pct+'%';if(el._st)el._st.textContent=lbl;}
-function downloadFile(meta){const bin=atob(meta.data);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bytes],{type:meta.mime}));a.download=meta.name;a.click();}
-function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
-
-// ─── VOICE ────────────────────────────────────────────────────────────
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let recog=null,voiceOn=false;
-if(SR){recog=new SR();recog.lang='nl-NL';recog.onresult=e=>{$('msg-inp').value=e.results[0][0].transcript;autoResize($('msg-inp'));};recog.onend=()=>{voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';};recog.onerror=()=>{voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';};}
-function toggleVoice(){if(!recog){showToast('Inspreken werkt niet in deze browser.');return;}if(voiceOn){recog.stop();voiceOn=false;$('voice-btn').style.borderColor='';$('voice-btn').style.color='';}else{recog.start();voiceOn=true;$('voice-btn').style.borderColor='rgb(239 68 68 / .6)';$('voice-btn').style.color='rgb(239 68 68)';}}
-
-// ─── SELF-DESTRUCT ────────────────────────────────────────────────────
-const DEST=[0,5,10,30];
-function cycleDestruct(){const c=activeConv();if(!c)return;const i=DEST.indexOf(c.destructTimer||0);c.destructTimer=DEST[(i+1)%DEST.length];const btn=$('destruct-btn');btn.textContent=c.destructTimer?`⏱ Wis na ${c.destructTimer}min`:'⏱ Auto-wis';btn.style.color=c.destructTimer?'#f59e0b':'';sysMsg(c,c.destructTimer?`🔥 Berichten verdwijnen na ${c.destructTimer} minuten.`:'Auto-wis uitgeschakeld.');}
-function schedDestruct(el,mins){if(!mins)return;setTimeout(()=>{el.style.transition='opacity .6s,transform .5s';el.style.opacity='0';el.style.transform='scale(.9)';setTimeout(()=>el.remove(),700);},mins*60000);}
-
-// ─── EXPORT ───────────────────────────────────────────────────────────
-function exportConv(){const c=activeConv();if(!c)return;const d={exported:new Date().toISOString(),name:c.name,msgs:c.msgs.map(m=>({dir:m.dir,t:m.t,text:m.dir==='recv'?m.data?.text:m.dir==='sys'?m.data?.text:'[versleuteld]'}))};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.download=`paramant-${c.name.replace(/\W/g,'-')}-${Date.now()}.json`;a.click();}
-
-// ─── MESSAGES ─────────────────────────────────────────────────────────
-function addMsg(conv,dir,data){const t=data.t||now();conv.msgs.push({dir,data,t});if(conv.id===activeId){const el=buildMsg(dir,data,t);$('msgs').appendChild(el);$('msgs').scrollTop=$('msgs').scrollHeight;if(dir!=='sys'&&conv.destructTimer)schedDestruct(el,conv.destructTimer);}renderList();}
-function sysMsg(conv,text){const t=now();conv.msgs.push({dir:'sys',data:{text},t});if(conv.id===activeId){$('msgs').appendChild(buildMsg('sys',{text},t));$('msgs').scrollTop=$('msgs').scrollHeight;}}
-function buildMsg(dir,data,t){
-  const outer=document.createElement('div');
-  if(dir==='sys'){outer.className='flex justify-center my-1';const b=document.createElement('div');b.className='bbl-sys px-4 py-2 rounded-2xl text-xs text-teal-400/80 text-center max-w-sm leading-relaxed';b.textContent=data.text;outer.appendChild(b);return outer;}
-  outer.className=`flex flex-col ${dir==='sent'?'items-end':'items-start'} fade-up`;
-  if(dir==='sent'){
-    const box=document.createElement('div');box.className='max-w-xs lg:max-w-sm';
-    const lbl=document.createElement('div');lbl.className='mono text-xs text-slate-500 mb-1.5 px-1';lbl.textContent=data.type==='file'?'📎 Versleuteld bestand — stuur dit naar je vriend:':'📤 Versleuteld bericht — stuur dit pakket naar je vriend:';
-    const pkt=document.createElement('div');pkt.className='bg-slate-800 border border-slate-700 rounded-2xl p-3';
-    const prev=document.createElement('div');prev.className='mono text-xs text-teal-400/50 mb-2 truncate';prev.textContent=(data.pkt||'').slice(0,60)+'…';
-    const cp=document.createElement('button');cp.className='w-full py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm rounded-xl transition-all active:scale-95';cp.textContent='📋 Kopieer en stuur';cp.onclick=()=>{navigator.clipboard.writeText(data.pkt).catch(()=>{});cp.textContent='✓ Gekopieerd!';setTimeout(()=>cp.textContent='📋 Kopieer en stuur',1800);};
-    if(data.relayed){const rl=document.createElement('div');rl.className='mono text-xs text-green-400 mt-1.5 text-center';rl.textContent='✓ Automatisch verzonden via relay';}
-    pkt.appendChild(prev);pkt.appendChild(cp);
-    if(data.relayed){const rl=document.createElement('div');rl.className='mono text-xs text-green-400 mt-1.5 text-center';rl.textContent='✓ Automatisch verzonden via relay';pkt.appendChild(rl);}
-    box.appendChild(lbl);box.appendChild(pkt);outer.appendChild(box);
-  }else if(dir==='recv'){
-    const box=document.createElement('div');box.className='max-w-xs lg:max-w-sm';
-    if(data.type==='file'){const fb=document.createElement('div');fb.className='flex items-center gap-3 p-3 bg-slate-800 border border-slate-700 rounded-2xl cursor-pointer hover:border-teal-500/40 transition-all';fb.onclick=()=>downloadFile(data.meta);fb.innerHTML=`<div class="text-3xl flex-shrink-0">📄</div><div class="flex-1 min-w-0"><div class="font-medium text-white text-sm truncate">${data.meta?.name||'bestand'}</div><div class="text-slate-500 text-xs mt-0.5">${fmtSize(data.meta?.size||0)} · Tik om op te slaan</div></div>`;box.appendChild(fb);}
-    else{const b=document.createElement('div');b.className='bbl-recv px-4 py-3 rounded-2xl text-white text-base leading-relaxed';b.textContent=data.text;box.appendChild(b);}
-    outer.appendChild(box);
-  }
-  const meta=document.createElement('div');meta.className='mono text-xs text-slate-600 mt-1 px-1 flex items-center gap-2';
-  meta.appendChild(document.createTextNode(t));
-  if(dir==='sent'){const ck=document.createElement('span');ck.className='text-teal-600';ck.textContent='✓';meta.appendChild(ck);}
-  if(data.pq){const pq=document.createElement('span');pq.className='text-teal-700';pq.textContent='⚛';meta.appendChild(pq);}
-  outer.appendChild(meta);return outer;
-}
-function renderMsgs(conv){$('msgs').innerHTML='';conv.msgs.forEach(m=>$('msgs').appendChild(buildMsg(m.dir,m.data,m.t)));$('msgs').scrollTop=$('msgs').scrollHeight;}
-
-// ─── SCREENS — _s() uses only inline style, avoids Tailwind conflicts ─
-function _s(id,d){const e=$(id);if(!e)return;e.style.display=d;}
-function showWelcome(){_s('welcome','flex');_s('conn-scr','none');_s('chat-head','none');_s('chat-wrap','none');_s('input-row','none');_s('audit-bar','none');activeId=null;document.querySelectorAll('.ci-item').forEach(e=>e.classList.remove('bg-slate-800','border-teal-500/30'));}
-function showConnect(){if(convs.length>=MAX){showToast('Je hebt al 3 gesprekken. Sluit er eerst één.');return;}_s('welcome','none');_s('conn-scr','flex');_s('chat-head','none');_s('chat-wrap','none');_s('input-row','none');_s('audit-bar','none');$('peer-key').value='';$('peer-name').value='';$('conn-err').style.display='none';$('conn-btn').disabled=false;$('conn-btn').textContent='⚡ Verbinden';closeSidebar();setTimeout(()=>$('peer-key').focus(),80);}
-function cancelConnect(){if(activeId)showChat(activeId);else showWelcome();}
-function showChat(id){
-  const conv=getConv(id);if(!conv)return;activeId=id;
-  _s('welcome','none');_s('conn-scr','none');_s('chat-head','flex');_s('chat-wrap','flex');$('chat-wrap').style.flexDirection='column';_s('input-row','flex');_s('audit-bar','block');
-  $('ch-nm').textContent=conv.name;
-  $('ch-st').textContent=(relayOn?'📡 Relay · ':'')+'Verbonden · quantum-veilig 🔒';
-  const db=$('destruct-btn');if(db){db.textContent=conv.destructTimer?`⏱ Wis na ${conv.destructTimer}min`:'⏱ Auto-wis';db.style.color=conv.destructTimer?'#f59e0b':'';}
-  const av=$('ch-av');av.innerHTML='';
-  if(conv.chainKey){const cvEl=document.createElement('canvas');cvEl.width=40;cvEl.height=40;sha256(new Uint8Array(conv.chainKey)).then(h=>drawFractal(cvEl,fractalParams(h))).catch(()=>{});av.appendChild(cvEl);}else av.textContent=conv.name.charAt(0).toUpperCase();
-  renderMsgs(conv);hidePaste();updateAudit(conv);
-  document.querySelectorAll('.ci-item').forEach(e=>e.classList.remove('bg-slate-800','border-teal-500/30'));
-  const ci=$('ci-'+id);if(ci)ci.classList.add('bg-slate-800','border-teal-500/30');
-  $('new-btn').disabled=convs.length>=MAX;closeSidebar();
-}
-function endConv(){const c=activeConv();if(!c||!confirm(`Gesprek met ${c.name} sluiten?`))return;if(c.chainKey)c.chainKey.fill(0);convs=convs.filter(x=>x.id!==activeId);renderList();if(convs.length>0)showChat(convs[0].id);else showWelcome();}
-function renderList(){
-  const list=$('conv-list');list.querySelectorAll('.ci-item').forEach(e=>e.remove());
-  $('empty-hint').style.display=convs.length?'none':'block';
-  convs.forEach(c=>{
-    const div=document.createElement('div');div.className='ci-item group flex items-center gap-3 px-3 py-3 rounded-2xl cursor-pointer border border-transparent hover:border-slate-700 hover:bg-slate-800/60 transition-all mx-1 mb-1';div.id='ci-'+c.id;div.onclick=()=>showChat(c.id);
-    if(c.id===activeId)div.classList.add('bg-slate-800','border-teal-500/30');
-    const av=document.createElement('div');av.className='w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 border-2 border-slate-600 flex items-center justify-center font-bold text-teal-400 text-sm';
-    if(c.chainKey){const cvEl=document.createElement('canvas');cvEl.width=40;cvEl.height=40;sha256(new Uint8Array(c.chainKey)).then(h=>drawFractal(cvEl,fractalParams(h))).catch(()=>{});av.appendChild(cvEl);}else av.textContent=c.name.charAt(0).toUpperCase();
-    const inf=document.createElement('div');inf.className='flex-1 min-w-0';
-    const nm=document.createElement('div');nm.className='font-semibold text-white text-sm truncate';nm.textContent=c.name;
-    const pv=document.createElement('div');pv.className='text-xs text-slate-500 truncate mt-0.5';const last=c.msgs[c.msgs.length-1];pv.textContent=last?(last.dir==='sent'?'📤 Verstuurd':last.dir==='recv'?'📥 Ontvangen':last.data.text):'Verbonden';
-    inf.appendChild(nm);inf.appendChild(pv);
-    const right=document.createElement('div');right.className='flex items-center gap-1.5 flex-shrink-0';
-    const dot=document.createElement('div');dot.className='w-2 h-2 rounded-full '+(c.connected?'bg-green-400':'bg-slate-600');
-    const x=document.createElement('button');x.className='w-6 h-6 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 text-xs transition-all opacity-0 group-hover:opacity-100';x.textContent='✕';
-    x.onclick=e=>{e.stopPropagation();if(confirm(`Gesprek met ${c.name} verwijderen?`)){if(c.chainKey)c.chainKey.fill(0);convs=convs.filter(x=>x.id!==c.id);if(activeId===c.id){if(convs.length>0)showChat(convs[0].id);else showWelcome();}renderList();}};
-    right.appendChild(dot);right.appendChild(x);
-    div.appendChild(av);div.appendChild(inf);div.appendChild(right);
-    list.insertBefore(div,$('empty-hint'));
-  });
-  $('new-btn').disabled=convs.length>=MAX;
-}
-function updateAudit(c){
-  if(!c||c.id!==activeId)return;
-  $('au-kx').textContent=c.kxType||'—';$('au-rnd').textContent='#'+c.msgSeq;$('au-tags').textContent=c.tagsCnt;
-  $('au-kem').textContent=c.kemCnt||0;if(c.kemCnt>0)$('au-kem-wrap').classList.remove('hidden');
-  $('au-rep').textContent=c.repCnt||0;if(c.repCnt>0)$('au-rep-wrap').classList.remove('hidden');
-}
-
-// ─── MODALS ───────────────────────────────────────────────────────────
-function showSN(){const c=activeConv();if(!c)return;$('sn-grid').innerHTML=c.safetyNums.map(n=>`<div class="bg-slate-900 border border-slate-700 rounded-xl py-3 text-center mono text-base font-bold text-yellow-400 tracking-wider">${n}</div>`).join('');$('sn-modal').classList.remove('hidden');}
-function hideSN(){$('sn-modal').classList.add('hidden');}
-function toggleLedger(){const p=$('ledger-col');p.classList.toggle('hidden');$('ledger-btn').style.borderColor=p.classList.contains('hidden')?'':'rgba(20,184,166,.4)';if(!p.classList.contains('hidden')&&relayOn)fetchLedger();}
-function togglePaste(){const p=$('paste-ov');if(p.style.display==='block')hidePaste();else{p.style.display='block';$('paste-ta').value='';$('paste-err').textContent='';$('paste-ta').focus();}}
-function hidePaste(){$('paste-ov').style.display='none';}
-
-// ─── LAUNCH ───────────────────────────────────────────────────────────
-function openApp(){$('app').style.display='flex';document.body.style.overflow='hidden';}
-function closeApp(){$('app').style.display='none';document.body.style.overflow='';}
-if(location.hash==='#app')openApp();
-
-// ─── TOAST ────────────────────────────────────────────────────────────
-function showToast(msg,_unused,bg){const t=document.createElement('div');t.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${bg||'#1e293b'};border:1px solid #334155;color:#e2e8f0;padding:12px 20px;border-radius:12px;font-size:14px;z-index:99999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);font-family:Inter,sans-serif`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.transition='opacity .4s';t.style.opacity='0';setTimeout(()=>t.remove(),400);},3500);}
-
-// ─── AUTO-DETECT JSON PASTE ────────────────────────────────────────────
-$('msg-inp').addEventListener('paste',e=>{setTimeout(()=>{const v=$('msg-inp').value.trim();if(v.startsWith('{')){try{const p=JSON.parse(v);if(p.v&&p.iv&&p.ct&&p.seq!==undefined){$('msg-inp').value='';$('msg-inp').style.height='auto';$('paste-ta').value=v;$('paste-ov').style.display='block';$('paste-err').textContent='';doDecrypt();}}catch(e){}}},50);});
-$('msg-inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doEncrypt();}});
-$('paste-ta').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doDecrypt();}});
-$('peer-key').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doConnect();}});
-document.addEventListener('keydown',e=>{if(e.key==='PrintScreen'||(e.metaKey&&e.shiftKey&&['3','4','5'].includes(e.key))){const c=activeConv();if(c)sysMsg(c,'⚠️ Let op: screenshots zijn niet versleuteld!');}});
-
-// ─── SIDEBAR ──────────────────────────────────────────────────────────
-function openSidebar(){$('sidebar-panel').style.transform='translateX(0)';$('mob-ov').classList.remove('hidden');}
-function closeSidebar(){$('sidebar-panel').style.transform='';$('mob-ov').classList.add('hidden');}
-
-// ─── UTILS ────────────────────────────────────────────────────────────
-function now(){return new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});}
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,128)+'px';}
-
-// ─── SERVICE WORKER (PWA) ─────────────────────────────────────────────
-if('serviceWorker' in navigator){const sw=`const C='pm-v3';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(self.location.href)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k))))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;try{navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});}catch(e){}}
 </script>
 </body>
 </html>
