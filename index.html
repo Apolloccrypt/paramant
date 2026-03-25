@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PARAMANT — Niemand kan meelezen. Letterlijk niemand.</title>
 <meta name="description" content="Post-quantum versleuteld appen zonder account. ML-KEM-768 + ECDH P-256 + AES-256-GCM. Optionele relay ziet alleen hash-prefix. Gratis voor altijd.">
 <meta name="theme-color" content="#0f172a">
@@ -22,14 +22,11 @@
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:hidden;-webkit-text-size-adjust:100%}
-*{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
-input,textarea,button{-webkit-appearance:none;border-radius:0}
-textarea,input[type=text]{font-size:16px!important}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:hidden}
 .mono{font-family:'JetBrains Mono',monospace}
 
 /* App overlay */
-#app{display:none;position:fixed;inset:0;flex-direction:column;background:#0f172a;z-index:9999;overflow:hidden;height:100%;height:100dvh}
+#app{display:none;position:fixed;inset:0;flex-direction:column;background:#0f172a;z-index:9999;overflow:hidden}
 
 /* Scrollbar */
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
@@ -619,7 +616,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <div id="mob-ov" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden" onclick="closeSidebar()"></div>
 
     <!-- Sidebar -->
-    <div id="sidebar-panel" class="fixed md:relative inset-y-0 left-0 z-50 md:z-auto w-80 flex flex-col bg-slate-900 border-r border-slate-800 -translate-x-full md:translate-x-0 transition-transform duration-250 overflow-hidden" style="height:100%;height:100dvh;max-height:-webkit-fill-available">
+    <div id="sidebar-panel" class="fixed md:relative inset-y-0 left-0 z-50 md:z-auto w-80 flex flex-col bg-slate-900 border-r border-slate-800 -translate-x-full md:translate-x-0 transition-transform duration-250 overflow-hidden">
 
       <!-- Identity card -->
       <div class="p-4 border-b border-slate-800 flex-shrink-0">
@@ -861,7 +858,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
       <!-- Messages -->
       <div id="chat-wrap" style="display:none;flex:1 1 0;min-height:0" class="flex-col overflow-hidden relative">
-        <div id="msgs-host" style="flex:1 1 0;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain" class="overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
+        <div id="msgs-host" style="flex:1 1 0;min-height:0" class="overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
         <!-- Paste overlay -->
         <div id="paste-ov" style="display:none" class="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 p-4 shadow-2xl">
           <div class="text-sm font-semibold text-white mb-1">📥 Bericht van je amice lezen</div>
@@ -877,7 +874,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       </div>
 
       <!-- Input row -->
-      <div id="input-row" style="display:none;padding-bottom:max(12px,env(safe-area-inset-bottom))" class="items-end gap-2 px-3 py-3 bg-slate-900 border-t border-slate-800 flex-shrink-0">
+      <div id="input-row" style="display:none" class="items-end gap-2 px-3 py-3 bg-slate-900 border-t border-slate-800 flex-shrink-0">
         <input type="file" id="file-inp" multiple style="display:none" onchange="handleFiles(this)">
         <button onclick="document.getElementById('file-inp').click()"
           class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all"
@@ -888,7 +885,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           title="📥 Bericht ontvangen van je amice? Klik hier en plak het versleutelde pakket">📥</button>
         <textarea id="msg-inp" rows="1" placeholder="Typ een bericht…"
           class="flex-1 bg-slate-800 border border-slate-700 focus:border-teal-500 text-white rounded-xl px-4 py-3 text-base outline-none resize-none max-h-32 leading-normal transition-colors placeholder-slate-600"
-          oninput="autoResize(this)" style="-webkit-appearance:none;border-radius:12px"></textarea>
+          oninput="autoResize(this)"></textarea>
         <button onclick="doEncrypt()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-teal-500 hover:bg-teal-400 rounded-xl text-slate-900 text-xl font-bold transition-all active:scale-95">➤</button>
       </div>
     </div>
@@ -985,31 +982,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 // ── Runtime integriteit ─────────────────────────────────────────
 // iFrame blokkade (clickjacking preventie)
 if(window.self!==window.top){try{window.top.location=window.self.location;}catch(e){document.body.innerHTML='';}}
-// ── iOS-safe clipboard copy ──────────────────────────────────────
-// navigator.clipboard.writeText werkt alleen op HTTPS en binnen user gesture
-// iOS Safari < 13.4 vereist execCommand fallback
-function copyText(text, btn, successTxt='✓ Gekopieerd!', resetTxt=''){
-  const reset = ()=>{ if(btn && resetTxt) setTimeout(()=>btn.textContent=resetTxt, 2000); };
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(()=>{
-      if(btn) btn.textContent=successTxt;
-      reset();
-    }).catch(()=>copyFallback(text, btn, successTxt, resetTxt));
-  } else {
-    copyFallback(text, btn, successTxt, resetTxt);
-  }
-}
-function copyFallback(text, btn, successTxt, resetTxt){
-  try{
-    const ta=document.createElement('textarea');
-    ta.value=text;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);ta.focus();ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    if(btn) btn.textContent=successTxt;
-    if(btn && resetTxt) setTimeout(()=>btn.textContent=resetTxt, 2000);
-  }catch(e){}
-}
+
 const b2h=a=>Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');
 const h2b=h=>{h=h.replace(/\s+/g,'');const m=h.match(/.{2}/g);return m?new Uint8Array(m.map(x=>parseInt(x,16))):null;};
 const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
@@ -1274,7 +1247,7 @@ async function initIdentity(){
 }
 initIdentity();
 
-function copyMyKey(){const k=$('my-key-prev').dataset.full||myBundle;const btn=$('copy-key-btn');copyText(k,btn,'✓ Gekopieerd!','📋 Kopieer');}
+function copyMyKey(){const k=$('my-key-prev').dataset.full||myBundle;navigator.clipboard.writeText(k).catch(()=>{});const btn=$('copy-key-btn');btn.textContent='✓ Gekopieerd!';setTimeout(()=>btn.textContent='📋 Kopieer',2000);}
 let qrShown=false;
 function toggleQR(){qrShown=!qrShown;const p=$('qr-panel');if(!qrShown){p.classList.add('hidden');return;}p.classList.remove('hidden');$('qr-box').innerHTML='';try{new QRCode($('qr-box'),{text:($('my-key-prev').dataset.full||myBundle).slice(0,200),width:160,height:160,correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
 async function regenIdentity(){
@@ -1907,7 +1880,7 @@ function addLedgerEntry(e){
   const copyBtn=document.createElement('button');
   copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-teal-400 text-xs leading-none px-1';
   copyBtn.textContent='⎘';copyBtn.title='Hash kopiëren';
-  copyBtn.onclick=(ev)=>{ev.stopPropagation();copyText(e.h,copyBtn,'✓','⎘');};
+  copyBtn.onclick=(ev)=>{ev.stopPropagation();navigator.clipboard.writeText(e.h).catch(()=>{});copyBtn.textContent='✓';setTimeout(()=>copyBtn.textContent='⎘',1200);};
   hashRow.appendChild(hashTxt);hashRow.appendChild(copyBtn);
   // Meta row
   const meta=document.createElement('div');meta.className='text-slate-600 mt-0.5';
@@ -1949,7 +1922,7 @@ function rerenderLedger(){
     const copyBtn=document.createElement('button');
     copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-teal-400 text-xs leading-none px-1';
     copyBtn.textContent='⎘';copyBtn.title='Hash kopiëren';
-    copyBtn.onclick=(ev)=>{ev.stopPropagation();copyText(e.h,copyBtn,'✓','⎘');};
+    copyBtn.onclick=(ev)=>{ev.stopPropagation();navigator.clipboard.writeText(e.h).catch(()=>{});copyBtn.textContent='✓';setTimeout(()=>copyBtn.textContent='⎘',1200);};
     hashRow.appendChild(hashTxt);hashRow.appendChild(copyBtn);
     const meta=document.createElement('div');meta.className='text-slate-600 mt-0.5';
     meta.textContent=(e.b/1024).toFixed(1)+'KB · '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -1976,7 +1949,7 @@ function loadMoreLedger(){
     const hashRow=document.createElement('div');hashRow.className='flex items-center gap-1';
     const hashTxt=document.createElement('span');hashTxt.className='text-teal-600 flex-1 truncate';hashTxt.textContent=e.h+'…';
     const copyBtn=document.createElement('button');copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-teal-400 text-xs leading-none px-1';copyBtn.textContent='⎘';
-    copyBtn.onclick=(ev)=>{ev.stopPropagation();copyText(e.h,copyBtn,'✓','⎘');};
+    copyBtn.onclick=(ev)=>{ev.stopPropagation();navigator.clipboard.writeText(e.h).catch(()=>{});copyBtn.textContent='✓';setTimeout(()=>copyBtn.textContent='⎘',1200);};
     hashRow.appendChild(hashTxt);hashRow.appendChild(copyBtn);
     const meta=document.createElement('div');meta.className='text-slate-600 mt-0.5';meta.textContent=(e.b/1024).toFixed(1)+'KB · '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     div.appendChild(hashRow);div.appendChild(meta);el.appendChild(div);
@@ -2257,7 +2230,7 @@ function buildMsg(dir,data,t){
     const pktBox=document.createElement('div');pktBox.className='bg-slate-900 border border-slate-700 rounded-xl p-2.5';
     const prev=document.createElement('div');prev.className='mono text-xs text-teal-400/50 mb-2 truncate';prev.textContent=(data.pkt||'').slice(0,60)+'…';
     const cp=document.createElement('button');cp.className='w-full py-2 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-xs rounded-lg transition-all active:scale-95';cp.textContent='📋 Kopieer en stuur';
-    cp.onclick=()=>copyText(data.pkt,cp,'✓ Gekopieerd!','📋 Kopieer en stuur');
+    cp.onclick=()=>{navigator.clipboard.writeText(data.pkt).catch(()=>{});cp.textContent='✓ Gekopieerd!';setTimeout(()=>cp.textContent='📋 Kopieer en stuur',1800);};
     pktBox.appendChild(prev);pktBox.appendChild(cp);
     detailsBox.appendChild(lbl2);detailsBox.appendChild(pktBox);
 
@@ -2440,7 +2413,7 @@ function showSN(){
 function copySN(){
   const c=activeConv();if(!c||!c.safetyNums.length)return;
   const txt='PARAMANT veiligheidsnummers:\n'+c.safetyNums.join('  ');
-  copyText(txt,null,'','');
+  navigator.clipboard.writeText(txt).catch(()=>{});
   const btn=$('sn-copy-btn');if(btn){btn.textContent='✓ Gekopieerd!';setTimeout(()=>btn.textContent='📋 Kopieer alle nummers',2000);}
 }
 function hideSN(){$('sn-modal').classList.add('hidden');}
