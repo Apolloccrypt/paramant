@@ -99,6 +99,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     </div>
 
     <!-- Badge -->
+    <div class="inline-flex items-center gap-2 px-4 py-2 mb-3 bg-slate-800/60 border border-slate-700 rounded-full text-xs text-slate-400 font-medium">
+      🛠️ Onafhankelijke open-source privacytool &nbsp;·&nbsp; gemaakt door één persoon
+    </div>
+
     <div class="inline-flex items-center gap-2 px-4 py-2 mb-7 bg-teal-500/10 border border-teal-500/25 rounded-full text-sm text-teal-400 font-medium">
       <span class="w-2 h-2 rounded-full bg-teal-400 pulse-badge flex-shrink-0"></span>
       NIST-gecertificeerd · ML-KEM-768 · Quantum-proof
@@ -432,15 +436,37 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   </div>
 </section>
 
-<footer class="py-8 px-6 bg-slate-900 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
-  <div class="font-bold text-white text-lg tracking-tight">PARAMANT</div>
-  <div class="flex gap-5 text-sm text-slate-500">
-    <a href="#hoe" class="hover:text-teal-400 transition-colors">Hoe werkt het?</a>
-    <a href="#vergelijk" class="hover:text-teal-400 transition-colors">Vergelijking</a>
-    <a href="#ledger" class="hover:text-teal-400 transition-colors">Ledger</a>
-    <a href="javascript:openApp()" class="hover:text-teal-400 transition-colors">Open app</a>
+<!-- Donation section -->
+<section class="py-10 px-5 bg-slate-950 border-t border-slate-800">
+  <div class="max-w-xl mx-auto text-center">
+    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+      PARAMANT is een <strong class="text-white">onafhankelijke privacytool</strong> — geen bedrijf, geen investeerders, geen advertenties. Gebouwd en onderhouden door één persoon.<br>
+      <span class="text-slate-500">Als je het nuttig vindt, kun je het bestaan ervan steunen met een donatie.</span>
+    </p>
+    <a href="https://buymeacoffee.com/mickbeer" target="_blank" rel="noopener noreferrer"
+      class="inline-flex items-center gap-2.5 px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold text-base rounded-2xl transition-all hover:shadow-lg hover:shadow-yellow-400/20 active:scale-95">
+      ☕ Koop me een koffie
+    </a>
+    <p class="text-slate-600 text-xs mt-3 mono">buymeacoffee.com/mickbeer</p>
   </div>
-  <div class="mono text-xs text-slate-600">ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</div>
+</section>
+
+<footer class="py-6 px-6 bg-slate-900 border-t border-slate-800">
+  <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="font-bold text-white text-lg tracking-tight">PARAMANT</div>
+      <div class="text-xs text-slate-600 mt-0.5">Onafhankelijke open-source privacytool</div>
+    </div>
+    <div class="flex flex-wrap gap-4 text-sm text-slate-500">
+      <a href="#hoe" class="hover:text-teal-400 transition-colors">Hoe werkt het?</a>
+      <a href="#vergelijk" class="hover:text-teal-400 transition-colors">Vergelijking</a>
+      <a href="#ledger" class="hover:text-teal-400 transition-colors">Ledger</a>
+      <a href="javascript:openApp()" class="hover:text-teal-400 transition-colors">Open app</a>
+      <a href="https://github.com/Apolloccrypt/paramant" target="_blank" rel="noopener" class="hover:text-teal-400 transition-colors">GitHub</a>
+      <a href="https://buymeacoffee.com/mickbeer" target="_blank" rel="noopener" class="hover:text-yellow-400 transition-colors">☕ Doneer</a>
+    </div>
+    <div class="mono text-xs text-slate-700">ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</div>
+  </div>
 </footer>
 
 </div><!-- /landing -->
@@ -1693,30 +1719,44 @@ async function doConnect(){
     const theirKey=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
     const bits=await crypto.subtle.deriveBits({name:'ECDH',public:theirKey},myKP.privateKey,256);
     const shared=new Uint8Array(bits);
-    let master=null,ck=null;
+    let master=null;
     try{
       master=await hkdf(shared,'paramant-master-v1',32);
       const sn=await safetyNums(master);
-      // Twee onafhankelijke chains uit dezelfde master — nooit verwarren
-      const sendCK=await hkdf(master,'paramant-send-chain-v1',32);
-      const recvCK=await hkdf(master,'paramant-recv-chain-v1',32);
+
+      // ── Rol-gebaseerde chains ─────────────────────────────────────────
+      // ECDH is commutatief: beide kanten berekenen dezelfde master.
+      // Daarom vergelijken we de publieke sleutels lexicografisch
+      // om te bepalen wie "initiator" is en wie "responder".
+      // Initiator (lagere pubkey) stuurt op chain-A, ontvangt op chain-B.
+      // Responder (hogere pubkey) stuurt op chain-B, ontvangt op chain-A.
+      // Zo heeft elke richting altijd een unieke sleutelfamilie.
+      const myRawPub=new Uint8Array(await crypto.subtle.exportKey('raw',myKP.publicKey));
+      let isInitiator=false;
+      for(let i=0;i<myRawPub.length;i++){
+        if(myRawPub[i]<eb[i]){isInitiator=true;break;}
+        if(myRawPub[i]>eb[i]){isInitiator=false;break;}
+      }
+      const ckA=await hkdf(master,'paramant-chain-A-v2',32); // initiator→responder
+      const ckB=await hkdf(master,'paramant-chain-B-v2',32); // responder→initiator
+      const chatCK=await hkdf(master,'paramant-chat-id-v2',32);
+
       const id=Date.now();
       const conv=newConv(id,bundle.nick||name);
-      conv.sendChainKey=sendCK; conv.sendSeq=0;
-      conv.recvChainKey=recvCK; conv.recvSeq=0;
-      conv.safetyNums=sn;conv.connected=true;
+      // Wijs send/recv toe op basis van rol
+      conv.sendChainKey = isInitiator ? ckA : ckB;
+      conv.recvChainKey = isInitiator ? ckB : ckA;
+      conv.sendSeq=0; conv.recvSeq=0;
+      conv.safetyNums=sn; conv.connected=true;
       conv.kxType=myMLK&&bundle.mlkem?'ECDH P-256 + ML-KEM-768':'ECDH P-256';
       if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
-      // chatId voor relay room — stabiel, gebaseerd op master (al gewist na hkdf)
-      // Gebruik sendCK als stable basis — beide kanten hebben dezelfde sendCK na ECDH
-      conv.chatId=await chatIdFrom(sendCK);
+      // Stabiele chatId voor relay room — dezelfde voor beide kanten
+      conv.chatId=await chatIdFrom(chatCK);
       convs.push(conv);
       sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
       sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
       if(relayOn){
         relayJoin(conv.chatId);
-        // Stuur verbindingsverzoek naar de andere partij via presence
-        // Zodat zij een "Accepteer & verbind" notificatie krijgen
         broadcastConnRequest(bundle);
       }
       renderList();showChat(id);
@@ -1724,7 +1764,6 @@ async function doConnect(){
     }finally{
       shared.fill(0);
       if(master)master.fill(0);
-      // sendCK en recvCK blijven in conv — dat is intentioneel
     }
   }catch(e){
     $('conn-err').textContent=e.message;$('conn-err').style.display='block';
