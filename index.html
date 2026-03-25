@@ -1046,13 +1046,15 @@ const LP={
   requestAnimationFrame(animL);
 })();
 
-// ── Object.freeze: voorkom monkey-patching van crypto functies ────────────
+// ── Object.freeze: voorkom monkey-patching van interne crypto functies ──────
+// Alleen functies die gegarandeerd gesynchroniseerd gedefinieerd zijn
 (()=>{
   try{
-    const _e={hkdf,sha256,ratchet,aesEnc,aesDec,kemEncap,kemDecap,safetyNums,pad32,unpad32,chatIdFrom};
+    // Geen kemEncap/kemDecap — die hangen af van noble-pq CDN (async laden)
+    // Geen window.crypto.defineProperty — breekt crypto.subtle op sommige browsers
+    const _e={hkdf,sha256,ratchet,aesEnc,aesDec,safetyNums,pad32,unpad32,chatIdFrom};
     Object.freeze(_e);
   }catch(e){}
-  try{Object.defineProperty(window,'crypto',{configurable:false,writable:false});}catch(e){}
 })();
 
 // ─── IDENTITY — SHA-256(pubKey) → avatar + nick ──────────────────
