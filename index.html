@@ -899,6 +899,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
 <script>
 'use strict';
+// ── Runtime integriteit ─────────────────────────────────────────
+// iFrame blokkade (clickjacking preventie)
+if(window.self!==window.top){try{window.top.location=window.self.location;}catch(e){document.body.innerHTML='';}}
 // ─── Helpers ────────────────────────────────────────────────────────
 const $=id=>document.getElementById(id);
 const b2h=a=>Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');
@@ -1041,6 +1044,15 @@ const LP={
   };
   ['hero-cv','hero-main-cv','app-logo-cv','wl-cv'].forEach(id=>{const cv=$(id);if(cv)drawFractal(cv,p);});
   requestAnimationFrame(animL);
+})();
+
+// ── Object.freeze: voorkom monkey-patching van crypto functies ────────────
+(()=>{
+  try{
+    const _e={hkdf,sha256,ratchet,aesEnc,aesDec,kemEncap,kemDecap,safetyNums,pad32,unpad32,chatIdFrom};
+    Object.freeze(_e);
+  }catch(e){}
+  try{Object.defineProperty(window,'crypto',{configurable:false,writable:false});}catch(e){}
 })();
 
 // ─── IDENTITY — SHA-256(pubKey) → avatar + nick ──────────────────
