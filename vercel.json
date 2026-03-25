@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "paramant",
   "buildCommand": null,
   "outputDirectory": ".",
   "routes": [
