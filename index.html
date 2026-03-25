@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PARAMANT — Veiliger dan Signal. Geen account.</title>
+<title>PARAMANT — Niemand kan meelezen. Letterlijk niemand.</title>
 <meta name="description" content="Post-quantum versleuteld appen zonder account. ML-KEM-768 + ECDH P-256 + AES-256-GCM. Optionele relay ziet alleen hash-prefix. Gratis voor altijd.">
 <meta name="theme-color" content="#0f172a">
-<meta property="og:title" content="PARAMANT — Veiliger dan Signal. Geen account.">
+<meta property="og:title" content="PARAMANT — Niemand kan meelezen. Letterlijk niemand.">
 <meta property="og:description" content="Quantum-safe berichten. Niemand kan meelezen — ook wij niet.">
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22PARAMANT%22%2C%22short_name%22%3A%22PARAMANT%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
 <!-- CDNs -->
@@ -105,8 +105,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     </div>
 
     <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-5">
-      Veiliger dan Signal.<br>
-      <span class="text-teal-400" style="animation:glow 3s ease-in-out infinite">Geen account nodig.</span>
+      Niemand kan meelezen.<br>
+      <span class="text-teal-400" style="animation:glow 3s ease-in-out infinite">Letterlijk niemand.</span>
     </h1>
 
     <p class="text-lg md:text-xl text-slate-400 font-light max-w-xl mx-auto mb-10 leading-relaxed">
@@ -450,11 +450,18 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 <div id="app">
 
   <!-- Top bar -->
-  <div class="flex items-center gap-3 px-4 h-14 bg-slate-900 border-b border-slate-800 flex-shrink-0">
-    <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400">☰</button>
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 rounded-lg overflow-hidden border border-teal-500/40"><canvas id="app-logo-cv" width="28" height="28"></canvas></div>
-      <span class="font-bold text-white text-sm tracking-tight">PARAMANT</span>
+  <div class="flex items-center gap-2 px-3 h-14 bg-slate-900 border-b border-slate-800 flex-shrink-0">
+    <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 flex-shrink-0">☰</button>
+    <!-- Logo + breadcrumb navigation -->
+    <div class="flex items-center gap-1 flex-shrink-0">
+      <button onclick="closeApp()" class="flex items-center gap-2 hover:opacity-80 transition-opacity" title="Terug naar de landingspagina">
+        <div class="w-7 h-7 rounded-lg overflow-hidden border border-teal-500/40"><canvas id="app-logo-cv" width="28" height="28"></canvas></div>
+        <span class="font-bold text-white text-sm tracking-tight hidden sm:block">PARAMANT</span>
+      </button>
+      <span id="nav-sep" class="text-slate-700 text-sm mx-1 hidden">/</span>
+      <button id="nav-home" onclick="showWelcome()" class="hidden text-xs text-slate-500 hover:text-teal-400 transition-colors px-1" title="Welkomscherm">Home</button>
+      <span id="nav-sep2" class="text-slate-700 text-sm mx-0.5 hidden">/</span>
+      <span id="nav-current" class="hidden text-xs text-slate-400 max-w-24 truncate"></span>
     </div>
     <div class="flex-1"></div>
     <!-- Relay toggle — gebruiker hint -->
@@ -473,7 +480,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <button onclick="toggleLedger()" id="ledger-btn" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs text-slate-400 transition-all">
       📊 Ledger
     </button>
-    <button onclick="closeApp()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-400 hover:text-white transition-all">← Site</button>
+    <button onclick="closeApp()" class="hidden md:flex px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-400 hover:text-white transition-all" title="Terug naar landingspagina">← Site</button>
   </div>
 
   <!-- App body -->
@@ -531,9 +538,14 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
               ↺ Nieuw adres
             </button>
             <button onclick="dlPage()"
-              class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-500 hover:text-slate-300">
-              ⬇ Download voor USB/offline
+              class="py-2 bg-slate-700/60 border border-slate-700 text-slate-400 text-xs rounded-xl transition-all hover:border-slate-500 hover:text-slate-300"
+              title="Download volledige app als HTML — werkt op USB, lokaal of offline zonder internet">
+              ⬇ Download
             </button>
+          </div>
+          <!-- Offline uitleg -->
+          <div class="mt-2 p-2 bg-slate-950/80 rounded-xl text-xs text-slate-600 leading-relaxed">
+            💾 Download = volledige app op USB of lokaal.<br>Open in elke browser — geen internet nodig.
           </div>
 
           <!-- QR Panel -->
@@ -1045,7 +1057,14 @@ async function regenIdentity(){
   if(myMLK)$('pq-badge').classList.remove('hidden');
   drawFractal($('my-avatar'),myFractalParams);
 }
-function dlPage(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([document.documentElement.outerHTML],{type:'text/html'}));a.download='paramant.html';a.click();}
+function dlPage(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([document.documentElement.outerHTML],{type:'text/html'}));
+  a.download='paramant.html';
+  a.click();
+  // Show offline instructions toast after short delay
+  setTimeout(()=>showToast('✅ Opgeslagen! Open paramant.html in elke browser — werkt zonder internet.',null,'#0f4c3a'),800);
+}
 
 // ─── RELAY ───────────────────────────────────────────────────────────
 // Stel jouw relay-URL in (optioneel — werkt ook offline):
@@ -1623,9 +1642,30 @@ function buildMsg(dir,data,t){
 function renderMsgs(conv){$('msgs').innerHTML='';conv.msgs.forEach(m=>$('msgs').appendChild(buildMsg(m.dir,m.data,m.t)));$('msgs').scrollTop=$('msgs').scrollHeight;}
 
 // ─── SCREENS — _s() uses only inline style, avoids Tailwind conflicts ─
+// ── Breadcrumb nav helper ─────────────────────────────────────────
+function setNav(screen, label){
+  const sep=$('nav-sep'), home=$('nav-home'), sep2=$('nav-sep2'), cur=$('nav-current');
+  if(screen==='welcome'){
+    if(sep)sep.classList.add('hidden');
+    if(home)home.classList.add('hidden');
+    if(sep2)sep2.classList.add('hidden');
+    if(cur)cur.classList.add('hidden');
+  }else{
+    if(sep)sep.classList.remove('hidden');
+    if(home)home.classList.remove('hidden');
+    if(screen==='chat'&&label){
+      if(sep2)sep2.classList.remove('hidden');
+      if(cur){cur.classList.remove('hidden');cur.textContent=label;}
+    }else{
+      if(sep2)sep2.classList.add('hidden');
+      if(cur)cur.classList.add('hidden');
+    }
+  }
+}
+
 function _s(id,d){const e=$(id);if(!e)return;e.style.display=d;}
-function showWelcome(){_s('welcome','flex');_s('conn-scr','none');_s('chat-head','none');_s('chat-wrap','none');_s('input-row','none');_s('audit-bar','none');activeId=null;document.querySelectorAll('.ci-item').forEach(e=>e.classList.remove('bg-slate-800','border-teal-500/30'));}
-function showConnect(){if(convs.length>=MAX){showToast('Je hebt al 3 gesprekken. Sluit er eerst één.');return;}_s('welcome','none');_s('conn-scr','flex');_s('chat-head','none');_s('chat-wrap','none');_s('input-row','none');_s('audit-bar','none');$('peer-key').value='';$('peer-name').value='';$('conn-err').style.display='none';$('conn-btn').disabled=false;$('conn-btn').textContent='⚡ Verbinden';closeSidebar();setTimeout(()=>$('peer-key').focus(),80);}
+function showWelcome(){_s('welcome','flex');_s('conn-scr','none');_s('chat-head','none');_s('chat-wrap','none');_s('input-row','none');_s('audit-bar','none');activeId=null;document.querySelectorAll('.ci-item').forEach(e=>e.classList.remove('bg-slate-800','border-teal-500/30'));setNav('welcome');}
+function showConnect(){if(convs.length>=MAX){showToast('Je hebt al 3 gesprekken. Sluit er eerst één.');return;}_s('welcome','none');_s('conn-scr','flex');_s('chat-head','none');_s('chat-wrap','none');_s('input-row','none');_s('audit-bar','none');$('peer-key').value='';$('peer-name').value='';$('conn-err').style.display='none';$('conn-btn').disabled=false;$('conn-btn').textContent='⚡ Verbinden';setNav('connect');closeSidebar();setTimeout(()=>$('peer-key').focus(),80);}
 function cancelConnect(){if(activeId)showChat(activeId);else showWelcome();}
 function showChat(id){
   const conv=getConv(id);if(!conv)return;activeId=id;
@@ -1639,6 +1679,7 @@ function showChat(id){
   document.querySelectorAll('.ci-item').forEach(e=>e.classList.remove('bg-slate-800','border-teal-500/30'));
   const ci=$('ci-'+id);if(ci)ci.classList.add('bg-slate-800','border-teal-500/30');
   $('new-btn').disabled=convs.length>=MAX;closeSidebar();
+  setNav('chat', conv.name);
 }
 function endConv(){const c=activeConv();if(!c||!confirm(`Gesprek met ${c.name} sluiten?`))return;if(c.chainKey)c.chainKey.fill(0);convs=convs.filter(x=>x.id!==activeId);renderList();if(convs.length>0)showChat(convs[0].id);else showWelcome();}
 function renderList(){
