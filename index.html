@@ -2,6 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230f172a'/><circle cx='16' cy='16' r='8' fill='none' stroke='%2314b8a6' stroke-width='2'/><circle cx='16' cy='16' r='3' fill='%2314b8a6'/></svg>">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PARAMANT — Niemand kan meelezen. Letterlijk niemand.</title>
 <meta name="description" content="Post-quantum versleuteld appen zonder account. ML-KEM-768 + ECDH P-256 + AES-256-GCM. Geen inhoud opgeslagen. Gratis en open-source.">
@@ -519,33 +520,30 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <div class="px-4 py-2 bg-slate-800 border-b border-slate-700 mono text-xs text-slate-400 flex justify-between">
             <span>ACTIEVE GEBRUIKERS</span><span class="text-teal-500">LIVE</span>
           </div>
-          <div id="ledger-demo-entries" class="p-4 space-y-2 mono text-xs">
-            <div class="flex justify-between items-center py-2 border-b border-slate-800 text-slate-600">
-              <span>Laden…</span>
+          <div class="p-4 space-y-2 mono text-xs">
+            <div class="flex justify-between items-center py-2 border-b border-slate-800">
+              <span class="text-teal-600">a3f8c2d1e7b4…</span>
+              <span class="text-slate-500">1.2 KB</span>
+              <span class="text-slate-600">14:23:41</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-slate-800">
+              <span class="text-teal-600">7e9b1a4f2c8d…</span>
+              <span class="text-slate-500">2.8 KB</span>
+              <span class="text-slate-600">14:23:44</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-slate-800">
+              <span class="text-teal-600">a3f8c2d1e7b4…</span>
+              <span class="text-slate-500">1.1 KB</span>
+              <span class="text-slate-600">14:24:02</span>
+            </div>
+            <div class="flex justify-between items-center py-2">
+              <span class="text-teal-600">f1d7a2e9c3b5…</span>
+              <span class="text-slate-500">10.3 KB</span>
+              <span class="text-slate-600">14:24:18</span>
             </div>
           </div>
-          <script>
-          (function(){
-            var api=(window._PARAMANT_RELAY||'').replace('wss://','https://').replace('ws://','http://');
-            if(!api)return;
-            function fmt(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
-            function ts(t){var d=new Date(t);return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');}
-            fetch(api+'/api/ledger').then(function(r){return r.json();}).then(function(d){
-              if(!d.ok||!d.entries||!d.entries.length)return;
-              var el=document.getElementById('ledger-demo-entries');
-              if(!el)return;
-              el.innerHTML=d.entries.slice(0,4).map(function(e,i){
-                return '<div class="flex justify-between items-center py-2 '+(i<3?'border-b border-slate-800':'')+'">'
-                  +'<span class="text-teal-600">'+e.chatHash+'</span>'
-                  +'<span class="text-slate-500">'+fmt(e.bytes)+'</span>'
-                  +'<span class="text-slate-600">'+ts(e.timestamp)+'</span>'
-                  +'</div>';
-              }).join('');
-            }).catch(function(){});
-          })();
-          </script>
           <div class="px-4 py-3 bg-slate-800/50 border-t border-slate-700 text-xs text-slate-500 mono">
-            Hash-prefix · pakketgrootte · tijdstempel · max 5 min bewaard
+            Hash-prefix · pakketgrootte · tijdstempel · max 30 min bewaard
           </div>
         </div>
         <div class="mt-3 flex items-start gap-2 text-sm text-teal-400">
@@ -773,6 +771,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       👥 Online
     </button>
 
+    <!-- Relay feed knop — desktop -->
+    <a href="/relay-feed.html" target="_blank" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs text-slate-400 transition-all flex-shrink-0" title="Live relay feed">📡 Feed</a>
+
     <!-- ← Site knop — alleen desktop -->
     <button onclick="closeApp()" class="hidden lg:flex px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-400 hover:text-white transition-all flex-shrink-0" title="Terug naar landingspagina">← Site</button>
 
@@ -781,6 +782,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <button onclick="toggleAppMenu()" class="w-8 h-8 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 text-sm">⋯</button>
       <div id="app-menu" class="hidden absolute right-0 top-10 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 min-w-max overflow-hidden">
         <button onclick="toggleLedger();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">👥 Actief</button>
+        <a href="/relay-feed.html" target="_blank" onclick="closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">📡 Relay feed</a>
         <button onclick="closeApp();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">← Terug naar site</button>
       </div>
     </div>
@@ -926,23 +928,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <button onclick="showConnect()" class="px-8 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-base rounded-2xl transition-all hover:shadow-xl hover:shadow-teal-500/20 active:scale-95">🤝 Nieuw gesprek starten</button>
 
         <!-- Live presence — zichtbaar in welkomscherm zodra relay aan is -->
-        <div id="welcome-presence" class="hidden w-full max-w-sm mt-6">
-          <div class="border border-teal-500/20 rounded-2xl overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-2.5 bg-teal-500/8 border-b border-teal-500/15">
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                <span class="text-teal-400 text-xs font-mono font-semibold tracking-widest">LIVE NU ONLINE</span>
-              </div>
-              <span id="wl-presence-count" class="text-teal-600 text-xs font-mono">0 actief</span>
-            </div>
-            <div id="wl-presence-list" class="bg-slate-900/60 divide-y divide-slate-800/60">
-              <div id="wl-presence-empty" class="text-center py-4 text-slate-600 text-xs font-mono">
-                Wacht op andere gebruikers…
-              </div>
-            </div>
-          </div>
-          <div class="text-xs text-slate-600 text-center mt-2 font-mono">Klik op iemand om direct te verbinden</div>
-        </div>
+        <div id="welcome-presence" style="display:none!important"><div id="wl-presence-list"><div id="wl-presence-empty"></div></div><span id="wl-presence-count"></span></div>
       </div>
 
       <!-- Connect screen -->
