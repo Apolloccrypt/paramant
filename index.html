@@ -1283,6 +1283,32 @@ function showRelayConfigTip(){
 function relayJoin(room){if(!relayOn||!relayWS||relayWS.readyState!==1)return;relayWS.send(JSON.stringify({type:'join',chatHash:room,nick:myNick}));}
 function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyState!==1)return false;try{relayWS.send(JSON.stringify({type:'packet',chatHash:conv.chatId,seq:pkt.seq,payload:{iv:pkt.iv,ct:pkt.ct,type:pkt.type,kemCt:pkt.kemCt,kemPub:pkt.kemPub}}));return true;}catch(e){return false;}}
 function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
+
+// Broadcast verbindingsverzoek — de andere partij ziet een inkomend verzoek
+function broadcastConnRequest(theirBundle){
+  if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;
+  let targetHash='';
+  try{
+    const b=JSON.parse(theirBundle||'{}');
+    if(b.ecdh){
+      // Bereken target hash van hun publieke sleutel
+      const eb=h2b(b.ecdh.replace(/\s+/g,''));
+      if(eb&&eb.length===65){
+        sha256(eb).then(h=>{
+          const hint=b2h(h.slice(0,8));
+          relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{
+            pType:'conn_request',
+            nick:myNick,
+            bundle:myBundle,
+            avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',
+            targetHash:hint,
+            ts:Date.now()
+          }}));
+        }).catch(()=>{});
+      }
+    }
+  }catch(e){}
+}
 // Broadcast presence elke 10s (was 25s — te traag voor peer discovery)
 setInterval(()=>{if(relayOn)broadcastPresence();},10000);
 // Stats elke 15s
@@ -1295,20 +1321,128 @@ function onRelayMsg(msg){
   if(typeof msg.online==='number') updateOnlineFromWS(msg.online);
   if(typeof msg.peers==='number' && msg.type==='joined') updateOnlineFromWS(msg.online||msg.peers);
 
-  if(msg.type==='packet'){const pay=msg.payload;
+  if(msg.type==='packet'){
+    const pay=msg.payload;
+
+    // Presence broadcast
     if(pay?.pType==='presence'&&pay.nick&&pay.bundle&&pay.nick!==myNick){
       if(!validNick(pay.nick))return;
       try{const b=JSON.parse(pay.bundle);if(!b?.ecdh||!isHex(b.ecdh,130))return;}catch{return;}
       presenceMap.set(pay.nick,{nick:pay.nick,bundle:pay.bundle,avatarHint:pay.avatarHint,ts:pay.ts});
       renderPresence();return;
     }
-    const conv=convs.find(c=>c.chatId&&c.connected);if(!conv)return;const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};decryptPacket(conv,pkt).then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()})).catch(e=>sysMsg(conv,'⚠️ '+e.message));
-  }else if(msg.type==='peer_left'){
+
+    // ── Verbindingsverzoek: B heeft A verbonden, vraagt A om terug te verbinden ──
+    if(pay?.pType==='conn_request'&&pay.nick&&pay.bundle&&pay.targetHash){
+      if(!validNick(pay.nick))return;
+      // Controleer of dit verzoek voor MIJ is
+      if(!myIdentityHash)return;
+      const myHashHex=b2h(myIdentityHash.slice(0,8));
+      if(pay.targetHash!==myHashHex)return;
+      // Heb ik al een verbinding met deze peer?
+      let existing;try{const b=JSON.parse(pay.bundle);existing=convs.find(c=>c.connected);}catch{return;}
+      if(existing)return; // al verbonden, negeer
+      // Valideer bundle
+      try{const b=JSON.parse(pay.bundle);if(!b?.ecdh||!isHex(b.ecdh,130))return;}catch{return;}
+      // Sla op in presenceMap zodat quickConnect werkt
+      presenceMap.set(pay.nick,{nick:pay.nick,bundle:pay.bundle,avatarHint:pay.avatarHint||'',ts:Date.now()});
+      renderPresence();
+      // Toon inkomend verzoek notification
+      showIncomingRequest(pay.nick,pay.bundle,pay.avatarHint||'');
+      return;
+    }
+
+    // ── Normaal versleuteld pakket — zoek de juiste conv op chatHash ──
+    // Gebruik chatHash uit de relay-boodschap als die er is
+    const incomingHash=msg.chatHash||'';
+    let conv=null;
+    if(incomingHash){
+      conv=convs.find(c=>c.chatId&&c.chatId.startsWith(incomingHash.replace('…','').slice(0,8)));
+    }
+    // Fallback: eerste verbonden conv
+    if(!conv) conv=convs.find(c=>c.chatId&&c.connected);
+    if(!conv)return;
+    const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};
+    decryptPacket(conv,pkt)
+      .then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()}))
+      .catch(e=>sysMsg(conv,'⚠️ '+e.message));
+  }
+  else if(msg.type==='peer_left'){
     presenceMap.delete(msg.nick);renderPresence();
     if(typeof msg.peers==='number') updateOnlineFromWS(msg.peers);
-  }else if(msg.type==='peer_joined'){
+  }
+  else if(msg.type==='peer_joined'){
     if(typeof msg.peers==='number') updateOnlineFromWS(msg.peers);
   }
+}
+
+// ── Inkomend verbindingsverzoek UI ────────────────────────────────
+function showIncomingRequest(nick, bundle, avatarHint){
+  // Verwijder eventueel oude verzoek
+  const old=$('incoming-request-toast');if(old)old.remove();
+
+  const toast=document.createElement('div');
+  toast.id='incoming-request-toast';
+  toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;width:320px;max-width:90vw';
+
+  // Avatar
+  const avatarHtml=avatarHint
+    ? `<div class="w-10 h-10 rounded-full border-2 border-teal-500/60 overflow-hidden flex-shrink-0 bg-slate-800 flex items-center justify-center" id="ir-av"></div>`
+    : `<div class="w-10 h-10 rounded-full border-2 border-teal-500/60 bg-slate-800 flex items-center justify-center text-teal-400 font-bold flex-shrink-0">${nick.charAt(0).toUpperCase()}</div>`;
+
+  toast.innerHTML=`
+    <div class="bg-slate-800 border-2 border-teal-500/50 rounded-2xl p-4 shadow-2xl shadow-teal-500/20">
+      <div class="flex items-center gap-3 mb-3">
+        ${avatarHtml}
+        <div class="flex-1 min-w-0">
+          <div class="text-white font-bold text-sm">📨 Inkomend verzoek</div>
+          <div class="text-teal-400 text-xs font-mono truncate">${san(nick,20)} wil verbinden</div>
+        </div>
+        <button onclick="this.closest('#incoming-request-toast').remove()" class="text-slate-500 hover:text-white text-lg leading-none flex-shrink-0">✕</button>
+      </div>
+      <p class="text-slate-400 text-xs mb-3 leading-relaxed">Plak ook jouw adres bij je amice, <strong class="text-white">of klik Accepteer</strong> om direct terug te verbinden.</p>
+      <div class="flex gap-2">
+        <button onclick="acceptIncomingRequest('${encodeURIComponent(bundle)}','${san(nick,20)}')"
+          class="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm rounded-xl transition-all active:scale-95">
+          ⚡ Accepteer & verbind
+        </button>
+        <button onclick="this.closest('#incoming-request-toast').remove()"
+          class="px-4 py-2.5 bg-slate-700 border border-slate-600 text-slate-300 text-sm rounded-xl transition-all">
+          Later
+        </button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(toast);
+
+  // Render avatar in toast if hint available
+  if(avatarHint){
+    setTimeout(()=>{
+      const av=toast.querySelector('#ir-av');
+      if(av){
+        const cv=document.createElement('canvas');cv.width=40;cv.height=40;
+        const fh=new Uint8Array(32);const hb=h2b(avatarHint)||new Uint8Array(8);
+        fh.set(hb.slice(0,8));drawFractal(cv,fractalParams(fh));av.appendChild(cv);
+      }
+    },50);
+  }
+
+  // Auto-dismiss after 60 seconds
+  setTimeout(()=>{
+    const t=$('incoming-request-toast');
+    if(t){t.style.transition='opacity .5s';t.style.opacity='0';setTimeout(()=>t.remove(),500);}
+  },60000);
+}
+
+function acceptIncomingRequest(encodedBundle, nick){
+  const bundle=decodeURIComponent(encodedBundle);
+  const t=$('incoming-request-toast');if(t)t.remove();
+  showConnect();
+  setTimeout(()=>{
+    $('peer-key').value=bundle;
+    $('peer-name').value=nick;
+    doConnect();
+  },80);
 }
 
 function buildPresenceRow(p, compact=false){
@@ -1558,7 +1692,12 @@ async function doConnect(){
       convs.push(conv);
       sysMsg(conv,`🎉 Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
       sysMsg(conv,'💡 Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
-      if(relayOn)relayJoin(conv.chatId);
+      if(relayOn){
+        relayJoin(conv.chatId);
+        // Stuur verbindingsverzoek naar de andere partij via presence
+        // Zodat zij een "Accepteer & verbind" notificatie krijgen
+        broadcastConnRequest(bundle);
+      }
       renderList();showChat(id);
       $('au-kx').textContent=conv.kxType;if(conv.chatId){$('au-cid').textContent=conv.chatId.slice(0,8)+'…';$('au-cid-wrap').classList.remove('hidden');}
     }finally{
