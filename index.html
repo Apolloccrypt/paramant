@@ -830,7 +830,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <button onclick="togglePaste()"
           class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xl text-slate-400 transition-all"
           title="📥 Bericht ontvangen van je amice? Klik hier en plak het versleutelde pakket">📥</button>
-        <textarea id="msg-inp" rows="1" placeholder="Verbind eerst voor je een bericht kunt sturen…" id="msg-inp-placeholder"
+        <textarea id="msg-inp" rows="1" placeholder="Typ een bericht…"
           class="flex-1 bg-slate-800 border border-slate-700 focus:border-teal-500 text-white rounded-xl px-4 py-3 text-base outline-none resize-none max-h-32 leading-normal transition-colors placeholder-slate-600"
           oninput="autoResize(this)"></textarea>
         <button onclick="doEncrypt()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-teal-500 hover:bg-teal-400 rounded-xl text-slate-900 text-xl font-bold transition-all active:scale-95">➤</button>
@@ -2062,7 +2062,25 @@ function addProgMsg(conv,name,size){
   w._bar=bar;w._st=st;const _sh2=$msgs();const _ho2=$('msgs-host');if(_sh2&&_ho2){_sh2.appendChild(wrap);_ho2.scrollTop=_ho2.scrollHeight;}return w;
 }
 function updateProg(el,pct,lbl){if(!el)return;if(el._bar)el._bar.style.width=pct+'%';if(el._st)el._st.textContent=lbl;}
-function downloadFile(meta){const bin=atob(meta.data);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bytes],{type:meta.mime}));a.download=meta.name;a.click();}
+function downloadFile(meta){
+  if(!meta?.data){showToast('⚠️ Bestandsdata ontbreekt — ontvang het bestand opnieuw.');return;}
+  try{
+    const bin=atob(meta.data);
+    const bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    const blob=new Blob([bytes],{type:meta.mime||'application/octet-stream'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=meta.name||'bestand';
+    a.style.display='none';
+    document.body.appendChild(a); // vereist op mobiel
+    a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+  }catch(e){
+    showToast('⚠️ Download mislukt: '+e.message);
+  }
+}
 function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
 
 // ─── VOICE ────────────────────────────────────────────────────────────
@@ -2083,34 +2101,67 @@ function buildMsg(dir,data,t){
   const outer=document.createElement('div');
   if(dir==='sys'){outer.className='flex justify-center my-1';const b=document.createElement('div');b.className='bbl-sys px-4 py-2 rounded-2xl text-xs text-teal-400/80 text-center max-w-sm leading-relaxed';b.textContent=data.text;outer.appendChild(b);return outer;}
   outer.className=`flex flex-col ${dir==='sent'?'items-end':'items-start'} fade-up`;
+
   if(dir==='sent'){
     const box=document.createElement('div');box.className='max-w-xs lg:max-w-sm';
-    const lbl=document.createElement('div');lbl.className='mono text-xs text-slate-500 mb-1.5 px-1';lbl.textContent=data.type==='file'?'📎 Versleuteld bestand — stuur dit naar je amice:':'📤 Versleuteld bericht — stuur dit pakket naar je amice:';
-    const pkt=document.createElement('div');pkt.className='bg-slate-800 border border-slate-700 rounded-2xl p-3';
+
+    if(data.type==='file'){
+      // Bestand verstuurd — toon bestandsnaam prominent
+      const fb=document.createElement('div');fb.className='bbl-sent px-4 py-3 rounded-2xl flex items-center gap-2';
+      const ic=document.createElement('span');ic.textContent='📎';
+      const tx=document.createElement('span');tx.className='text-sm font-medium';tx.textContent=data.payload?.name||'bestand';
+      fb.appendChild(ic);fb.appendChild(tx);box.appendChild(fb);
+    }else{
+      // Tekst verstuurd — toon de plaintext bubble
+      const b=document.createElement('div');b.className='bbl-sent px-4 py-3 rounded-2xl text-sm leading-relaxed';b.textContent=data.payload||'';
+      box.appendChild(b);
+    }
+
+    // Uitklapbare technische details
+    const detailsToggle=document.createElement('div');
+    detailsToggle.className='mono text-xs text-slate-600 mt-1 px-1 cursor-pointer hover:text-slate-400 transition-colors select-none flex items-center gap-1';
+    const relayedText = data.relayed ? '✓ Relay · ' : '';
+    detailsToggle.innerHTML=''; // clear before building
+    const toggleTxt=document.createTextNode(relayedText+'🔒 bekijk versleuteld pakket ›');
+    detailsToggle.appendChild(toggleTxt);
+
+    const detailsBox=document.createElement('div');
+    detailsBox.className='hidden mt-1';
+    const lbl2=document.createElement('div');lbl2.className='mono text-xs text-slate-500 mb-1 px-1';
+    lbl2.textContent=data.type==='file'?'📎 Versleuteld bestand — stuur naar je amice:':'📤 Versleuteld bericht — stuur naar je amice:';
+    const pktBox=document.createElement('div');pktBox.className='bg-slate-900 border border-slate-700 rounded-xl p-2.5';
     const prev=document.createElement('div');prev.className='mono text-xs text-teal-400/50 mb-2 truncate';prev.textContent=(data.pkt||'').slice(0,60)+'…';
-    const cp=document.createElement('button');cp.className='w-full py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm rounded-xl transition-all active:scale-95';cp.textContent='📋 Kopieer en stuur';cp.onclick=()=>{navigator.clipboard.writeText(data.pkt).catch(()=>{});cp.textContent='✓ Gekopieerd!';setTimeout(()=>cp.textContent='📋 Kopieer en stuur',1800);};
-    if(data.relayed){const rl=document.createElement('div');rl.className='mono text-xs text-green-400 mt-1.5 text-center';rl.textContent='✓ Automatisch verzonden via relay';}
-    pkt.appendChild(prev);pkt.appendChild(cp);
-    if(data.relayed){const rl=document.createElement('div');rl.className='mono text-xs text-green-400 mt-1.5 text-center';rl.textContent='✓ Automatisch verzonden via relay';pkt.appendChild(rl);}
-    box.appendChild(lbl);box.appendChild(pkt);outer.appendChild(box);
+    const cp=document.createElement('button');cp.className='w-full py-2 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-xs rounded-lg transition-all active:scale-95';cp.textContent='📋 Kopieer en stuur';
+    cp.onclick=()=>{navigator.clipboard.writeText(data.pkt).catch(()=>{});cp.textContent='✓ Gekopieerd!';setTimeout(()=>cp.textContent='📋 Kopieer en stuur',1800);};
+    pktBox.appendChild(prev);pktBox.appendChild(cp);
+    detailsBox.appendChild(lbl2);detailsBox.appendChild(pktBox);
+
+    detailsToggle.onclick=()=>{
+      const open=detailsBox.classList.toggle('hidden');
+      toggleTxt.textContent=relayedText+(open?'🔒 bekijk versleuteld pakket ›':'🔒 verberg pakket ‹');
+    };
+    box.appendChild(detailsToggle);box.appendChild(detailsBox);
+    outer.appendChild(box);
+
   }else if(dir==='recv'){
     const box=document.createElement('div');box.className='max-w-xs lg:max-w-sm';
     if(data.type==='file'){
       const fb=document.createElement('div');fb.className='flex items-center gap-3 p-3 bg-slate-800 border border-slate-700 rounded-2xl cursor-pointer hover:border-teal-500/40 transition-all';fb.onclick=()=>downloadFile(data.meta);
-      // XSS fix: textContent for user-supplied filename
       const ico=document.createElement('div');ico.className='text-3xl flex-shrink-0';ico.textContent='📄';
       const finf=document.createElement('div');finf.className='flex-1 min-w-0';
       const fnm=document.createElement('div');fnm.className='font-medium text-white text-sm truncate';fnm.textContent=data.meta?.name||'bestand';
       const fsz=document.createElement('div');fsz.className='text-slate-500 text-xs mt-0.5';fsz.textContent=fmtSize(data.meta?.size||0)+' · Tik om op te slaan';
       finf.appendChild(fnm);finf.appendChild(fsz);fb.appendChild(ico);fb.appendChild(finf);box.appendChild(fb);
+    }else{
+      const b=document.createElement('div');b.className='bbl-recv px-4 py-3 rounded-2xl text-white text-base leading-relaxed';b.textContent=data.text;box.appendChild(b);
     }
-    else{const b=document.createElement('div');b.className='bbl-recv px-4 py-3 rounded-2xl text-white text-base leading-relaxed';b.textContent=data.text;box.appendChild(b);}
     outer.appendChild(box);
   }
-  const meta=document.createElement('div');meta.className='mono text-xs text-slate-600 mt-1 px-1 flex items-center gap-2';
+
+  const meta=document.createElement('div');meta.className='mono text-xs text-slate-600 mt-0.5 px-1 flex items-center gap-2';
   meta.appendChild(document.createTextNode(t));
   if(dir==='sent'){const ck=document.createElement('span');ck.className='text-teal-600';ck.textContent='✓';meta.appendChild(ck);}
-  if(data.pq){const pq=document.createElement('span');pq.className='text-teal-700';pq.textContent='⚛';meta.appendChild(pq);}
+  if(data.pq){const pq=document.createElement('span');pq.className='text-teal-700';pq.title='Post-quantum ratchet';pq.textContent='⚛';meta.appendChild(pq);}
   outer.appendChild(meta);return outer;
 }
 function renderMsgs(conv){
@@ -2198,6 +2249,13 @@ function showChat(id){
   const av=$('ch-av');av.innerHTML='';
   if(conv.chainKey){const cvEl=document.createElement('canvas');cvEl.width=40;cvEl.height=40;sha256(new Uint8Array(conv.chainKey)).then(h=>drawFractal(cvEl,fractalParams(h))).catch(()=>{});av.appendChild(cvEl);}else av.textContent=conv.name.charAt(0).toUpperCase();
   renderMsgs(conv);hidePaste();updateAudit(conv);
+  // Placeholder en disabled staat op basis van verbinding
+  const inp=$('msg-inp');
+  if(inp){
+    inp.disabled=!conv.sendChainKey;
+    inp.placeholder=conv.sendChainKey?'Typ een bericht…':'Verbind eerst voor je een bericht kunt sturen…';
+    inp.style.opacity=conv.sendChainKey?'1':'0.5';
+  }
   document.querySelectorAll('.ci-item').forEach(e=>e.classList.remove('bg-slate-800','border-teal-500/30'));
   const ci=$('ci-'+id);if(ci)ci.classList.add('bg-slate-800','border-teal-500/30');
   $('new-btn').disabled=convs.length>=MAX;closeSidebar();
