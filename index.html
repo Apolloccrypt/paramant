@@ -474,8 +474,15 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       </button>
       <span id="relay-hint" class="text-xs text-slate-600 mono hidden md:block">↑ klik voor live modus</span>
     </div>
-    <div class="hidden md:flex items-center gap-1.5 mono text-xs text-slate-500">
-      <span>📡</span><span id="counter">—</span>
+    <!-- Online teller — gevoed via WebSocket, altijd zichtbaar als relay aan is -->
+    <div id="online-badge" class="hidden items-center gap-1.5 px-3 py-1.5 bg-slate-800/60 border border-slate-700 rounded-xl text-xs mono text-slate-400">
+      <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+      <span id="counter">—</span>
+      <span class="text-slate-600">online</span>
+    </div>
+    <!-- Countdown — alleen zichtbaar tijdens verbinden -->
+    <div id="relay-countdown-badge" class="hidden items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-xs mono text-yellow-400">
+      <span id="relay-countdown-lbl">⏳ 30s</span>
     </div>
     <button onclick="toggleLedger()" id="ledger-btn" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-teal-500/40 rounded-xl text-xs text-slate-400 transition-all">
       📊 Ledger
@@ -1108,23 +1115,35 @@ let relayCountdownTimer = null;
 function startRelayCountdown(){
   clearInterval(relayCountdownTimer);
   let secs = 30;
-  const l = $('rl-lbl');
+  const badge = $('relay-countdown-badge');
+  const lbl   = $('relay-countdown-lbl');
   const wHint = $('relay-welcome-hint');
+  if(badge){ badge.style.display='flex'; }
   relayCountdownTimer = setInterval(()=>{
     secs--;
-    if(l && !relayOn) l.textContent = `⏳ Verbinden… ${secs}s`;
-    if(wHint && !relayOn){
+    if(lbl) lbl.textContent = `⏳ ${Math.max(0,secs)}s`;
+    if(wHint){
       const sub = wHint.querySelector('.relay-hint-sub');
-      if(sub) sub.textContent = `→ Server wekt op… nog ~${Math.max(0,secs)} seconden`;
+      if(sub && !relayOn) sub.textContent = `→ Server wekt op… nog ~${Math.max(0,secs)} seconden`;
     }
-    if(secs <= 0 || relayOn){ clearInterval(relayCountdownTimer); relayCountdownTimer=null; }
+    if(secs <= 0 || relayOn){
+      clearInterval(relayCountdownTimer);
+      relayCountdownTimer = null;
+      if(badge) badge.style.display='none';
+    }
   }, 1000);
 }
-function stopRelayCountdown(){ clearInterval(relayCountdownTimer); relayCountdownTimer=null; }
+function stopRelayCountdown(){
+  clearInterval(relayCountdownTimer);
+  relayCountdownTimer = null;
+  const badge = $('relay-countdown-badge');
+  if(badge) badge.style.display='none';
+}
 
 function setRelayUI(s){
-  const d=$('rl-dot'),l=$('rl-lbl'),hint=$('relay-hint');
+  const d=$('rl-dot'), l=$('rl-lbl'), hint=$('relay-hint');
   const wHint=$('relay-welcome-hint'), wPres=$('welcome-presence');
+  const onlineBadge=$('online-badge');
   d.className='w-2 h-2 rounded-full flex-shrink-0 transition-all ';
   if(s==='on'){
     stopRelayCountdown();
@@ -1133,14 +1152,15 @@ function setRelayUI(s){
     if(hint)hint.style.display='none';
     if(wHint)wHint.style.display='none';
     if(wPres)wPres.classList.remove('hidden');
+    if(onlineBadge)onlineBadge.style.display='flex';
     setTimeout(fetchStats,500);
     setTimeout(broadcastPresence,1000);
   }else if(s==='con'){
     d.classList.add('bg-yellow-400');
     l.textContent=IS_ONION?'🧅 Tor…':'⏳ Verbinden…';
     if(hint)hint.style.display='none';
+    if(onlineBadge)onlineBadge.style.display='none';
     startRelayCountdown();
-    // Update welcome hint text
     if(wHint){
       wHint.style.display='';
       const title=wHint.querySelector('.relay-hint-title');
@@ -1151,6 +1171,7 @@ function setRelayUI(s){
     d.classList.add('bg-red-500');
     l.textContent='❌ Relay fout';
     if(hint){hint.textContent='↑ klik opnieuw om te proberen';hint.style.display='';}
+    if(onlineBadge)onlineBadge.style.display='none';
     if(wHint){
       wHint.style.display='';
       const title=wHint.querySelector('.relay-hint-title');
@@ -1164,6 +1185,7 @@ function setRelayUI(s){
     d.classList.add('bg-slate-600');
     l.textContent='Offline';
     if(hint){hint.textContent='↑ klik voor live modus';hint.style.display='';}
+    if(onlineBadge)onlineBadge.style.display='none';
     if(wHint){
       wHint.style.display='';
       const title=wHint.querySelector('.relay-hint-title');
@@ -1268,14 +1290,26 @@ setInterval(()=>{if(relayOn)fetchStats();},15000);
 // Keep-alive ping elke 10 min (Render gratis tier)
 setInterval(()=>{if(RELAY_API)fetch(`${RELAY_API}/health`).catch(()=>{});},600000);
 
-function onRelayMsg(msg){if(msg.type==='packet'){const pay=msg.payload;
-  if(pay?.pType==='presence'&&pay.nick&&pay.bundle&&pay.nick!==myNick){
-    if(!validNick(pay.nick))return;
-    try{const b=JSON.parse(pay.bundle);if(!b?.ecdh||!isHex(b.ecdh,130))return;}catch{return;}
-    presenceMap.set(pay.nick,{nick:pay.nick,bundle:pay.bundle,avatarHint:pay.avatarHint,ts:pay.ts});
-    renderPresence();return;
+function onRelayMsg(msg){
+  // Direct online count update vanuit WS — geen HTTP nodig
+  if(typeof msg.online==='number') updateOnlineFromWS(msg.online);
+  if(typeof msg.peers==='number' && msg.type==='joined') updateOnlineFromWS(msg.online||msg.peers);
+
+  if(msg.type==='packet'){const pay=msg.payload;
+    if(pay?.pType==='presence'&&pay.nick&&pay.bundle&&pay.nick!==myNick){
+      if(!validNick(pay.nick))return;
+      try{const b=JSON.parse(pay.bundle);if(!b?.ecdh||!isHex(b.ecdh,130))return;}catch{return;}
+      presenceMap.set(pay.nick,{nick:pay.nick,bundle:pay.bundle,avatarHint:pay.avatarHint,ts:pay.ts});
+      renderPresence();return;
+    }
+    const conv=convs.find(c=>c.chatId&&c.connected);if(!conv)return;const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};decryptPacket(conv,pkt).then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()})).catch(e=>sysMsg(conv,'⚠️ '+e.message));
+  }else if(msg.type==='peer_left'){
+    presenceMap.delete(msg.nick);renderPresence();
+    if(typeof msg.peers==='number') updateOnlineFromWS(msg.peers);
+  }else if(msg.type==='peer_joined'){
+    if(typeof msg.peers==='number') updateOnlineFromWS(msg.peers);
   }
-  const conv=convs.find(c=>c.chatId&&c.connected);if(!conv)return;const pkt={v:'paramant-v2',type:pay?.type||'text',seq:msg.seq,...pay};decryptPacket(conv,pkt).then(()=>addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:msg.seq,b:JSON.stringify(pay).length,t:Date.now()})).catch(e=>sysMsg(conv,'⚠️ '+e.message));}else if(msg.type==='peer_left'){presenceMap.delete(msg.nick);renderPresence();}}
+}
 
 function buildPresenceRow(p, compact=false){
   const row=document.createElement('div');
@@ -1341,7 +1375,27 @@ function renderPresence(){
   });
 }
 function quickConnect(p){showConnect();setTimeout(()=>{$('peer-key').value=p.bundle||'';try{const b=JSON.parse(p.bundle);if(b.nick)$('peer-name').value=b.nick;}catch(e){}},60);}
-async function fetchStats(){if(!RELAY_API)return;try{const r=await fetch(`${RELAY_API}/api/stats`);const d=await r.json();if(d.ok){const fmt=n=>Number(n).toLocaleString('nl-NL');$('counter').textContent=fmt(d.messages);$('ls-msgs').textContent=fmt(d.messages);$('ls-chats').textContent=fmt(d.chats);if($('ls-online'))$('ls-online').textContent=fmt(d.online||0);}}catch(e){}}
+async function fetchStats(){
+  if(!RELAY_API)return;
+  try{
+    const r=await fetch(`${RELAY_API}/api/stats`);
+    const d=await r.json();
+    if(d.ok){
+      const fmt=n=>Number(n).toLocaleString('nl-NL');
+      const online=d.online||0;
+      $('counter').textContent=online+' '+(online===1?'peer':'peers');
+      $('ls-msgs').textContent=fmt(d.messages);
+      $('ls-chats').textContent=fmt(d.chats);
+      if($('ls-online'))$('ls-online').textContent=fmt(online);
+    }
+  }catch(e){}
+}
+// Update online count direct vanuit WS (geen HTTP nodig)
+function updateOnlineFromWS(n){
+  const c=$('counter');
+  if(c)c.textContent=n+' '+(n===1?'peer':'peers');
+  if($('ls-online'))$('ls-online').textContent=n;
+}
 async function fetchLedger(){
   if(!RELAY_API)return;
   try{
