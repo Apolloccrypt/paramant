@@ -132,7 +132,7 @@ h2{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
           <div class="dl-ext">.deb — Debian / Ubuntu / Pop!_OS</div>
         </div>
       </div>
-      <div class="dl-desc">Installeer via <span class="mono">dpkg -i</span> of dubbelklik in bestandsbeheer.</div>
+      <div class="dl-desc">De app draait op een Rust backend (paramant-core) die ML-KEM-768 en ECDH P-256 uitvoert — sleutels worden na gebruik echt gewist via Rust's geheugenbeheer. De Tauri 2 frontend toont de vertrouwde PARAMANT interface, maar alle cryptografie gebeurt native in de binary. Communicatie gaat via <span class="mono">relay.paramant.app</span> — volledig compatibel met de browser versie.</div>
       <div class="dl-btn">⬇ Download .deb</div>
       <div class="dl-size">~3 MB</div>
     </a>
@@ -145,7 +145,7 @@ h2{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
           <div class="dl-ext">.rpm — Fedora / RHEL / openSUSE</div>
         </div>
       </div>
-      <div class="dl-desc">Installeer via <span class="mono">rpm -i</span> of je pakketbeheerder.</div>
+      <div class="dl-desc">Identiek aan de .deb versie — dezelfde Rust crypto core, dezelfde relay. De .rpm is gebouwd voor Fedora, RHEL en openSUSE. Geen verschil in beveiliging of functionaliteit ten opzichte van de .deb.</div>
       <div class="dl-btn">⬇ Download .rpm</div>
       <div class="dl-size">~3 MB</div>
     </a>
@@ -158,7 +158,7 @@ h2{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
           <div class="dl-ext">.exe — Windows 10/11 x64</div>
         </div>
       </div>
-      <div class="dl-desc">Standalone — geen installatie nodig. Bij SmartScreen: klik <em>Meer info → Toch uitvoeren</em>.</div>
+      <div class="dl-desc">Cross-gecompileerd met Rust via mingw-w64 — dezelfde ML-KEM-768 crypto core als de Linux versie. De Tauri WebView toont de PARAMANT interface; de Rust binary verwerkt alle sleutels en versleuteling. SmartScreen geeft een waarschuwing omdat de .exe niet code-signed is — klik <em>Meer info → Toch uitvoeren</em>.</div>
       <div class="dl-btn">⬇ Download .exe</div>
       <div class="dl-size">~20 MB</div>
     </a>
@@ -171,7 +171,7 @@ h2{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
           <div class="dl-ext">.apk — Android 8.0+</div>
         </div>
       </div>
-      <div class="dl-desc">Schakel <em>Onbekende bronnen</em> in via Instellingen → Beveiliging, dan installeer de APK.</div>
+      <div class="dl-desc">Gebouwd via Tauri Mobile — Rust crypto core gecompileerd naar ARM64 en x86_64 Android targets. De APK bevat een WebView die de PARAMANT interface toont; alle versleuteling draait als native Rust code in de Android binary. De APK is unsigned (geen Play Store) — schakel <em>Onbekende bronnen</em> in en installeer handmatig.</div>
       <div class="dl-btn">⬇ Download .apk</div>
       <div class="dl-size">~35 MB</div>
     </a>
