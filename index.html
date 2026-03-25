@@ -1564,33 +1564,59 @@ function showIncomingRequest(nick, bundle, avatarHint){
   toast.id='incoming-request-toast';
   toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;width:320px;max-width:90vw';
 
-  // Avatar
-  const avatarHtml=avatarHint
-    ? `<div class="w-10 h-10 rounded-full border-2 border-teal-500/60 overflow-hidden flex-shrink-0 bg-slate-800 flex items-center justify-center" id="ir-av"></div>`
-    : `<div class="w-10 h-10 rounded-full border-2 border-teal-500/60 bg-slate-800 flex items-center justify-center text-teal-400 font-bold flex-shrink-0">${nick.charAt(0).toUpperCase()}</div>`;
+  // ── Bouw toast via DOM API — geen innerHTML met user data ──
+  const safeNick = san(nick, 20);
+  const outer = document.createElement('div');
+  outer.className = 'bg-slate-800 border-2 rounded-2xl p-4 shadow-2xl';
+  outer.style.cssText = 'border-color:rgba(20,184,166,.5);box-shadow:0 25px 50px rgba(20,184,166,.2)';
 
-  toast.innerHTML=`
-    <div class="bg-slate-800 border-2 border-teal-500/50 rounded-2xl p-4 shadow-2xl shadow-teal-500/20">
-      <div class="flex items-center gap-3 mb-3">
-        ${avatarHtml}
-        <div class="flex-1 min-w-0">
-          <div class="text-white font-bold text-sm">📨 Inkomend verzoek</div>
-          <div class="text-teal-400 text-xs font-mono truncate">${san(nick,20)} wil verbinden</div>
-        </div>
-        <button onclick="this.closest('#incoming-request-toast').remove()" class="text-slate-500 hover:text-white text-lg leading-none flex-shrink-0">✕</button>
-      </div>
-      <p class="text-slate-400 text-xs mb-3 leading-relaxed">Plak ook jouw adres bij je amice, <strong class="text-white">of klik Accepteer</strong> om direct terug te verbinden.</p>
-      <div class="flex gap-2">
-        <button onclick="acceptIncomingRequest('${encodeURIComponent(bundle)}','${san(nick,20)}')"
-          class="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm rounded-xl transition-all active:scale-95">
-          ⚡ Accepteer & verbind
-        </button>
-        <button onclick="this.closest('#incoming-request-toast').remove()"
-          class="px-4 py-2.5 bg-slate-700 border border-slate-600 text-slate-300 text-sm rounded-xl transition-all">
-          Later
-        </button>
-      </div>
-    </div>`;
+  // Header row
+  const headerRow = document.createElement('div');
+  headerRow.className = 'flex items-center gap-3 mb-3';
+
+  // Avatar
+  const av = document.createElement('div');
+  av.className = 'w-10 h-10 rounded-full border-2 overflow-hidden flex-shrink-0 bg-slate-800 flex items-center justify-center text-teal-400 font-bold';
+  av.style.borderColor = 'rgba(20,184,166,.6)';
+  if(avatarHint){ av.id='ir-av'; }
+  else { av.textContent = safeNick.charAt(0).toUpperCase(); }
+
+  // Info
+  const info = document.createElement('div'); info.className = 'flex-1 min-w-0';
+  const title = document.createElement('div'); title.className = 'text-white font-bold text-sm'; title.textContent = '📨 Inkomend verzoek';
+  const subtitle = document.createElement('div'); subtitle.className = 'text-teal-400 text-xs font-mono truncate';
+  subtitle.textContent = safeNick + ' wil verbinden';
+  info.appendChild(title); info.appendChild(subtitle);
+
+  // Close button
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'text-slate-500 hover:text-white text-lg leading-none flex-shrink-0';
+  closeBtn.textContent = '✕';
+  closeBtn.onclick = () => toast.remove();
+
+  headerRow.appendChild(av); headerRow.appendChild(info); headerRow.appendChild(closeBtn);
+
+  // Body text
+  const body = document.createElement('p');
+  body.className = 'text-slate-400 text-xs mb-3 leading-relaxed';
+  body.textContent = 'Plak ook jouw adres bij je amice, of klik Accepteer om direct terug te verbinden.';
+  const bold = document.createElement('strong'); bold.className = 'text-white'; bold.textContent = ' Accepteer';
+  body.insertBefore(bold, body.childNodes[1]);
+
+  // Buttons
+  const btnRow = document.createElement('div'); btnRow.className = 'flex gap-2';
+  const acceptBtn = document.createElement('button');
+  acceptBtn.className = 'flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm rounded-xl transition-all active:scale-95';
+  acceptBtn.textContent = '⚡ Accepteer & verbind';
+  acceptBtn.onclick = () => acceptIncomingRequest(encodeURIComponent(bundle), safeNick);
+  const laterBtn = document.createElement('button');
+  laterBtn.className = 'px-4 py-2.5 bg-slate-700 border border-slate-600 text-slate-300 text-sm rounded-xl transition-all';
+  laterBtn.textContent = 'Later';
+  laterBtn.onclick = () => toast.remove();
+  btnRow.appendChild(acceptBtn); btnRow.appendChild(laterBtn);
+
+  outer.appendChild(headerRow); outer.appendChild(body); outer.appendChild(btnRow);
+  toast.appendChild(outer);
 
   document.body.appendChild(toast);
 
