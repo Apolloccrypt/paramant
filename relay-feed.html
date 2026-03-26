@@ -256,12 +256,10 @@ function renderFeed(entries, isRefresh){
 
 async function fetchAll(){
   try{
-    const [statsR, ledgerR] = await Promise.all([
-      fetch(RELAY+'/api/stats').catch(()=>({json:()=>({ok:false})})),
-      fetch(RELAY+'/api/ledger').catch(()=>({json:()=>({ok:false})}))
+    const [stats, ledger] = await Promise.all([
+      fetch(RELAY+'/api/stats').then(r=>r.json()).catch(()=>({ok:false})),
+      fetch(RELAY+'/api/ledger').then(r=>r.json()).catch(()=>({ok:false}))
     ]);
-    const stats=await statsR.json();
-    const ledger=await ledgerR.json();
 
     // Update header stats
     if(stats && (stats.ok || stats.messages !== undefined)){
