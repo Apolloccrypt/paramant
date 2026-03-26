@@ -374,44 +374,83 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   </div>
 </section>
 
-<!-- HASH CHAIN TICKER — live relay data -->
-<div class="py-5 bg-[#0c0e10] border-y border-[#1e2026] overflow-hidden">
-  <p class="text-center text-xs text-[#5a6070] mono mb-3 tracking-widest">LIVE RELAY — IEDEREEN ZIET DE HASH · NIEMAND LEEST DE INHOUD</p>
-  <div class="flex overflow-hidden">
-    <div id="chain-ticker" class="chain-scroll flex gap-2 items-center">
-      <!-- Gevuld via JS met live relay data -->
-      <span class="hash-block text-slate-700">Laden…</span>
+<!-- MEMPOOL STRIP — blockchain-achtige live relay visualisatie -->
+<div style="background:#0c0e10;border-top:1px solid #1e2026;border-bottom:1px solid #1e2026;padding:20px 0">
+  <div style="max-width:1100px;margin:0 auto;padding:0 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:10px;color:#3d4149;font-family:var(--mono);letter-spacing:.1em">// RELAY_MEMPOOL · LIVE · PUBLIEK AANTOONBAAR · ONLEESBAAR</div>
+      <div style="display:flex;gap:16px;font-size:10px;font-family:var(--mono)">
+        <span style="color:#3d4149">MSGS: <span id="mp-msgs" style="color:#5a6070">—</span></span>
+        <span style="color:#3d4149">ONLINE: <span id="mp-online" style="color:#00ff9d">—</span></span>
+        <span style="color:#3d4149">UPTIME: <span id="mp-uptime" style="color:#5a6070">—</span></span>
+      </div>
+    </div>
+    <div id="mp-chain" style="display:flex;gap:0;align-items:stretch;overflow-x:auto;padding-bottom:4px;min-height:72px">
+      <div style="font-size:11px;color:#2a2d35;font-family:var(--mono);align-self:center;padding:0 12px">Wachten op pakketten...</div>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:#2a2d35;font-family:var(--mono)">
+      Dit is alles wat de relay weet. Hash · Grootte · Tijdstempel. De inhoud is wiskundig onleesbaar.
     </div>
   </div>
 </div>
 <script>
 (function(){
-  const RELAY_HTTP = (window._PARAMANT_RELAY||'').replace('wss://','https://').replace('ws://','http://');
-  if(!RELAY_HTTP) return;
-  function fmtBytes(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
-  function fmtTime(ts){const d=new Date(ts);return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');}
-  function buildTicker(entries){
-    const el=document.getElementById('chain-ticker');
-    if(!el||!entries.length)return;
-    // Dubbel voor naadloze loop
-    const items=[...entries,...entries];
-    el.innerHTML=items.map(e=>`<span class="hash-block">${e.chatHash.replace('…','')}<span class="text-[#5a6070] mx-1">·</span>${fmtBytes(e.bytes)}<span class="text-[#5a6070] mx-1">·</span>${fmtTime(e.timestamp)}</span><span class="hash-link">-></span>`).join('');
-    // Reset animatie
-    el.style.animation='none';
-    void el.offsetWidth;
-    el.style.animation='';
+  const RH=(window._PARAMANT_RELAY||'wss://relay.paramant.app').replace('wss://','https://').replace('ws://','http://');
+  const COLORS=['#00ff9d','#00cc7a','#4a7c59'];
+
+  function fmtB(b){if(b<1024)return b+'B';return(b/1024).toFixed(1)+'KB';}
+  function fmtT(ts){const d=new Date(ts);return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');}
+  function fmtUp(s){if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'u'+Math.floor((s%3600)/60)+'m';}
+
+  function buildBlock(e, i, total){
+    const age = Math.max(0, Math.min(1, (Date.now()-e.timestamp)/300000));
+    const opacity = 1 - age*0.6;
+    const col = age < 0.3 ? '#00ff9d' : age < 0.6 ? '#4a7c59' : '#2a2d35';
+    const hash = e.chatHash.replace('…','').slice(0,8);
+    const isLast = i === total-1;
+    return `<div style="display:flex;align-items:stretch;flex-shrink:0">
+      <div style="background:#111214;border:1px solid ${col};padding:10px 14px;min-width:140px;opacity:${opacity}">
+        <div style="font-size:10px;color:${col};font-family:var(--mono);letter-spacing:.06em;margin-bottom:4px">#${String(i+1).padStart(3,'0')}</div>
+        <div style="font-size:12px;color:#e2e4e8;font-family:var(--mono);margin-bottom:4px">${hash}…</div>
+        <div style="font-size:10px;color:#5a6070;font-family:var(--mono)">${fmtB(e.bytes)} · ${fmtT(e.timestamp)}</div>
+      </div>
+      ${!isLast ? '<div style="display:flex;align-items:center;padding:0 6px;color:#2a2d35;font-family:var(--mono);font-size:14px;flex-shrink:0">→</div>' : ''}
+    </div>`;
   }
-  fetch(RELAY_HTTP+'/api/ledger')
-    .then(r=>r.json())
-    .then(d=>{if(d.ok&&d.entries&&d.entries.length)buildTicker(d.entries.slice(0,12));})
-    .catch(()=>{});
-  // Ververs elke 30 seconden
-  setInterval(()=>{
-    fetch(RELAY_HTTP+'/api/ledger')
-      .then(r=>r.json())
-      .then(d=>{if(d.ok&&d.entries&&d.entries.length)buildTicker(d.entries.slice(0,12));})
-      .catch(()=>{});
-  }, 30000);
+
+  function render(stats, entries){
+    const el = document.getElementById('mp-msgs');
+    const eo = document.getElementById('mp-online');
+    const eu = document.getElementById('mp-uptime');
+    if(el) el.textContent = stats.messages||0;
+    if(eo) eo.textContent = stats.online||0;
+    if(eu) eu.textContent = fmtUp(stats.uptime_s||0);
+
+    const chain = document.getElementById('mp-chain');
+    if(!chain) return;
+    if(!entries||!entries.length){
+      chain.innerHTML='<div style="font-size:11px;color:#2a2d35;font-family:var(--mono);align-self:center;padding:0 12px">Geen pakketten in de laatste 5 minuten — stuur een bericht in PARAMANT om er één te zien.</div>';
+      return;
+    }
+    const blocks = entries.slice(0,8);
+    chain.innerHTML = blocks.map((e,i)=>buildBlock(e,i,blocks.length)).join('');
+    // Fade-in nieuwste blok
+    const first = chain.querySelector('div[style*="flex-shrink"]');
+    if(first) first.style.animation='fadeUp .3s ease';
+  }
+
+  async function tick(){
+    try{
+      const [stats, ledger] = await Promise.all([
+        fetch(RH+'/api/stats').then(r=>r.json()).catch(()=>({})),
+        fetch(RH+'/api/ledger').then(r=>r.json()).catch(()=>({}))
+      ]);
+      render(stats, ledger.entries||[]);
+    }catch(e){}
+  }
+
+  tick();
+  setInterval(tick, 10000);
 })();
 </script>
 
