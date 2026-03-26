@@ -256,37 +256,35 @@ function renderFeed(entries, isRefresh){
 
 async function fetchAll(){
   try{
-    const stats = await fetch(RELAY+'/api/stats').then(r=>r.json());
-    const ledger = await fetch(RELAY+'/api/ledger').then(r=>r.json());
+    const stats = await fetch(RELAY+'/api/stats').then(r=>r.json()).catch(()=>null);
+    const ledger = await fetch(RELAY+'/api/ledger').then(r=>r.json()).catch(()=>null);
 
-    // Update header stats
-    if(stats && (stats.ok || stats.messages !== undefined)){
-      document.getElementById('hdr-msgs').textContent=Number(stats.messages||0).toLocaleString('nl-NL');
-      document.getElementById('hdr-online').textContent=stats.online||0;
-      document.getElementById('s-msgs').textContent=Number(stats.messages||0).toLocaleString('nl-NL');
-      document.getElementById('s-chats').textContent=stats.chats||0;
-      document.getElementById('s-online').textContent=stats.online||0;
-      document.getElementById('s-uptime').textContent=fmtUptime(stats.uptime_s||0);
+    if(stats){
+      const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+      set('hdr-msgs', Number(stats.messages||0).toLocaleString('nl-NL'));
+      set('hdr-online', stats.online||0);
+      set('s-msgs', Number(stats.messages||0).toLocaleString('nl-NL'));
+      set('s-chats', stats.chats||0);
+      set('s-online', stats.online||0);
+      set('s-uptime', fmtUptime(stats.uptime_s||0));
       const dot=document.getElementById('live-dot');
-      dot.style.background=(stats.online||0)>0?'#00ff9d':'#2a2d35';
+      if(dot) dot.style.background=(stats.online||0)>0?'#00ff9d':'#2a2d35';
     }
 
-    // Update feed
-    if(ledger && (ledger.ok || ledger.entries) && ledger.entries){
+    if(ledger && ledger.entries){
       const isRefresh=allEntries.length>0;
       allEntries=ledger.entries;
       renderFeed(allEntries, isRefresh);
     }
 
   }catch(e){
-    document.getElementById('live-dot').style.background='#ef4444';
+    const dot=document.getElementById('live-dot');
+    if(dot) dot.style.background='#ef4444';
   }
 }
 
-// Start
 fetchAll();
-// Ververs elke 5 seconden
-setInterval(fetchAll, 15000);
+setInterval(fetchAll, 10000);
 </script>
 </body>
 </html>
