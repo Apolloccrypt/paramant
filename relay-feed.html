@@ -264,20 +264,19 @@ async function fetchAll(){
     const ledger=await ledgerR.json();
 
     // Update header stats
-    if(stats.ok){
-      document.getElementById('hdr-msgs').textContent=Number(stats.messages).toLocaleString('nl-NL');
+    if(stats && (stats.ok || stats.messages !== undefined)){
+      document.getElementById('hdr-msgs').textContent=Number(stats.messages||0).toLocaleString('nl-NL');
       document.getElementById('hdr-online').textContent=stats.online||0;
-      document.getElementById('s-msgs').textContent=Number(stats.messages).toLocaleString('nl-NL');
+      document.getElementById('s-msgs').textContent=Number(stats.messages||0).toLocaleString('nl-NL');
       document.getElementById('s-chats').textContent=stats.chats||0;
       document.getElementById('s-online').textContent=stats.online||0;
       document.getElementById('s-uptime').textContent=fmtUptime(stats.uptime_s||0);
-      // Live indicator
       const dot=document.getElementById('live-dot');
       dot.style.background=(stats.online||0)>0?'#00ff9d':'#2a2d35';
     }
 
     // Update feed
-    if(ledger.ok&&ledger.entries){
+    if(ledger && (ledger.ok || ledger.entries) && ledger.entries){
       const isRefresh=allEntries.length>0;
       allEntries=ledger.entries;
       renderFeed(allEntries, isRefresh);
