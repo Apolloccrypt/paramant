@@ -6,3 +6,4 @@
 .wrangler/
 .git/
 vercel.json
+dist/
