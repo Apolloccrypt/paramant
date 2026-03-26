@@ -938,7 +938,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <div id="rl-dot" class="w-2 h-2 rounded-full bg-[#3d4149] flex-shrink-0 transition-all"></div>
       <span id="rl-lbl">Offline</span>
     </button>
-    <span id="relay-hint" class="text-xs text-[#5a6070] mono hidden lg:block flex-shrink-0">^ klik om online te gaan</span>
+    
 
     <!-- Online teller — alleen op grotere schermen -->
     <div id="online-badge" class="hidden items-center gap-1 px-2.5 py-1.5 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-sm text-xs mono text-[#c8ccd4] flex-shrink-0">
@@ -952,12 +952,13 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     </div>
 
     <!-- Ledger knop — alleen desktop -->
-    <button onclick="toggleLedger()" id="ledger-btn" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs text-[#c8ccd4] transition-all flex-shrink-0">
-       Online
+    <button onclick="toggleLedger()" id="ledger-btn" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs text-[#c8ccd4] transition-all flex-shrink-0" title="Actieve gebruikers en relay statistieken">
+      <span id="ledger-online-count" class="w-1.5 h-1.5 rounded-full bg-[#3d4149] flex-shrink-0"></span>
+      Actieve gebruikers
     </button>
 
     <!-- Relay feed knop — desktop -->
-    <a href="/relay-feed.html" target="_blank" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs text-[#c8ccd4] transition-all flex-shrink-0" title="Live relay feed"> Feed</a>
+    <a href="/relay-feed.html" target="_blank" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs text-[#c8ccd4] transition-all flex-shrink-0" title="Live relay feed">Feed</a>
 
     <!-- <- Site knop — alleen desktop -->
     <button onclick="closeApp()" class="hidden lg:flex px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-xs text-[#c8ccd4] hover:text-[#e2e4e8] transition-all flex-shrink-0" title="Terug naar landingspagina"><- Site</button>
@@ -966,7 +967,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <div class="relative lg:hidden flex-shrink-0">
       <button onclick="toggleAppMenu()" class="w-8 h-8 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-[#c8ccd4] text-sm">⋯</button>
       <div id="app-menu" class="hidden absolute right-0 top-10 bg-[#1a1d22] border border-[#2a2d35] rounded-sm shadow-xl z-50 min-w-max overflow-hidden">
-        <button onclick="toggleLedger();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-[#c8ccd4] hover:bg-[#2a2d35] flex items-center gap-2"> Actief</button>
+        <button onclick="toggleLedger();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-[#c8ccd4] hover:bg-[#2a2d35] flex items-center gap-2">Actieve gebruikers</button>
         <a href="/relay-feed.html" target="_blank" onclick="closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-[#c8ccd4] hover:bg-[#2a2d35] flex items-center gap-2"> Relay feed</a>
         <button onclick="closeApp();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-[#c8ccd4] hover:bg-[#2a2d35] flex items-center gap-2"><- Terug naar site</button>
       </div>
@@ -1643,8 +1644,10 @@ function dlPage(){
 
 // ─── RELAY ───────────────────────────────────────────────────────────
 // Stel jouw relay-URL in (optioneel — werkt ook offline):
+// window._PARAMANT_RELAY = 'wss://jouw-relay.onrender.com';
 // ── Relay — Tor-bewust, dual-mode (clearnet + .onion) ─────────────
 // Stel in:
+//   window._PARAMANT_RELAY       = 'wss://clearnet-relay.onrender.com'  (clearnet)
 //   window._PARAMANT_RELAY_ONION = 'ws://jouwrelay.onion'               (.onion)
 //
 // Automatische keuze:
@@ -1720,6 +1723,8 @@ function setRelayUI(s){
     if(wHint)wHint.style.display='none';
     if(wPres)wPres.classList.remove('hidden');
     if(onlineBadge)onlineBadge.style.display='flex';
+    const ld=document.getElementById('ledger-online-count');
+    if(ld){ld.style.background='#00ff9d';};
     setTimeout(fetchStats,500);
     setTimeout(broadcastPresence,1000);
   }else if(s==='con'){
@@ -1727,6 +1732,8 @@ function setRelayUI(s){
     l.textContent=IS_ONION?'[TOR] Tor…':'⏳ Verbinden…';
     if(hint)hint.style.display='none';
     if(onlineBadge)onlineBadge.style.display='none';
+    const ld2=document.getElementById('ledger-online-count');
+    if(ld2){ld2.style.background='#3d4149';};
     startRelayCountdown();
     if(wHint){
       wHint.style.display='';
