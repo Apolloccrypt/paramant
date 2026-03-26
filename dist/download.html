@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARAMANT // DOWNLOAD</title>
+<meta name="description" content="Download PARAMANT native app. Post-quantum versleuteld. Rust + Tauri 2 + ML-KEM-768.">
+<style>
+
+:root{
+  --bg:#0c0e10;
+  --s1:#111214;
+  --s2:#1a1d22;
+  --b1:#1e2026;
+  --b2:#2a2d35;
+  --t1:#e2e4e8;
+  --t2:#d8dce4;
+  --t3:#8a8e98;
+  --t4:#5a6070;
+  --g:#00ff9d;
+  --gd:#4a7c59;
+  --mono:'JetBrains Mono',ui-monospace,'Cascadia Code',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t2);font-family:var(--mono);min-height:100vh}
+a{color:var(--g);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{color:var(--t1);font-weight:700;letter-spacing:-.01em}
+code{background:var(--s2);border:1px solid var(--b2);padding:2px 8px;font-family:var(--mono);font-size:12px;color:var(--g)}
+
+main{padding-top:68px;max-width:860px;margin:0 auto;padding-left:24px;padding-right:24px;padding-bottom:80px}
+.page-header{padding:32px 0 28px;border-bottom:1px solid var(--b1);margin-bottom:32px}
+.page-title{font-size:11px;color:var(--t4);letter-spacing:.1em;margin-bottom:8px}
+h1{font-size:26px;font-weight:800}
+.sub{font-size:13px;color:var(--t3);margin-top:6px;line-height:1.7}
+.section-label{font-size:10px;color:var(--t4);letter-spacing:.1em;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--b1)}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b1);border:1px solid var(--b1);margin-bottom:40px}
+.cmp-col{background:var(--s1);padding:20px}
+.cmp-title{font-size:10px;letter-spacing:.1em;margin-bottom:16px}
+.cmp-title.native{color:var(--g)}
+.cmp-title.browser{color:var(--t4)}
+.cmp-row{font-size:12px;color:var(--t3);padding:7px 0;border-bottom:1px solid var(--b1);display:flex;gap:10px;line-height:1.5}
+.cmp-row:last-child{border-bottom:none}
+.cmp-ok{color:var(--g);flex-shrink:0}
+.cmp-warn{color:#f59e0b;flex-shrink:0}
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--b1);border:1px solid var(--b1);margin-bottom:40px}
+.dl-card{background:var(--s1);padding:20px;text-decoration:none;display:block;transition:background .15s}
+.dl-card:hover{background:var(--s2);text-decoration:none}
+.dl-platform{font-size:10px;color:var(--t4);letter-spacing:.08em;margin-bottom:4px}
+.dl-name{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:4px}
+.dl-ext{font-size:11px;color:var(--t4);font-family:var(--mono);margin-bottom:12px}
+.dl-desc{font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:14px;min-height:60px}
+.dl-btn{font-size:11px;font-weight:700;color:var(--bg);background:var(--g);padding:8px 14px;letter-spacing:.04em;display:inline-block}
+.dl-btn:hover{background:#00cc7a;text-decoration:none}
+.dl-meta{font-size:10px;color:var(--t4);margin-top:8px;font-family:var(--mono)}
+.dl-signed{font-size:10px;color:var(--gd);margin-top:4px;font-family:var(--mono)}
+.install-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b1);border:1px solid var(--b1);margin-bottom:40px}
+.install-card{background:var(--s1);padding:16px}
+.install-title{font-size:10px;color:var(--t4);letter-spacing:.08em;margin-bottom:10px}
+.install-code{background:var(--bg);border:1px solid var(--b1);padding:8px 12px;font-family:var(--mono);font-size:11px;color:var(--g)}
+.cta{background:var(--s1);border:1px solid var(--b1);padding:28px;text-align:center}
+.cta h3{font-size:16px;margin-bottom:8px}
+.cta p{font-size:12px;color:var(--t3);margin-bottom:16px}
+.cta-btn{font-size:12px;font-weight:700;color:var(--bg);background:var(--g);padding:10px 24px;letter-spacing:.04em;display:inline-block}
+@media(max-width:600px){.compare,.install-grid{grid-template-columns:1fr}h1{font-size:20px}}
+</style>
+</head>
+<body>
+<nav style="position:fixed;top:0;left:0;right:0;height:48px;background:#0c0e10;border-bottom:1px solid #1e2026;display:flex;align-items:center;padding:0 24px;gap:24px;z-index:100;font-family:var(--mono)"><a href="/" style="font-size:13px;font-weight:800;color:#e2e4e8;text-decoration:none;flex-shrink:0">PARAMANT<span style="font-size:9px;color:#5a6070;border:1px solid #2a2d35;padding:1px 5px;margin-left:6px;font-weight:400">v0.2.0</span></a><span style="color:#2a2d35">|</span><a href="/" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#8a8e98;">HOME</a><a href="/download" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#00ff9d;border-bottom:1px solid #00ff9d;">[DL] NATIVE</a><a href="/privacy" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#8a8e98;">PRIVACY</a><span style="margin-left:auto;font-size:9px;color:#4a7c59;letter-spacing:.06em">SYS_READY</span></nav>
+<main>
+  <div class="page-header">
+    <div class="page-title">// NATIVE_APP_DOWNLOAD</div>
+    <h1>PARAMANT Native</h1>
+    <p class="sub">Rust backend. Tauri 2. ML-KEM-768 in native binary — niet in browser JS.<br>Zelfde relay, zelfde berichten, meer controle over geheugen.</p>
+  </div>
+
+  <div class="section-label">// BROWSER VS NATIVE</div>
+  <div class="compare">
+    <div class="cmp-col">
+      <div class="cmp-title browser">BROWSER — paramant.app</div>
+      <div class="cmp-row"><span class="cmp-ok">OK</span>Geen installatie — open direct</div>
+      <div class="cmp-row"><span class="cmp-ok">OK</span>Werkt op elk apparaat</div>
+      <div class="cmp-row"><span class="cmp-ok">OK</span>ML-KEM-768 + AES-256-GCM</div>
+      <div class="cmp-row"><span class="cmp-warn">!</span>JS garbage collector beheert sleutels</div>
+      <div class="cmp-row"><span class="cmp-warn">!</span>Browser-extensies kunnen DOM lezen</div>
+    </div>
+    <div class="cmp-col" style="border-left:1px solid #1e2026">
+      <div class="cmp-title native">NATIVE — v0.2.0</div>
+      <div class="cmp-row"><span class="cmp-ok">OK</span>Rust drop() wist sleutels uit RAM</div>
+      <div class="cmp-row"><span class="cmp-ok">OK</span>Geen browser — geen extensies</div>
+      <div class="cmp-row"><span class="cmp-ok">OK</span>ML-KEM-768 + AES-256-GCM identiek</div>
+      <div class="cmp-row"><span class="cmp-ok">OK</span>Relay URL via Rust command</div>
+      <div class="cmp-row"><span class="cmp-ok">OK</span>GPG/APK v2+v3 gesigneerd</div>
+    </div>
+  </div>
+
+  <div class="section-label">// DOWNLOADS — v0.2.0</div>
+  <div class="dl-grid">
+    <a class="dl-card" href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.2.0/PARAMANT_0.2.0_amd64.deb">
+      <div class="dl-platform">[LNX]</div>
+      <div class="dl-name">Linux</div>
+      <div class="dl-ext">.deb — Debian / Ubuntu / Pop!_OS</div>
+      <div class="dl-desc">Rust backend + Tauri 2 WebKit. ML-KEM-768 native AVX2. GPG-gesigneerd door Mick Beer &lt;<span class="__cf_email__" data-cfemail="b5d8dcd6ded7c7f5c5c7dac1dadbd8d4dcd99bd6dad8">[email&#160;protected]</span>&gt;.</div>
+      <div class="dl-btn">[DL] .deb</div>
+      <div class="dl-meta">~3 MB</div>
+      <div class="dl-signed">GPG: 6EF8E5AC...29A49B97</div>
+    </a>
+    <a class="dl-card" href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.2.0/PARAMANT-0.2.0-1.x86_64.rpm">
+      <div class="dl-platform">[LNX]</div>
+      <div class="dl-name">Linux</div>
+      <div class="dl-ext">.rpm — Fedora / RHEL / openSUSE</div>
+      <div class="dl-desc">Identiek aan .deb. Zelfde Rust crypto core, zelfde relay. Gebouwd voor RPM-gebaseerde distros.</div>
+      <div class="dl-btn">[DL] .rpm</div>
+      <div class="dl-meta">~3 MB</div>
+      <div class="dl-signed">// build: cargo tauri build</div>
+    </a>
+    <a class="dl-card" href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.2.0/PARAMANT_0.2.0_amd64.AppImage">
+      <div class="dl-platform">[LNX]</div>
+      <div class="dl-name">Linux</div>
+      <div class="dl-ext">.AppImage — Universeel</div>
+      <div class="dl-desc">Portable binary — werkt op elke Linux distro zonder installatie. Geen root vereist. chmod +x en uitvoeren.</div>
+      <div class="dl-btn">[DL] .AppImage</div>
+      <div class="dl-meta">~77 MB (all-in-one)</div>
+      <div class="dl-signed">// chmod +x paramant.AppImage</div>
+    </a>
+    <a class="dl-card" href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.2.0/PARAMANT-0.2.0-windows-signed.exe">
+      <div class="dl-platform">[WIN]</div>
+      <div class="dl-name">Windows</div>
+      <div class="dl-ext">.exe — Windows 10/11 x64</div>
+      <div class="dl-desc">Cross-compiled via mingw-w64. Gesigneerd met osslsigncode (self-signed). SmartScreen: klik Meer info -> Toch uitvoeren.</div>
+      <div class="dl-btn">[DL] .exe</div>
+      <div class="dl-meta">~20 MB</div>
+      <div class="dl-signed">// signed: osslsigncode</div>
+    </a>
+    <a class="dl-card" href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.2.0/PARAMANT-0.2.0-android-signed.apk">
+      <div class="dl-platform">[APK]</div>
+      <div class="dl-name">Android</div>
+      <div class="dl-ext">.apk — Android 8.0+ (ARM64)</div>
+      <div class="dl-desc">Tauri Mobile. Rust gecompileerd naar ARM64 + x86_64. APK signing v2+v3 scheme. Sideload: Instellingen -> Onbekende bronnen.</div>
+      <div class="dl-btn">[DL] .apk</div>
+      <div class="dl-meta">~22 MB</div>
+      <div class="dl-signed">// v2+v3 signed, 1 signer</div>
+    </a>
+  </div>
+
+  <div class="section-label">// INSTALLATIE</div>
+  <div class="install-grid">
+    <div class="install-card">
+      <div class="install-title">[LNX] .deb</div>
+      <div class="install-code">sudo dpkg -i PARAMANT_0.2.0_amd64.deb</div>
+    </div>
+    <div class="install-card">
+      <div class="install-title">[LNX] .rpm</div>
+      <div class="install-code">sudo rpm -i PARAMANT-0.2.0-1.x86_64.rpm</div>
+    </div>
+    <div class="install-card">
+      <div class="install-title">[LNX] .AppImage</div>
+      <div class="install-code">chmod +x paramant_0.2.0_amd64.AppImage<br>./paramant_0.2.0_amd64.AppImage</div>
+    </div>
+    <div class="install-card">
+      <div class="install-title">[APK] Android</div>
+      <div class="install-code">Instellingen -> Beveiliging -><br>Onbekende bronnen -> APK installeren</div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <h3>Liever geen installatie?</h3>
+    <p>Browser versie — geen download, geen account, geen installatie verei
