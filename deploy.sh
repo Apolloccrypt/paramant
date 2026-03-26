@@ -2,7 +2,7 @@
 set -e
 echo "=== PARAMANT DEPLOY ==="
 rm -rf dist && mkdir dist
-cp index.html download.html privacy.html invite.html _headers dist/
+cp index.html download.html privacy.html invite.html relay-feed.html _headers dist/
 cat > dist/wrangler.toml << 'TOML'
 name = "paramant"
 compatibility_date = "2025-09-27"
