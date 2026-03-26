@@ -26,7 +26,7 @@ header{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(12,14,16,
 .back-btn:hover{border-color:#00ff9d;color:#00ff9d}
 
 /* Layout */
-main{padding-top:72px;display:grid;grid-template-columns:1fr 320px;gap:0;height:100vh;overflow:hidden}
+main{padding-top:58px;display:grid;grid-template-columns:1fr 320px;gap:0;height:100vh;overflow:hidden}
 @media(max-width:768px){main{grid-template-columns:1fr}aside{display:none}}
 
 /* Feed */
@@ -83,23 +83,7 @@ aside{background:#0a0c0e;border-left:1px solid #1e2026;overflow-y:auto;padding:1
 </head>
 <body>
 
-<header>
-  <div class="live-dot" id="live-dot" style="background:#2a2d35"></div>
-  <div class="logo">PARA<span>MANT</span></div>
-  <div class="sep">/</div>
-  <div class="pagetitle mono">relay_feed</div>
-  <div class="header-stats">
-    <div class="stat">
-      <div class="stat-val" id="hdr-msgs">—</div>
-      <div class="stat-lbl">berichten</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val" id="hdr-online" style="color:#4ade80">—</div>
-      <div class="stat-lbl">online</div>
-    </div>
-    <a href="/" class="back-btn">← Terug</a>
-  </div>
-</header>
+<nav style="position:fixed;top:0;left:0;right:0;height:48px;background:#0c0e10;border-bottom:1px solid #1e2026;display:flex;align-items:center;padding:0 24px;gap:24px;z-index:100;font-family:'JetBrains Mono',ui-monospace,monospace"><a href="/" style="font-size:13px;font-weight:800;color:#e2e4e8;text-decoration:none;flex-shrink:0">PARAMANT<span style="font-size:9px;color:#3d4149;border:1px solid #2a2d35;padding:1px 5px;margin-left:6px;font-weight:400">v0.2.0</span></a><span style="color:#2a2d35">|</span><a href="/" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#5a6070;">HOME</a><a href="/download.html" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#5a6070;">[DL] NATIVE</a><a href="/relay-feed.html" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#00ff9d;border-bottom:1px solid #00ff9d;">RELAY_FEED</a><a href="/privacy.html" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#5a6070;">PRIVACY</a><span style="margin-left:auto;font-size:9px;color:#4a7c59;letter-spacing:.06em">SYS_READY</span></nav>
 
 <main>
   <!-- Feed -->

@@ -1116,7 +1116,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             [CALL] Bellen
           </button>
           <button onclick="showNewGroupDialog()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/30 rounded-lg text-xs text-[#5a6070] mono transition-all"
+            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-blue-500/30 rounded-lg text-xs text-[#5a6070] mono transition-all"
             title="Maak een groepschat met meerdere verbonden amices">
             [GRP]️ Groep
           </button>
@@ -1378,7 +1378,7 @@ function drawFractal(cv,p){
     let zx=0,zy=0,it=0;
     while(zx*zx+zy*zy<4&&it<maxIt){const x2=zx*zx,y2=zy*zy;zy=2*zx*zy+im;zx=x2-y2+re;it++;}
     const i=(py*W+px)*4;
-    if(it===maxIt){img.data[i]=12;img.data[i+1]=14;img.data[i+2]=16;img.data[i+3]=255;}
+    if(it===maxIt){img.data[i]=15;img.data[i+1]=23;img.data[i+2]=42;img.data[i+3]=255;}
     else{
       const t=it/maxIt;
       // Blend two palettes based on mix byte
@@ -1397,12 +1397,12 @@ let hfA=0;
 // Seahorse valley nabij — mooi detail zichtbaar ook op kleine canvas
 const LP={
   cx:-0.7435,cy:0.1314,
-  zoom:0.0045,
-  pal:[0,255,157],       // #00ff9d — PARAMANT groen
-  pal2:[0,180,100],      // donkerder groen als mix
-  mix:0.3,
-  maxIt:120,
-  bright:1.15
+  zoom:0.0045,           // niet te ver ingezoomd = herkenbare structuur
+  pal:[0,210,180],       // teal — past bij PARAMANT kleurschema
+  pal2:[20,120,255],     // blauw als mix
+  mix:0.35,
+  maxIt:120,             // genoeg detail
+  bright:1.1
 };
 (function animL(){
   hfA+=.0015; // trager = rustiger
