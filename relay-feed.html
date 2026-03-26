@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARAMANT // RELAY FEED</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0c0e10;color:#c8ccd4;font-family:'JetBrains Mono',monospace;padding:60px 24px 40px}
+nav{position:fixed;top:0;left:0;right:0;height:48px;background:#0c0e10;border-bottom:1px solid #1e2026;display:flex;align-items:center;padding:0 24px;gap:20px;z-index:100}
+.logo{font-size:13px;font-weight:800;color:#e2e4e8;text-decoration:none}
+.logo span{color:#00ff9d}
+nav a{font-size:11px;color:#8a8e98;text-decoration:none;letter-spacing:.05em}
+nav a:hover{color:#00ff9d}
+.grid{display:grid;grid-template-columns:1fr 280px;gap:20px;max-width:1100px;margin:20px auto 0}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat{background:#111214;border:1px solid #1e2026;padding:14px}
+.stat-val{font-size:22px;font-weight:700;color:#e2e4e8}
+.stat-lbl{font-size:10px;color:#5a6070;margin-top:4px;letter-spacing:.06em}
+.entry{background:#111214;border:1px solid #1e2026;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:12px;font-size:12px}
+.hash{color:#00ff9d;font-size:13px;flex:1}
+.hash span{color:#00cc7a}
+.meta{color:#5a6070;font-size:11px}
+.status{font-size:11px;color:#5a6070;margin-bottom:10px}
+.dot{width:6px;height:6px;border-radius:50%;background:#3d4149;display:inline-block;margin-right:6px;transition:background .3s}
+.dot.on{background:#00ff9d}
+.side{background:#111214;border:1px solid #1e2026;padding:16px}
+.side-title{font-size:10px;color:#5a6070;letter-spacing:.08em;margin-bottom:12px}
+.empty{color:#3d4149;font-size:12px;padding:20px 0}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.stat-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo">PARA<span>MANT</span></a>
+  <span style="color:#2a2d35">|</span>
+  <a href="/">HOME</a>
+  <a href="/download">[DL] NATIVE</a>
+  <a href="/privacy">PRIVACY</a>
+  <span style="margin-left:auto;font-size:9px;color:#4a7c59;letter-spacing:.06em"><span class="dot" id="dot"></span>RELAY_FEED</span>
+</nav>
+
+<div style="max-width:1100px;margin:0 auto">
+  <div class="stat-row">
+    <div class="stat"><div class="stat-val" id="s-msgs">—</div><div class="stat-lbl">BERICHTEN</div></div>
+    <div class="stat"><div class="stat-val" id="s-chats">—</div><div class="stat-lbl">GESPREKKEN</div></div>
+    <div class="stat"><div class="stat-val" id="s-online">—</div><div class="stat-lbl">ONLINE</div></div>
+    <div class="stat"><div class="stat-val" id="s-uptime">—</div><div class="stat-lbl">UPTIME</div></div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="status" id="status">Verbinden...</div>
+      <div id="feed"><div class="empty">Geen entries — wacht op berichten.</div></div>
+    </div>
+    <div class="side">
+      <div class="side-title">// INFO</div>
+      <div style="font-size:11px;color:#8a8e98;line-height:1.9">
+        Relay ziet alleen:<br>
+        · Hash-prefix (16 hex)<br>
+        · Pakketgrootte<br>
+        · Tijdstempel<br><br>
+        <span style="color:#5a6070">Nooit: inhoud, namen, IP</span><br>
+        <span style="color:#5a6070">TTL: max 5 minuten</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://relay.paramant.app';
+
+function t(ts){const d=new Date(ts);return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');}
+function up(s){if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'u '+Math.floor((s%3600)/60)+'m';}
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+
+async function tick(){
+  try{
+    const stats = await fetch(API+'/api/stats').then(r=>r.json());
+    set('s-msgs', stats.messages||0);
+    set('s-chats', stats.chats||0);
+    set('s-online', stats.online||0);
+    set('s-uptime', up(stats.uptime_s||0));
+    document.getElementById('dot').className = 'dot on';
+    set('status', 'Verbonden · relay.paramant.app');
+
+    const ledger = await fetch(API+'/api/ledger').then(r=>r.json());
+    const feed = document.getElementById('feed');
+    if(!ledger.entries||!ledger.entries.length){
+      feed.innerHTML='<div class="empty">Geen entries in de laatste 5 minuten.</div>';
+    } else {
+      feed.innerHTML = ledger.entries.map(e=>
+        '<div class="entry">'+
+        '<div class="hash"><span>'+e.chatHash.slice(0,8)+'</span>'+e.chatHash.slice(8)+'</div>'+
+        '<div class="meta">'+Math.round(e.bytes/1024*10)/10+'KB</div>'+
+        '<div class="meta">'+t(e.timestamp)+'</div>'+
+        '</div>'
+      ).join('');
+    }
+  }catch(err){
+    set('status','Verbindingsfout — herverbinden...');
+    document.getElementById('dot').className='dot';
+  }
+}
+
+tick();
+setInterval(tick, 10000);
+</script>
+</body>
+</html>
