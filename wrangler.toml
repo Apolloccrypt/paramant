@@ -4,3 +4,4 @@ compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = "."
+exclude = [".git/**", ".wrangler/**", ".vercel/**", "*.toml", "*.md", ".env*", "PROBEER", "README.md", "_headers"]
