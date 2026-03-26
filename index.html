@@ -286,7 +286,11 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <a href="/download.html" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#8a8e98;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#00ff9d'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">[DL] NATIVE</a>
     
     <a href="/privacy.html" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#8a8e98;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#e2e4e8'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">PRIVACY</a>
+    <a href="/relay-feed" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#8a8e98;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026" onmouseover="this.style.color='#00ff9d'" onmouseout="this.style.color='#8a8e98'">RELAY_FEED</a>
+    <a href="/relay-feed" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#8a8e98;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#e2e4e8'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">RELAY_FEED</a>
   </div>
+
+    <a href="/relay-feed" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#8a8e98;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026" onmouseover="this.style.color='#e2e4e8'" onmouseout="this.style.color='#8a8e98'">RELAY_FEED</a>
 
   <!-- SPACER -->
   <div style="flex:1"></div>
@@ -1103,18 +1107,12 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <!-- Knoppen -->
           <div class="grid grid-cols-2 gap-2 mb-2">
             <button id="copy-key-btn" onclick="copyMyKey()"
-              class="py-3 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-sm rounded-sm transition-all active:scale-95">
+              class="py-3 bg-[#00ff9d] hover:bg-[#00cc7a] text-[#0c0e10] font-bold text-sm rounded-sm transition-all active:scale-95">
               [COPY] Kopieer adres
             </button>
-          </div>
-          <div class="grid grid-cols-2 gap-2 mb-2">
             <button onclick="toggleQR()"
-              class="py-3 bg-[#2a2d35] hover:bg-[#3d4149] border border-[#3d4149] text-[#e2e4e8] text-sm rounded-sm transition-all">
-               QR-code
-            </button>
-            <button onclick="copyMyKey()"
-              class="py-3 bg-[#2a2d35] hover:bg-[#3d4149] border border-[#3d4149] text-[#c8ccd4] text-sm rounded-sm transition-all">
-              [COPY] Volledig adres
+              class="py-3 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] text-[#c8ccd4] text-sm rounded-sm transition-all">
+              QR-code
             </button>
           </div>
           <div class="grid grid-cols-2 gap-2">
