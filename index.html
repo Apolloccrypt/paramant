@@ -287,6 +287,19 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   </button>
 <span style="font-size:9px;font-family:var(--mono);color:#4a7c59;margin-left:auto;margin-right:12px;letter-spacing:.06em">SYS_READY</span>
 </nav>
+<div id="mob-nav" style="display:none;position:fixed;top:48px;left:0;right:0;background:#0c0e10;border-bottom:1px solid #1e2026;z-index:99;padding:12px 24px;gap:12px;font-family:var(--mono);flex-direction:column">
+  <a href="/" onclick="closeMobNav()" style="font-size:12px;color:#8a8e98;text-decoration:none;padding:6px 0;border-bottom:1px solid #1e2026">HOME</a>
+  <a href="/download.html" onclick="closeMobNav()" style="font-size:12px;color:#8a8e98;text-decoration:none;padding:6px 0;border-bottom:1px solid #1e2026">[DL] NATIVE APP</a>
+  <a href="/relay-feed.html" onclick="closeMobNav()" style="font-size:12px;color:#8a8e98;text-decoration:none;padding:6px 0;border-bottom:1px solid #1e2026">RELAY_FEED</a>
+  <a href="/privacy.html" onclick="closeMobNav()" style="font-size:12px;color:#8a8e98;text-decoration:none;padding:6px 0">PRIVACY</a>
+</div>
+<!-- Mobile nav overlay -->
+<div id="mob-nav" style="display:none;position:fixed;top:48px;left:0;right:0;background:#0c0e10;border-bottom:1px solid #1e2026;z-index:99;padding:12px 24px;flex-direction:column;gap:12px;font-family:var(--mono)">
+  <a href="/" style="font-size:12px;color:#8a8e98;text-decoration:none;letter-spacing:.06em" onclick="closeMobNav()">HOME</a>
+  <a href="/download.html" style="font-size:12px;color:#8a8e98;text-decoration:none;letter-spacing:.06em" onclick="closeMobNav()">[DL] NATIVE APP</a>
+  <a href="/relay-feed.html" style="font-size:12px;color:#8a8e98;text-decoration:none;letter-spacing:.06em" onclick="closeMobNav()">RELAY_FEED</a>
+  <a href="/privacy.html" style="font-size:12px;color:#8a8e98;text-decoration:none;letter-spacing:.06em" onclick="closeMobNav()">PRIVACY</a>
+</div>
 
 <!-- HERO -->
 <section class="relative min-h-screen flex flex-col items-center justify-center text-center px-5 pt-24 pb-16 overflow-hidden">
@@ -418,6 +431,38 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <span class="text-xs text-[#5a6070] self-center">bestanden · berichten · QR-code</span>
         </div>
       </div>
+      <!-- STAP 4: Veiligheidsnummers -->
+      <div class="bg-[#1a1d22]/50 border border-[#00ff9d]/20 rounded p-6 hover:border-[#00ff9d]/40 transition-all group md:col-span-3" style="margin-top:12px">
+        <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap">
+          <div>
+            <div class="w-12 h-12 rounded bg-[#00ff9d]/15 border border-[#00ff9d]/25 flex items-center justify-center text-2xl mb-3 group-hover:bg-[#00ff9d]/25 transition-all">[SEC]</div>
+          </div>
+          <div style="flex:1;min-width:280px">
+            <div class="mono text-[#00ff9d] text-xs font-semibold tracking-widest mb-2">STAP 4 — AANBEVOLEN</div>
+            <h3 class="text-[#e2e4e8] font-bold text-lg mb-2">Verifieer de verbinding</h3>
+            <p class="text-[#c8ccd4] text-sm leading-relaxed mb-3">Na verbinding zie je 8 nummers. Bel je amice en lees ze op — als ze overeenkomen is niemand ertussen. Dit garandeert dat je écht met de juiste persoon praat.</p>
+            <div class="p-3 bg-[#111214] rounded-sm border border-[#2a2d35] mono text-xs text-[#00ff9d]/70" style="letter-spacing:.08em">
+              12847 &nbsp; 03921 &nbsp; 77453 &nbsp; 18204<br>
+              <span style="color:#5a6070">← Jij leest deze voor aan je amice →</span>
+            </div>
+          </div>
+          <div style="flex:1;min-width:200px;display:flex;align-items:center">
+            <div class="text-xs text-[#8a8e98] leading-loose">
+              [OK] Man-in-the-middle aanval onmogelijk<br>
+              [OK] Gebaseerd op cryptografische sleutels<br>
+              [OK] Eenmalig — daarna automatisch veilig
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Try now CTA -->
+    <div class="mt-10 mb-2 text-center">
+      <button onclick="openApp()" class="inline-flex items-center gap-2 px-8 py-4 bg-[#00ff9d] text-[#0c0e10] font-bold rounded-sm hover:bg-[#00cc7a] transition-all text-base tracking-wide" style="font-family:var(--mono)">
+        >> PROBEER NU — GEEN ACCOUNT NODIG
+      </button>
+      <p class="text-xs text-[#5a6070] mt-3 mono">Werkt direct in je browser · Geen installatie · Geen registratie</p>
     </div>
 
     <!-- Relay uitleg voor leken -->
@@ -770,7 +815,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <p class="text-[#c8ccd4] text-lg mb-6">In de browser of als native app. Jouw keuze.</p>
 
     <!-- Browser knop -->
-    <button onclick="openApp()" class="w-full sm:w-auto px-10 py-5 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-xl rounded transition-all hover:shadow-2xl hover:shadow-[#00ff9d]/10 active:scale-95 mb-4">
+    <button onclick="openApp()" aria-label="Open PARAMANT app" class="w-full sm:w-auto px-10 py-5 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-xl rounded transition-all hover:shadow-2xl hover:shadow-[#00ff9d]/10 active:scale-95 mb-4">
       >> OPEN APP // GRATIS
     </button>
 
@@ -835,7 +880,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <a href="https://github.com/Apolloccrypt/paramant" target="_blank" rel="noopener" class="hover:text-[#00ff9d] transition-colors">GitHub</a>
       <a href="https://buymeacoffee.com/mickbeer" target="_blank" rel="noopener" class="hover:text-[#00ff9d] transition-colors">[LOCK] Steun de relay</a>
     </div>
-    <div class="mono text-xs text-slate-700">ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</div>
+    <div class="mono text-xs text-[#3d4149]">ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</div>
+  <div class="w-full mt-3 pt-3 border-t border-[#1e2026] text-center text-xs text-[#3d4149] mono">
+    PARAMANT gebruikt geen cookies, geen trackers en geen analytics. Punt. &nbsp;·&nbsp; <a href="/privacy.html" style="color:#5a6070;text-decoration:none" onmouseover="this.style.color='#00ff9d'" onmouseout="this.style.color='#5a6070'">Privacy policy</a>
+  </div>
   </div>
 </footer>
 
@@ -1082,7 +1130,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           </div>
           <div id="conn-err" style="display:none" class="mt-3 px-4 py-3 bg-red-500/10 border border-red-500/25 rounded-sm text-red-400 text-sm mono"></div>
           <div class="flex gap-3 mt-5">
-            <button id="conn-btn" onclick="doConnect()" class="flex-1 py-4 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-base rounded-sm transition-all active:scale-95">>> Verbinden</button>
+            <button id="conn-btn" onclick="doConnect()" aria-label="Verbind met je amice" class="flex-1 py-4 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-base rounded-sm transition-all active:scale-95">>> Verbinden</button>
             <button onclick="cancelConnect()" class="px-5 py-4 bg-[#2a2d35] border border-[#3d4149] text-[#c8ccd4] font-medium rounded-sm transition-all hover:bg-[#3d4149]"><- Terug</button>
           </div>
           <div class="mt-4 p-3 bg-[#00ff9d]/5 border border-[#00ff9d]/15 rounded-sm flex items-start gap-2">
@@ -1117,9 +1165,14 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             [CALL] Bellen
           </button>
           <button onclick="showNewGroupDialog()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-blue-500/30 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
+            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/30 rounded-sm text-xs text-[#c8ccd4] mono transition-all"
             title="Maak een groepschat met meerdere verbonden amices">
             [GRP]️ Groep
+          </button>
+          <button onclick="testVerbinding()"
+            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/30 rounded-sm text-xs text-[#c8ccd4] mono transition-all"
+            aria-label="Test verbinding" title="Stuur test-ping om verbinding te controleren">
+            [TEST]
           </button>
           <button onclick="exportConv()"
             class="hidden sm:block px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-lg text-xs text-[#c8ccd4] mono transition-all hover:border-[#3d4149]"
@@ -3103,6 +3156,17 @@ function updateVoiceUI(active) {
 
 // Verwerk webrtc_signal berichten bij ontvangst
 const _origDecrypt = window.decryptPacket;
+
+function toggleMobNav(){const n=document.getElementById('mob-nav');n.style.display=n.style.display==='flex'?'none':'flex';}
+function closeMobNav(){document.getElementById('mob-nav').style.display='none';}
+
+function testVerbinding(){
+  const c=activeConv();
+  if(!c?.sendChainKey){alert('[!] Geen verbinding actief. Verbind eerst met je amice.');return;}
+  const start=Date.now();
+  encPayload(c,'[TEST] Ping '+new Date().toLocaleTimeString('nl-NL'),'text');
+  sysMsg(c,'[TEST] Test-bericht verstuurd. Kijk of je amice het ontvangt.');
+}
 </script>
 </body>
 </html>
