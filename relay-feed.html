@@ -256,10 +256,8 @@ function renderFeed(entries, isRefresh){
 
 async function fetchAll(){
   try{
-    const [stats, ledger] = await Promise.all([
-      fetch(RELAY+'/api/stats').then(r=>r.json()).catch(()=>({ok:false})),
-      fetch(RELAY+'/api/ledger').then(r=>r.json()).catch(()=>({ok:false}))
-    ]);
+    const stats = await fetch(RELAY+'/api/stats').then(r=>r.json());
+    const ledger = await fetch(RELAY+'/api/ledger').then(r=>r.json());
 
     // Update header stats
     if(stats && (stats.ok || stats.messages !== undefined)){
