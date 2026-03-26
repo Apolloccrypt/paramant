@@ -1864,10 +1864,8 @@ function setRelayUI(s){
 }
 
 function wakeupRelay(){
-  // Geen wakeup nodig voor .onion (geen Render cold-start)
   if(IS_ONION||!RELAY_API)return;
   fetch(`${RELAY_API}/health`).catch(()=>{});
-  setTimeout(()=>fetch(`${RELAY_API}/health`).catch(()=>{}),15000);
 }
 
 function connectRelay(){
@@ -1896,7 +1894,7 @@ function connectRelay(){
     };
     relayWS.onclose=()=>{
       relayOn=false;presenceMap.clear();renderPresence();
-      if(relayWant){setRelayUI('con');setTimeout(connectRelay,IS_ONION?8000:4000);}
+      if(relayWant){setRelayUI('con');setTimeout(connectRelay,IS_ONION?4000:1000);}
       else setRelayUI('off');
     };
     relayWS.onerror=()=>{
@@ -1914,10 +1912,10 @@ function connectRelay(){
           },5000);
         }
       }
-      if(relayWant)setTimeout(connectRelay,8000);
+      if(relayWant)setTimeout(connectRelay,2000);
     };
     relayWS.onmessage=e=>{try{onRelayMsg(JSON.parse(e.data));}catch(x){}}
-  }catch(e){setRelayUI('err');if(relayWant)setTimeout(connectRelay,8000);}
+  }catch(e){setRelayUI('err');if(relayWant)setTimeout(connectRelay,2000);}
 }
 
 function disconnectRelay(){
@@ -2916,7 +2914,7 @@ function openApp(){
   $('app').style.display='flex';
   document.body.style.overflow='hidden';
   // Relay automatisch starten — gebruiker hoeft niets te doen
-  if(!relayWant){setTimeout(()=>{relayWant=true;wakeupRelay();connectRelay();},300);}
+  if(!relayWant){relayWant=true;wakeupRelay();connectRelay();;}
   // Incognito/extensie hint — eenmalig per sessie
   if(!sessionStorage.getItem('pm-ext-checked')){
     sessionStorage.setItem('pm-ext-checked','1');
