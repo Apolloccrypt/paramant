@@ -1554,10 +1554,10 @@ const LP={
 })();
 
 // ─── IDENTITY — SHA-256(pubKey) -> avatar + nick ──────────────────
-const NADJ=['Stil','Snel','Slim','Wild','Koud','Vrij','Nacht','Diep','Scherp','Nevel','Vlug','Zwart','Goud','Stout','Zeker','Fel','Grijs','Hoog','Fijn','Raak','Koel','Helder','Ijzer','Sterk','Vast','Blauw','Rood','Flink','Handig','Rustig'];
-const NNOUN=['Vos','Kat','Wolf','Ster','Rots','Golf','Pijl','Haai','Lynx','Uil','Kraai','Maan','Kever','Tijger','Adelaar','Cobra','Arend','Zeehond','Ibis','Zalm','Beer','Das','Raaf','Eland','Slang','Haas','Aap','Krab','Mug','Gier'];
+const NADJ=['Nul','Hex','Bin','Enc','Void','Dark','Zero','Null','Anon','Crypt','Xor','Hash','Init','Core','Edge','Root','Base','Node','Port','Sync','Mask','Shard','Ghost','Epoch','Sector','Block','Proto','Meta','Proxy','Delta'];
+const NNOUN=['Nox','Vex','Krait','Oryx','Zond','Quor','Flux','Nexus','Plex','Axon','Krypt','Vorx','Zenith','Quartz','Velox','Drax','Prism','Onyx','Helix','Kron','Zephyr','Obsid','Pulsar','Vertex','Cipher','Nexon','Kodex','Phantom','Axor','Kryos'];
 const NSYM=['_','-','.','!','@','~','#','+'];
-const NPFX=['x','z','k','q','v','h','j','m','r',''];
+const NPFX=['0x','zk','xq','k3','v0','h4','j9','r7','n3',''];
 function nickFromHash(h){
   // Uses bytes 16-27 for maximum entropy
   const s=h[16]%5;
