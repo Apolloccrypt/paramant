@@ -261,25 +261,39 @@ async function fetchAll(){
 
     if(stats){
       const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-      set('hdr-msgs', Number(stats.messages||0).toLocaleString('nl-NL'));
-      set('hdr-online', stats.online||0);
       set('s-msgs', Number(stats.messages||0).toLocaleString('nl-NL'));
       set('s-chats', stats.chats||0);
       set('s-online', stats.online||0);
       set('s-uptime', fmtUptime(stats.uptime_s||0));
-      const dot=document.getElementById('live-dot');
-      if(dot) dot.style.background=(stats.online||0)>0?'#00ff9d':'#2a2d35';
+      // live-dot is a class, not id
+      document.querySelectorAll('.live-dot').forEach(dot=>{
+        dot.style.background=(stats.online||0)>0?'#00ff9d':'#2a2d35';
+        dot.style.animation=(stats.online||0)>0?'pulse 2s infinite':'none';
+      });
+      // Update header stats if elements exist
+      const hm=document.getElementById('hdr-msgs');if(hm)hm.textContent=Number(stats.messages||0).toLocaleString('nl-NL');
+      const ho=document.getElementById('hdr-online');if(ho)ho.textContent=stats.online||0;
+      // Update status text
+      const feed=document.getElementById('feed');
+      if(feed&&feed.querySelector('.empty')){
+        if((stats.messages||0)===0){
+          feed.innerHTML='<div class="empty">Geen pakketten in de laatste 5 minuten.<br><span style="font-size:11px;color:#1e3a5f">Stuur een bericht in PARAMANT om er één te zien.</span></div>';
+        }
+      }
     }
 
     if(ledger && ledger.entries){
       const isRefresh=allEntries.length>0;
       allEntries=ledger.entries;
       renderFeed(allEntries, isRefresh);
+    } else if(ledger && ledger.count === 0){
+      const feed=document.getElementById('feed');
+      if(feed) feed.innerHTML='<div class="empty">Geen pakketten in de laatste 5 minuten.<br><span style="font-size:11px;color:#1e3a5f">Stuur een bericht in PARAMANT om er één te zien.</span></div>';
+      const fc=document.getElementById('feed-count');if(fc)fc.textContent='0 entries';
     }
 
   }catch(e){
-    const dot=document.getElementById('live-dot');
-    if(dot) dot.style.background='#ef4444';
+    document.querySelectorAll('.live-dot').forEach(dot=>{dot.style.background='#ef4444';});
   }
 }
 
