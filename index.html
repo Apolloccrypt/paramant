@@ -1106,9 +1106,20 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
               class="py-3 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-sm rounded-sm transition-all active:scale-95">
               [COPY] Kopieer adres
             </button>
+            <button onclick="createTripleSecureInvite()"
+              class="py-3 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#00ff9d]/30 text-[#00ff9d] text-sm rounded-sm transition-all font-bold"
+              title="Genereer een veilige uitnodigingslink (5 min geldig)">
+              [LOCK] Invite
+            </button>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-2">
             <button onclick="toggleQR()"
               class="py-3 bg-[#2a2d35] hover:bg-[#3d4149] border border-[#3d4149] text-[#e2e4e8] text-sm rounded-sm transition-all">
                QR-code
+            </button>
+            <button onclick="copyMyKey()"
+              class="py-3 bg-[#2a2d35] hover:bg-[#3d4149] border border-[#3d4149] text-[#c8ccd4] text-sm rounded-sm transition-all">
+              [COPY] Volledig adres
             </button>
           </div>
           <div class="grid grid-cols-2 gap-2">
@@ -3294,7 +3305,7 @@ function howTab(id, btn) {
 }
 
 // ── TRIPLE SECURE INVITE ──────────────────────────────────────────
-async function createTripleSecureInvite() {
+async function createTripleSecureInvite(channel) {
   if (!myBundle) { alert('[!] Genereer eerst een identiteit.'); return; }
   const btn = document.getElementById('invite-btn');
   if (btn) { btn.disabled = true; btn.textContent = '...'; }
@@ -3311,16 +3322,75 @@ async function createTripleSecureInvite() {
     });
     if (!r.ok) throw new Error('Relay fout');
     const url = 'https://paramant.app/invite/' + token;
-    const msg = 'Hé!\n\nIk nodig je uit voor een beveiligde chat via PARAMANT.\nOpen dit binnen 5 minuten:\n\n' + url + '\n\nDaarna verdwijnt de link automatisch.';
-    await navigator.clipboard.writeText(msg).catch(()=>{});
+    const tekst = 'Hé! Ik nodig je uit voor een beveiligde chat via PARAMANT.\nOpen dit binnen 5 minuten:\n' + url + '\n\nDaarna verdwijnt de link automatisch — niemand anders kan hem openen.';
+    const enc = encodeURIComponent(tekst);
+    const urlEnc = encodeURIComponent(url);
+
+    // Toon share panel
+    showInviteSharePanel(url, tekst, enc, urlEnc, channel);
+
     const c = activeConv();
-    if (c) sysMsg(c, '[OK] Triple Secure Invite gekopieerd naar klembord (verloopt over 5 min)\n' + url);
-    else alert('[OK] Invite gekopieerd:\n' + url);
+    if (c) sysMsg(c, '[OK] Invite aangemaakt (verloopt over 5 min): ' + url);
   } catch(e) {
     alert('[!] Kon invite niet aanmaken: ' + e.message);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '[LOCK] Invite'; }
   }
+}
+
+function showInviteSharePanel(url, tekst, enc, urlEnc, channel) {
+  // Verwijder bestaand panel
+  const old = document.getElementById('invite-share-panel');
+  if (old) old.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'invite-share-panel';
+  panel.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  panel.innerHTML = `
+    <div style="background:#111214;border:1px solid #2a2d35;max-width:440px;width:100%;padding:24px;font-family:var(--mono)">
+      <div style="font-size:10px;color:#5a6070;letter-spacing:.1em;margin-bottom:12px">// TRIPLE SECURE INVITE GEGENEREERD</div>
+      <div style="font-size:13px;color:#e2e4e8;font-weight:600;margin-bottom:8px">Verloopt over 5 minuten</div>
+      <div style="background:#0c0e10;border:1px solid #1e2026;padding:10px;font-size:11px;color:#00ff9d;word-break:break-all;margin-bottom:16px;line-height:1.6">${url}</div>
+
+      <div style="font-size:10px;color:#5a6070;letter-spacing:.08em;margin-bottom:8px">// DEEL VIA</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        <a href="mailto:?subject=PARAMANT%20Uitnodiging&body=${enc}" target="_blank"
+          style="display:block;padding:10px;background:#1a1d22;border:1px solid #2a2d35;color:#c8ccd4;text-align:center;font-size:12px;text-decoration:none;transition:border-color .15s"
+          onmouseover="this.style.borderColor='#00ff9d'" onmouseout="this.style.borderColor='#2a2d35'">
+          [✉] E-mail
+        </a>
+        <a href="https://wa.me/?text=${enc}" target="_blank" rel="noopener"
+          style="display:block;padding:10px;background:#1a1d22;border:1px solid #2a2d35;color:#c8ccd4;text-align:center;font-size:12px;text-decoration:none"
+          onmouseover="this.style.borderColor='#00ff9d'" onmouseout="this.style.borderColor='#2a2d35'">
+          [W] WhatsApp
+        </a>
+        <a href="https://t.me/share/url?url=${urlEnc}&text=${enc}" target="_blank" rel="noopener"
+          style="display:block;padding:10px;background:#1a1d22;border:1px solid #2a2d35;color:#c8ccd4;text-align:center;font-size:12px;text-decoration:none"
+          onmouseover="this.style.borderColor='#00ff9d'" onmouseout="this.style.borderColor='#2a2d35'">
+          [T] Telegram
+        </a>
+        <button onclick="navigator.clipboard.writeText('${url}').then(()=>{this.textContent='[OK] Gekopieerd';setTimeout(()=>this.textContent='[C] Kopieer link',2000)}).catch(()=>{})"
+          style="padding:10px;background:#1a1d22;border:1px solid #2a2d35;color:#c8ccd4;font-size:12px;cursor:pointer;font-family:var(--mono)"
+          onmouseover="this.style.borderColor='#00ff9d'" onmouseout="this.style.borderColor='#2a2d35'">
+          [C] Kopieer link
+        </button>
+      </div>
+
+      <div style="font-size:11px;color:#3d4149;line-height:1.7;margin-bottom:14px">
+        De link is éénmalig — verdwijnt na gebruik of na 5 minuten.<br>
+        Geen cookies. Geen tracking. Geen opslag op servers.<br>
+        Alleen de ECDH-pubkey staat tijdelijk op de relay.
+      </div>
+
+      <button onclick="document.getElementById('invite-share-panel').remove()"
+        style="width:100%;padding:10px;background:transparent;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-family:var(--mono);font-size:12px"
+        onmouseover="this.style.borderColor='#5a6070'" onmouseout="this.style.borderColor='#2a2d35'">
+        [X] Sluiten
+      </button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+  panel.addEventListener('click', e=>{ if(e.target===panel) panel.remove(); });
 }
 
 // Check voor invite bij openen app
