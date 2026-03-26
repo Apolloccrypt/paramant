@@ -275,10 +275,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <span class="font-bold text-lg text-[#e2e4e8] tracking-tight font-mono">PARAMANT</span>
   </div>
   <div class="flex-1"></div>
-  <a href="#hoe" class="hidden md:block text-sm text-[#5a6070]">Hoe werkt het?</a>
-  <a href="#vergelijk" class="hidden md:block text-sm text-[#5a6070]">Vergelijking</a>
-  <a href="#ledger-section" class="hidden md:block text-sm text-[#5a6070]">Beveiliging</a>
-  <a href="/download.html" class="hidden md:block text-sm text-[#00ff9d] font-medium">v Native app</a>
+  <a href="#hoe" class="hidden md:block text-sm text-[#c8ccd4]">Hoe werkt het?</a>
+  <a href="#vergelijk" class="hidden md:block text-sm text-[#c8ccd4]">Vergelijking</a>
+  <a href="#ledger-section" class="hidden md:block text-sm text-[#c8ccd4]">Beveiliging</a>
+  <a href="/download.html" class="hidden md:block text-sm text-[#00ff9d] font-medium" style="font-family:var(--mono);font-size:11px;letter-spacing:.05em">[DL] NATIVE</a>
   <button id="pwa-install-btn" onclick="installPWA()" style="display:none;align-items:center;gap:6px;padding:6px 14px;background:rgba(0,255,157,.15);border:1px solid rgba(0,255,157,.3);border-radius:8px;color:#00ff9d;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(0,255,157,.25)'" onmouseout="this.style.background='rgba(0,255,157,.15)'">
     + Installeer app
   </button>
@@ -302,7 +302,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     </div>
 
     <!-- Badge -->
-    <div class="inline-flex items-center gap-2 px-4 py-2 mb-3 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-full text-xs text-[#5a6070] font-medium">
+    <div class="inline-flex items-center gap-2 px-4 py-2 mb-3 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-full text-xs text-[#c8ccd4] font-medium">
       ️ Onafhankelijke open-source privacytool &nbsp;·&nbsp; gemaakt door één persoon &nbsp;·&nbsp; <span style="color:#5a6070;font-family:var(--mono)">gemaakt in NL</span>
     </div>
 
@@ -316,7 +316,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <span class="text-[#00ff9d]" style="animation:glow 3s ease-in-out infinite">Letterlijk niemand.</span>
     </h1>
 
-    <p class="text-lg md:text-xl text-[#5a6070] font-light max-w-xl mx-auto mb-10 leading-relaxed">
+    <p class="text-lg md:text-xl text-[#c8ccd4] font-light max-w-xl mx-auto mb-10 leading-relaxed">
       Berichten die letterlijk niemand kan lezen — ook geen enkele server.
       Net als bitcoin openbaar aantoonbaar, maar volledig onleesbaar.
     </p>
@@ -327,7 +327,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#c8ccd4]"> Nul account, nul telefoon</div>
       <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/30 rounded-full text-sm text-[#00ff9d]">⚛ Post-quantum (NIST FIPS 203)</div>
       <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#c8ccd4]"> Geen installatie — werkt overal</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#5a6070]" style="font-family:var(--mono);font-size:11px;letter-spacing:.04em">// gemaakt in Nederland</div>
+      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#c8ccd4]" style="font-family:var(--mono);font-size:11px;letter-spacing:.04em">// gemaakt in Nederland</div>
     </div>
 
     <div class="flex flex-col sm:flex-row gap-3 justify-center">
@@ -343,7 +343,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
 <!-- HASH CHAIN TICKER — live relay data -->
 <div class="py-5 bg-[#0c0e10] border-y border-[#1e2026] overflow-hidden">
-  <p class="text-center text-xs text-[#3d4149] mono mb-3 tracking-widest">LIVE RELAY — IEDEREEN ZIET DE HASH · NIEMAND LEEST DE INHOUD</p>
+  <p class="text-center text-xs text-[#5a6070] mono mb-3 tracking-widest">LIVE RELAY — IEDEREEN ZIET DE HASH · NIEMAND LEEST DE INHOUD</p>
   <div class="flex overflow-hidden">
     <div id="chain-ticker" class="chain-scroll flex gap-2 items-center">
       <!-- Gevuld via JS met live relay data -->
@@ -362,7 +362,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     if(!el||!entries.length)return;
     // Dubbel voor naadloze loop
     const items=[...entries,...entries];
-    el.innerHTML=items.map(e=>`<span class="hash-block">${e.chatHash.replace('…','')}<span class="text-[#3d4149] mx-1">·</span>${fmtBytes(e.bytes)}<span class="text-[#3d4149] mx-1">·</span>${fmtTime(e.timestamp)}</span><span class="hash-link">-></span>`).join('');
+    el.innerHTML=items.map(e=>`<span class="hash-block">${e.chatHash.replace('…','')}<span class="text-[#5a6070] mx-1">·</span>${fmtBytes(e.bytes)}<span class="text-[#5a6070] mx-1">·</span>${fmtTime(e.timestamp)}</span><span class="hash-link">-></span>`).join('');
     // Reset animatie
     el.style.animation='none';
     void el.offsetWidth;
@@ -387,14 +387,14 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   <div class="max-w-4xl mx-auto text-center">
     <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">Zo simpel is het</div>
     <h2 class="text-3xl md:text-5xl font-bold text-[#e2e4e8] mb-4 tracking-tight">Klaar in 3 stappen</h2>
-    <p class="text-[#5a6070] text-lg mb-14 max-w-xl mx-auto">Geen app te installeren. Geen wachtwoord te onthouden. Gewoon veilig appen.</p>
+    <p class="text-[#c8ccd4] text-lg mb-14 max-w-xl mx-auto">Geen app te installeren. Geen wachtwoord te onthouden. Gewoon veilig appen.</p>
 
     <div class="grid md:grid-cols-3 gap-6 text-left">
       <div class="bg-[#1a1d22]/50 border border-[#2a2d35] rounded p-6 hover:border-[#00ff9d]/40 transition-all group">
         <div class="w-12 h-12 rounded bg-[#00ff9d]/15 border border-[#00ff9d]/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-[#00ff9d]/25 transition-all">[COPY]</div>
         <div class="mono text-[#00ff9d] text-xs font-semibold tracking-widest mb-2">STAP 1</div>
         <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Kopieer jouw adres</h3>
-        <p class="text-[#5a6070] text-sm leading-relaxed">Je krijgt automatisch een uniek adres. Dit is jouw "deur" — stuur het naar je amice via WhatsApp, sms of e-mail.</p>
+        <p class="text-[#c8ccd4] text-sm leading-relaxed">Je krijgt automatisch een uniek adres. Dit is jouw "deur" — stuur het naar je amice via WhatsApp, sms of e-mail.</p>
         <div class="mt-4 p-3 bg-[#111214] rounded-sm border border-[#2a2d35]">
           <p class="text-xs text-[#00ff9d]/70 mono">{"ecdh":"04a3f9…","nick":"Stil-Wolf21"}</p>
         </div>
@@ -403,7 +403,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div class="w-12 h-12 rounded bg-[#00ff9d]/15 border border-[#00ff9d]/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-[#00ff9d]/25 transition-all">></div>
         <div class="mono text-[#00ff9d] text-xs font-semibold tracking-widest mb-2">STAP 2</div>
         <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Verbind met je amice</h3>
-        <p class="text-[#5a6070] text-sm leading-relaxed">Plak het adres van je amice en klik "Verbind". Direct een beveiligde, quantum-veilige verbinding — zonder server ertussen.</p>
+        <p class="text-[#c8ccd4] text-sm leading-relaxed">Plak het adres van je amice en klik "Verbind". Direct een beveiligde, quantum-veilige verbinding — zonder server ertussen.</p>
         <div class="mt-4 p-3 bg-[#111214] rounded-sm border border-[#00ff9d]/20">
           <p class="text-xs text-[#00ff9d] mono flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#00ff9d] flex-shrink-0"></span>Verbonden · quantum-veilig [LOCK]</p>
         </div>
@@ -412,10 +412,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div class="w-12 h-12 rounded bg-[#00ff9d]/15 border border-[#00ff9d]/25 flex items-center justify-center text-2xl mb-5 group-hover:bg-[#00ff9d]/25 transition-all"></div>
         <div class="mono text-[#00ff9d] text-xs font-semibold tracking-widest mb-2">STAP 3</div>
         <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Appen maar!</h3>
-        <p class="text-[#5a6070] text-sm leading-relaxed">Typ berichten of stuur bestanden tot 10 MB. Elk bericht en bestand wordt volledig versleuteld vóór verzending — niemand kan het onderscheppen of lezen.</p>
+        <p class="text-[#c8ccd4] text-sm leading-relaxed">Typ berichten of stuur bestanden tot 10 MB. Elk bericht en bestand wordt volledig versleuteld vóór verzending — niemand kan het onderscheppen of lezen.</p>
         <div class="mt-4 flex gap-2">
           <span class="text-lg"></span><span class="text-lg">[COPY]</span><span class="text-lg"></span>
-          <span class="text-xs text-[#3d4149] self-center">bestanden · berichten · QR-code</span>
+          <span class="text-xs text-[#5a6070] self-center">bestanden · berichten · QR-code</span>
         </div>
       </div>
     </div>
@@ -426,23 +426,23 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <div class="text-3xl flex-shrink-0"></div>
         <div>
           <h3 class="text-[#e2e4e8] font-bold text-base mb-2">De relay: jouw automatische postbode</h3>
-          <p class="text-[#5a6070] text-sm leading-relaxed mb-3">
+          <p class="text-[#c8ccd4] text-sm leading-relaxed mb-3">
             Zonder relay werkt PARAMANT als een verzegelde envelop die je handmatig doorstuurt — volledig veilig, maar je moet het pakket zelf kopiëren en plakken.
           </p>
-          <p class="text-[#5a6070] text-sm leading-relaxed mb-3">
+          <p class="text-[#c8ccd4] text-sm leading-relaxed mb-3">
             Met de relay gaan berichten automatisch, net als een gewone chat — maar dan zonder dat de relay ooit de inhoud ziet. Hij ziet alleen: <span class="text-[#c8ccd4] mono">hash · bytes · tijdstempel</span>. Meer niet. De hostingprovider logt verbindingen op infrastructuurniveau — gebruik Tor voor maximale anonimiteit.
           </p>
           <div class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1 p-3 bg-[#111214] rounded-sm border border-[#2a2d35]">
-              <div class="text-xs text-[#3d4149] mono mb-1">RELAY UIT</div>
-              <div class="text-[#c8ccd4] text-sm">Kopieer -> plak -> verstuur<br><span class="text-[#3d4149] text-xs">Werkt via elk kanaal</span></div>
+              <div class="text-xs text-[#5a6070] mono mb-1">RELAY UIT</div>
+              <div class="text-[#c8ccd4] text-sm">Kopieer -> plak -> verstuur<br><span class="text-[#5a6070] text-xs">Werkt via elk kanaal</span></div>
             </div>
             <div class="flex-1 p-3 bg-[#00ff9d]/8 rounded-sm border border-[#00ff9d]/25">
               <div class="text-xs text-[#00ff9d] mono mb-1"> RELAY ACTIEF</div>
               <div class="text-[#4a7c59] text-sm">Automatisch verzonden<br><span class="text-[#4a7c59] text-xs">Aanbevolen voor normaal gebruik</span></div>
             </div>
           </div>
-          <p class="text-[#3d4149] text-xs mt-3">Zet de relay aan via de knop rechtsboven in de app. Het duurt maximaal 30 seconden om te starten.</p>
+          <p class="text-[#5a6070] text-xs mt-3">Zet de relay aan via de knop rechtsboven in de app. Het duurt maximaal 30 seconden om te starten.</p>
         </div>
       </div>
     </div>
@@ -452,7 +452,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <div class="text-3xl flex-shrink-0"></div>
       <div>
         <h3 class="text-[#e2e4e8] font-bold text-base mb-1.5">Eén van de veiligste manieren om bestanden te delen</h3>
-        <p class="text-[#5a6070] text-sm leading-relaxed">
+        <p class="text-[#c8ccd4] text-sm leading-relaxed">
           Elk bestand wordt versleuteld met <span class="text-[#c8ccd4]">AES-256-GCM</span> met een unieke sleutel die na gebruik wordt gewist. Geen enkele server ziet de inhoud — ook niet de relay. De hostingprovider ziet alleen dat er een verbinding is, nooit wat er verstuurd wordt. Maximum bestandsgrootte: <span class="text-[#00ff9d] font-semibold">10 MB per bestand</span>. Berichten: onbeperkt.
         </p>
       </div>
@@ -466,23 +466,23 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   <div class="max-w-3xl mx-auto text-center">
     <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">Het eerlijke verhaal</div>
     <h2 class="text-3xl md:text-4xl font-bold text-[#e2e4e8] mb-4 tracking-tight">PARAMANT vs de rest</h2>
-    <p class="text-[#5a6070] mb-10 text-lg">Andere apps zijn goed. Maar PARAMANT is beter.</p>
+    <p class="text-[#c8ccd4] mb-10 text-lg">Andere apps zijn goed. Maar PARAMANT is beter.</p>
 
     <div class="overflow-hidden rounded border border-[#2a2d35]">
       <table class="w-full text-sm">
         <thead>
           <tr class="bg-[#1a1d22] border-b border-[#2a2d35]">
-            <th class="text-left p-4 text-[#5a6070] font-medium">Eigenschap</th>
+            <th class="text-left p-4 text-[#c8ccd4] font-medium">Eigenschap</th>
             <th class="p-3 text-center">
-              <div class="text-[#5a6070] font-medium text-xs"></div>
+              <div class="text-[#c8ccd4] font-medium text-xs"></div>
               <div class="text-[#c8ccd4] font-medium">WhatsApp</div>
             </th>
             <th class="p-3 text-center">
-              <div class="text-[#5a6070] font-medium text-xs"></div>
+              <div class="text-[#c8ccd4] font-medium text-xs"></div>
               <div class="text-[#c8ccd4] font-medium">Signal</div>
             </th>
             <th class="p-3 text-center">
-              <div class="text-[#5a6070] font-medium text-xs">✈️</div>
+              <div class="text-[#c8ccd4] font-medium text-xs">✈️</div>
               <div class="text-[#c8ccd4] font-medium">Telegram</div>
             </th>
             <th class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20">
@@ -494,30 +494,30 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <tbody class="divide-y divide-slate-800">
           <tr class="hover:bg-[#1a1d22]/30 transition-colors">
             <td class="p-4 text-[#c8ccd4] font-medium text-left">Account nodig?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Telefoonnummer</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Telefoonnummer</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Telefoonnummer</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Telefoonnummer</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Telefoonnummer</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Telefoonnummer</div></td>
             <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Helemaal niets</div></td>
           </tr>
           <tr class="bg-[#111214]/40 hover:bg-[#1a1d22]/30 transition-colors">
             <td class="p-4 text-[#c8ccd4] font-medium text-left">Server leest mee?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Meta-servers</div></td>
-            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-[#3d4149]">Signal-servers</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Telegram cloud</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Meta-servers</div></td>
+            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-[#5a6070]">Signal-servers</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Telegram cloud</div></td>
             <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Optionele relay</div></td>
           </tr>
           <tr class="hover:bg-[#1a1d22]/30 transition-colors">
             <td class="p-4 text-[#c8ccd4] font-medium text-left">Post-quantum?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Niet bestand</div></td>
-            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-[#3d4149]">Deels (PQXDH)</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Niet bestand</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Niet bestand</div></td>
+            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-[#5a6070]">Deels (PQXDH)</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Niet bestand</div></td>
             <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">ML-KEM-768</div></td>
           </tr>
           <tr class="bg-[#111214]/40 hover:bg-[#1a1d22]/30 transition-colors">
             <td class="p-4 text-[#c8ccd4] font-medium text-left">Metadata bewaard?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Wie, wanneer, wie</div></td>
-            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-[#3d4149]">Minimaal</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Volledig</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Wie, wanneer, wie</div></td>
+            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-[#5a6070]">Minimaal</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Volledig</div></td>
             <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Nul metadata</div></td>
           </tr>
           <tr class="hover:bg-[#1a1d22]/30 transition-colors">
@@ -529,9 +529,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           </tr>
           <tr class="bg-[#111214]/40 hover:bg-[#1a1d22]/30 transition-colors">
             <td class="p-4 text-[#c8ccd4] font-medium text-left">App installeren?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Verplicht</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Verplicht</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#3d4149]">Verplicht</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Verplicht</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Verplicht</div></td>
+            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#5a6070]">Verplicht</div></td>
             <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Browser, klaar</div></td>
           </tr>
         </tbody>
@@ -546,7 +546,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <div class="text-center mb-14">
       <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">Net als blockchain</div>
       <h2 class="text-3xl md:text-4xl font-bold text-[#e2e4e8] mb-4 tracking-tight">Openbaar. Encrypted.<br>Transparant maar onleesbaar.</h2>
-      <p class="text-[#5a6070] text-lg max-w-xl mx-auto">Iedereen kan zien <em class="text-[#c8ccd4] not-italic font-medium">dát</em> er een gesprek plaatsvond. Maar niemand kan zien <em class="text-[#c8ccd4] not-italic font-medium">wie</em>, <em class="text-[#c8ccd4] not-italic font-medium">wat</em> of <em class="text-[#c8ccd4] not-italic font-medium">met wie</em>.</p>
+      <p class="text-[#c8ccd4] text-lg max-w-xl mx-auto">Iedereen kan zien <em class="text-[#c8ccd4] not-italic font-medium">dát</em> er een gesprek plaatsvond. Maar niemand kan zien <em class="text-[#c8ccd4] not-italic font-medium">wie</em>, <em class="text-[#c8ccd4] not-italic font-medium">wat</em> of <em class="text-[#c8ccd4] not-italic font-medium">met wie</em>.</p>
     </div>
 
     <div class="grid md:grid-cols-2 gap-8 items-start">
@@ -557,32 +557,32 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           Wat de relay ziet
         </h3>
         <div class="bg-[#111214] border border-[#2a2d35] rounded overflow-hidden">
-          <div class="px-4 py-2 bg-[#1a1d22] border-b border-[#2a2d35] mono text-xs text-[#5a6070] flex justify-between">
+          <div class="px-4 py-2 bg-[#1a1d22] border-b border-[#2a2d35] mono text-xs text-[#c8ccd4] flex justify-between">
             <span>ACTIEVE GEBRUIKERS</span><span class="text-[#00ff9d]">LIVE</span>
           </div>
           <div class="p-4 space-y-2 mono text-xs">
             <div class="flex justify-between items-center py-2 border-b border-[#1e2026]">
               <span class="text-[#4a7c59]">a3f8c2d1e7b4…</span>
-              <span class="text-[#3d4149]">1.2 KB</span>
-              <span class="text-[#3d4149]">14:23:41</span>
+              <span class="text-[#5a6070]">1.2 KB</span>
+              <span class="text-[#5a6070]">14:23:41</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-[#1e2026]">
               <span class="text-[#4a7c59]">7e9b1a4f2c8d…</span>
-              <span class="text-[#3d4149]">2.8 KB</span>
-              <span class="text-[#3d4149]">14:23:44</span>
+              <span class="text-[#5a6070]">2.8 KB</span>
+              <span class="text-[#5a6070]">14:23:44</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-[#1e2026]">
               <span class="text-[#4a7c59]">a3f8c2d1e7b4…</span>
-              <span class="text-[#3d4149]">1.1 KB</span>
-              <span class="text-[#3d4149]">14:24:02</span>
+              <span class="text-[#5a6070]">1.1 KB</span>
+              <span class="text-[#5a6070]">14:24:02</span>
             </div>
             <div class="flex justify-between items-center py-2">
               <span class="text-[#4a7c59]">f1d7a2e9c3b5…</span>
-              <span class="text-[#3d4149]">10.3 KB</span>
-              <span class="text-[#3d4149]">14:24:18</span>
+              <span class="text-[#5a6070]">10.3 KB</span>
+              <span class="text-[#5a6070]">14:24:18</span>
             </div>
           </div>
-          <div class="px-4 py-3 bg-[#1a1d22]/50 border-t border-[#2a2d35] text-xs text-[#3d4149] mono">
+          <div class="px-4 py-3 bg-[#1a1d22]/50 border-t border-[#2a2d35] text-xs text-[#5a6070] mono">
             Hash-prefix · pakketgrootte · tijdstempel · max 5 min bewaard
           </div>
         </div>
@@ -603,28 +603,28 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <span class="text-2xl"></span>
             <div>
               <div class="text-[#e2e4e8] font-medium text-sm">Namen en identiteiten</div>
-              <div class="text-[#3d4149] text-xs mt-0.5">Wie het stuurde is onbekend. Adressen zijn wiskundige sleutels, geen namen.</div>
+              <div class="text-[#5a6070] text-xs mt-0.5">Wie het stuurde is onbekend. Adressen zijn wiskundige sleutels, geen namen.</div>
             </div>
           </div>
           <div class="flex items-center gap-3 p-4 bg-[#111214] border border-[#1e2026] rounded-sm">
             <span class="text-2xl"></span>
             <div>
               <div class="text-[#e2e4e8] font-medium text-sm">De inhoud van berichten</div>
-              <div class="text-[#3d4149] text-xs mt-0.5">Versleuteld met AES-256-GCM. Zonder de sleutel is het onleesbare ruis.</div>
+              <div class="text-[#5a6070] text-xs mt-0.5">Versleuteld met AES-256-GCM. Zonder de sleutel is het onleesbare ruis.</div>
             </div>
           </div>
           <div class="flex items-center gap-3 p-4 bg-[#111214] border border-[#1e2026] rounded-sm">
             <span class="text-2xl">[NET]</span>
             <div>
               <div class="text-[#e2e4e8] font-medium text-sm">IP-adressen en locatie</div>
-              <div class="text-[#3d4149] text-xs mt-0.5">De relay zelf logt geen IPs. De hostingprovider (Render.com) logt verbindingen op infrastructuurniveau — buiten onze controle.</div>
+              <div class="text-[#5a6070] text-xs mt-0.5">De relay zelf logt geen IPs. De hostingprovider (Render.com) logt verbindingen op infrastructuurniveau — buiten onze controle.</div>
             </div>
           </div>
           <div class="flex items-center gap-3 p-4 bg-[#111214] border border-[#1e2026] rounded-sm">
             <span class="text-2xl"></span>
             <div>
               <div class="text-[#e2e4e8] font-medium text-sm">Met wie, wanneer, hoe lang</div>
-              <div class="text-[#3d4149] text-xs mt-0.5">De hash koppelt niet terug naar personen. Twee berichten met dezelfde hash — dat is alles.</div>
+              <div class="text-[#5a6070] text-xs mt-0.5">De hash koppelt niet terug naar personen. Twee berichten met dezelfde hash — dat is alles.</div>
             </div>
           </div>
         </div>
@@ -638,51 +638,51 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   <div class="max-w-5xl mx-auto text-center">
     <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">De beveiliging</div>
     <h2 class="text-3xl font-bold text-[#e2e4e8] mb-4 tracking-tight">Zes lagen bescherming</h2>
-    <p class="text-[#5a6070] mb-12 max-w-xl mx-auto">U hoeft dit niet te begrijpen. Maar het is er. Allemaal.</p>
+    <p class="text-[#c8ccd4] mb-12 max-w-xl mx-auto">U hoeft dit niet te begrijpen. Maar het is er. Allemaal.</p>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-left">
       <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
         <div class="text-3xl mb-3">⚛️</div>
         <div class="text-[#e2e4e8] font-semibold mb-1.5">Quantum-bestendig</div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">ML-KEM-768 + ECDH P-256. Beschermt ook als kwantumcomputers ooit beschikbaar worden.</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">ML-KEM-768 + ECDH P-256. Beschermt ook als kwantumcomputers ooit beschikbaar worden.</div>
         <div class="mt-3 mono text-xs text-[#4a7c59]">NIST FIPS 203</div>
       </div>
       <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
         <div class="text-3xl mb-3">[KEY]</div>
         <div class="text-[#e2e4e8] font-semibold mb-1.5">Elke bericht eigen sleutel</div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">AES-256-GCM ratchet. Oude berichten blijven veilig zelfs als iets later uitlekt.</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">AES-256-GCM ratchet. Oude berichten blijven veilig zelfs als iets later uitlekt.</div>
         <div class="mt-3 mono text-xs text-[#4a7c59]">Forward secrecy</div>
       </div>
       <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
         <div class="text-3xl mb-3">[SYNC]</div>
         <div class="text-[#e2e4e8] font-semibold mb-1.5">Zelf-herstellend</div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">Elke 8 berichten een nieuwe kwantumsleutel. Een aanval op één bericht raakt nooit de rest.</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">Elke 8 berichten een nieuwe kwantumsleutel. Een aanval op één bericht raakt nooit de rest.</div>
         <div class="mt-3 mono text-xs text-[#4a7c59]">KEM-injectie</div>
       </div>
       <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
         <div class="text-3xl mb-3">[SEC]️</div>
         <div class="text-[#e2e4e8] font-semibold mb-1.5">Geen herhaling mogelijk</div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">Elk bericht heeft een uniek nonce. Hetzelfde pakket twee keer? Geblokkeerd.</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">Elk bericht heeft een uniek nonce. Hetzelfde pakket twee keer? Geblokkeerd.</div>
         <div class="mt-3 mono text-xs text-[#4a7c59]">Replay-bescherming</div>
       </div>
       <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
         <div class="text-3xl mb-3"></div>
         <div class="text-[#e2e4e8] font-semibold mb-1.5">Verifieer de verbinding</div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">Bel je amice en vergelijk veiligheidsnummers. Gelijk? Niemand luistert mee.</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">Bel je amice en vergelijk veiligheidsnummers. Gelijk? Niemand luistert mee.</div>
         <div class="mt-3 mono text-xs text-[#4a7c59]">Safety numbers</div>
       </div>
       <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-tune-500/30 transition-all">
         <div class="text-3xl mb-3"></div>
         <div class="text-[#e2e4e8] font-semibold mb-1.5">Wiskundig uniek avatar</div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">Jouw fractal-avatar én naam worden afgeleid van je sleutel via SHA-256. Altijd hetzelfde voor dezelfde sleutel.</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">Jouw fractal-avatar én naam worden afgeleid van je sleutel via SHA-256. Altijd hetzelfde voor dezelfde sleutel.</div>
         <div class="mt-3 mono text-xs text-[#4a7c59]">SHA-256(pubKey)</div>
       </div>
     </div>
 
     <!-- Infrastructuur sectie -->
     <div class="mt-14 mb-2">
-      <div class="inline-block px-4 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-full text-[#5a6070] text-sm font-medium mono mb-6">De infrastructuur</div>
+      <div class="inline-block px-4 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-full text-[#c8ccd4] text-sm font-medium mono mb-6">De infrastructuur</div>
       <h3 class="text-xl font-bold text-[#e2e4e8] mb-2">Eigendom. Europees. Controleerbaar.</h3>
-      <p class="text-[#3d4149] text-sm mb-8 max-w-lg mx-auto">Geen big tech. Geen Amerikaanse servers. Alles draait op infrastructuur die wij controleren — onder Europees recht.</p>
+      <p class="text-[#5a6070] text-sm mb-8 max-w-lg mx-auto">Geen big tech. Geen Amerikaanse servers. Alles draait op infrastructuur die wij controleren — onder Europees recht.</p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left mb-6">
       <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
@@ -690,10 +690,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <div class="w-10 h-10 rounded-sm bg-red-500/10 border border-red-500/20 flex items-center justify-center text-xl flex-shrink-0">🇩🇪</div>
           <div>
             <div class="text-[#e2e4e8] font-semibold text-sm">Hetzner — Neurenberg</div>
-            <div class="mono text-xs text-[#3d4149]">relay.paramant.app</div>
+            <div class="mono text-xs text-[#5a6070]">relay.paramant.app</div>
           </div>
         </div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">De relay draait op een dedicated server in Duitsland. Striktste GDPR-handhaving in Europa. Geen Amerikaanse wetgeving (FISA, NSL).</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">De relay draait op een dedicated server in Duitsland. Striktste GDPR-handhaving in Europa. Geen Amerikaanse wetgeving (FISA, NSL).</div>
         <div class="mt-3 mono text-xs text-[#4a7c59]">EU · GDPR · eigendom</div>
       </div>
       <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
@@ -701,10 +701,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <div class="w-10 h-10 rounded-sm bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-xl flex-shrink-0">☁️</div>
           <div>
             <div class="text-[#e2e4e8] font-semibold text-sm">Cloudflare — tunnel</div>
-            <div class="mono text-xs text-[#3d4149]">paramant.app</div>
+            <div class="mono text-xs text-[#5a6070]">paramant.app</div>
           </div>
         </div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">De app en relay zijn bereikbaar via Cloudflare tunnel. Cloudflare ziet alleen versleuteld verkeer — nooit de inhoud van berichten.</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">De app en relay zijn bereikbaar via Cloudflare tunnel. Cloudflare ziet alleen versleuteld verkeer — nooit de inhoud van berichten.</div>
         <div class="mt-3 mono text-xs text-[#4a7c59]">TLS · DDoS-bescherming</div>
       </div>
       <div class="bg-[#1a1d22]/40 border border-[#00ff9d]/20 rounded p-5 hover:border-[#00ff9d]/40 transition-all">
@@ -712,13 +712,13 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <div class="w-10 h-10 rounded-sm bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-xl flex-shrink-0">[TOR]</div>
           <div>
             <div class="text-[#e2e4e8] font-semibold text-sm">Tor — hidden service</div>
-            <div class="mono text-xs text-[#3d4149]">.onion adres</div>
+            <div class="mono text-xs text-[#5a6070]">.onion adres</div>
           </div>
         </div>
-        <div class="text-[#5a6070] text-sm leading-relaxed">Voor maximale anonimiteit. Via Tor Browser is zelfs het IP-adres van de gebruiker onzichtbaar. Geen enkel knooppunt ziet het volledige pad.</div>
+        <div class="text-[#c8ccd4] text-sm leading-relaxed">Voor maximale anonimiteit. Via Tor Browser is zelfs het IP-adres van de gebruiker onzichtbaar. Geen enkel knooppunt ziet het volledige pad.</div>
         <div class="mt-3 p-2.5 bg-[#111214] rounded-sm border border-purple-500/15 cursor-pointer" onclick="navigator.clipboard.writeText('http://csnmdkpqikrf6abad7ej4mqsftiyh2z2fg3nzpf4x4zbnh2ulbmq5mid.onion/').catch(()=>{})">
           <div class="mono text-xs text-purple-400 break-all leading-relaxed">csnmdkpqikrf6abad7ej4mqsftiyh2z2fg3nzpf4x4zbnh2ulbmq5mid.onion</div>
-          <div class="mono text-xs text-[#3d4149] mt-1">^ klik om te kopiëren · open in Tor Browser</div>
+          <div class="mono text-xs text-[#5a6070] mt-1">^ klik om te kopiëren · open in Tor Browser</div>
         </div>
         <div class="mt-3 mono text-xs text-purple-500">IP anoniem · Tor Browser</div>
       </div>
@@ -727,36 +727,36 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <!-- Eerlijke beperkingen -->
     <div class="mt-10 max-w-2xl mx-auto border border-[#2a2d35]/60 rounded overflow-hidden">
       <div class="bg-[#1a1d22]/40 px-5 py-3 border-b border-[#2a2d35]/60 flex items-center gap-2">
-        <span class="text-[#5a6070] text-sm font-semibold">Eerlijk over de beperkingen</span>
-        <span class="ml-auto mono text-xs text-[#3d4149]">transparantie</span>
+        <span class="text-[#c8ccd4] text-sm font-semibold">Eerlijk over de beperkingen</span>
+        <span class="ml-auto mono text-xs text-[#5a6070]">transparantie</span>
       </div>
       <div class="divide-y divide-slate-800/60">
         <div class="px-5 py-3.5 flex items-start gap-3">
           <span class="text-yellow-500 flex-shrink-0 mt-0.5">[!]</span>
           <div>
             <div class="text-[#c8ccd4] text-sm font-medium">Geheugenisolatie is niet absoluut</div>
-            <div class="text-[#3d4149] text-xs mt-0.5 leading-relaxed">Sleutels worden na gebruik gewist (<code class="text-[#4a7c59]">fill(0)</code>), maar JavaScript-engines kunnen data eerder kopiëren in RAM. Absolute geheugenisolatie vereist een native app — niet een browser.</div>
+            <div class="text-[#5a6070] text-xs mt-0.5 leading-relaxed">Sleutels worden na gebruik gewist (<code class="text-[#4a7c59]">fill(0)</code>), maar JavaScript-engines kunnen data eerder kopiëren in RAM. Absolute geheugenisolatie vereist een native app — niet een browser.</div>
           </div>
         </div>
         <div class="px-5 py-3.5 flex items-start gap-3">
           <span class="text-yellow-500 flex-shrink-0 mt-0.5">[!]</span>
           <div>
             <div class="text-[#c8ccd4] text-sm font-medium">Browser-extensies vallen buiten onze CSP</div>
-            <div class="text-[#3d4149] text-xs mt-0.5 leading-relaxed">Een kwaadaardige extensie met DOM-toegang kan tekst onderscheppen vóór versleuteling. Gebruik PARAMANT in een browser zonder onbekende extensies — of in een privévenster.</div>
+            <div class="text-[#5a6070] text-xs mt-0.5 leading-relaxed">Een kwaadaardige extensie met DOM-toegang kan tekst onderscheppen vóór versleuteling. Gebruik PARAMANT in een browser zonder onbekende extensies — of in een privévenster.</div>
           </div>
         </div>
         <div class="px-5 py-3.5 flex items-start gap-3">
           <span class="text-yellow-500 flex-shrink-0 mt-0.5">[!]</span>
           <div>
             <div class="text-[#c8ccd4] text-sm font-medium">Cloudflare ziet verbindingsmetadata</div>
-            <div class="text-[#3d4149] text-xs mt-0.5 leading-relaxed">Cloudflare logt IP-adressen en tijdstempels van verbindingen op infrastructuurniveau — buiten onze controle. Gebruik Tor Browser voor volledige IP-anonimiteit.</div>
+            <div class="text-[#5a6070] text-xs mt-0.5 leading-relaxed">Cloudflare logt IP-adressen en tijdstempels van verbindingen op infrastructuurniveau — buiten onze controle. Gebruik Tor Browser voor volledige IP-anonimiteit.</div>
           </div>
         </div>
         <div class="px-5 py-3.5 flex items-start gap-3">
           <span class="text-yellow-500 flex-shrink-0 mt-0.5">[!]</span>
           <div>
             <div class="text-[#c8ccd4] text-sm font-medium">Geen formele cryptografische audit</div>
-            <div class="text-[#3d4149] text-xs mt-0.5 leading-relaxed">De implementatiechecks verifiëren dat alle componenten aanwezig en correct verbonden zijn — geen vervanging voor handmatig werk door gespecialiseerde cryptografen.</div>
+            <div class="text-[#5a6070] text-xs mt-0.5 leading-relaxed">De implementatiechecks verifiëren dat alle componenten aanwezig en correct verbonden zijn — geen vervanging voor handmatig werk door gespecialiseerde cryptografen.</div>
           </div>
         </div>
       </div>
@@ -767,7 +767,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a1a0f]/8 to-transparent pointer-events-none"></div>
   <div class="relative z-10 max-w-xl mx-auto">
     <h2 class="text-4xl md:text-5xl font-extrabold text-[#e2e4e8] mb-5 tracking-tight">Klaar voor echte privacy?</h2>
-    <p class="text-[#5a6070] text-lg mb-6">In de browser of als native app. Jouw keuze.</p>
+    <p class="text-[#c8ccd4] text-lg mb-6">In de browser of als native app. Jouw keuze.</p>
 
     <!-- Browser knop -->
     <button onclick="openApp()" class="w-full sm:w-auto px-10 py-5 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-xl rounded transition-all hover:shadow-2xl hover:shadow-[#00ff9d]/10 active:scale-95 mb-4">
@@ -775,7 +775,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     </button>
 
     <!-- Native downloads -->
-    <div class="mt-6 mb-2 text-[#3d4149] text-sm">Of download de native app:</div>
+    <div class="mt-6 mb-2 text-[#5a6070] text-sm">Of download de native app:</div>
     <div class="flex flex-wrap justify-center gap-3 mt-3">
       <a href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.1.0/PARAMANT_0.1.0_amd64.deb"
          class="flex items-center gap-2 px-5 py-2.5 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] hover:border-[#00ff9d]/40 text-[#c8ccd4] text-sm font-semibold rounded-sm transition-all">
@@ -794,8 +794,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         [APK] Android .apk
       </a>
     </div>
-    <div class="mt-4 mono text-xs text-[#3d4149] tracking-widest">POST-QUANTUM · GEEN ACCOUNT · GEEN SERVER · GEEN COMPROMIS</div>
-    <p class="text-[#3d4149] text-xs mt-2">Native app: Rust + Tauri 2 + ML-KEM-768 · <a href="https://github.com/Apolloccrypt/paramant-app" class="text-[#2a4a35] hover:text-[#00ff9d]">GitHub</a></p>
+    <div class="mt-4 mono text-xs text-[#5a6070] tracking-widest">POST-QUANTUM · GEEN ACCOUNT · GEEN SERVER · GEEN COMPROMIS</div>
+    <p class="text-[#5a6070] text-xs mt-2">Native app: Rust + Tauri 2 + ML-KEM-768 · <a href="https://github.com/Apolloccrypt/paramant-app" class="text-[#2a4a35] hover:text-[#00ff9d]">GitHub</a></p>
   </div>
 </section>
 
@@ -807,17 +807,17 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       Geen advertenties. Geen investeerders.<br>
       <span class="text-[#00ff9d]">Alleen jouw versleutelde bericht.</span>
     </h3>
-    <p class="text-[#5a6070] text-sm leading-relaxed mb-2">
+    <p class="text-[#c8ccd4] text-sm leading-relaxed mb-2">
       PARAMANT is vrij, open-source en zonder bedrijf erachter. Gemaakt in Nederland, alles in het Nederlands. De relay, hosting en ontwikkeling worden uitsluitend betaald uit vrijwillige donaties van gebruikers.
     </p>
-    <p class="text-[#3d4149] text-sm leading-relaxed mb-6">
+    <p class="text-[#5a6070] text-sm leading-relaxed mb-6">
       Geen donatie? Geen probleem — de tool blijft gratis. Vind je privacy het waard? Dan houd je met een bijdrage de relay online.
     </p>
     <a href="https://buymeacoffee.com/mickbeer" target="_blank" rel="noopener noreferrer"
       class="inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-base rounded transition-all hover:shadow-lg hover:shadow-[#00ff9d]/10 active:scale-95">
       [LOCK] Houd de relay online
     </a>
-    <p class="text-[#3d4149] text-xs mt-3 mono">buymeacoffee.com/mickbeer</p>
+    <p class="text-[#5a6070] text-xs mt-3 mono">buymeacoffee.com/mickbeer</p>
   </div>
 </section>
 
@@ -825,9 +825,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
     <div>
       <div class="font-bold text-[#e2e4e8] text-lg tracking-tight">PARAMANT</div>
-      <div class="text-xs text-[#3d4149] mt-0.5">Onafhankelijke open-source privacytool &nbsp;·&nbsp; gemaakt in Nederland</div>
+      <div class="text-xs text-[#5a6070] mt-0.5">Onafhankelijke open-source privacytool &nbsp;·&nbsp; gemaakt in Nederland</div>
     </div>
-    <div class="flex flex-wrap gap-4 text-sm text-[#3d4149]">
+    <div class="flex flex-wrap gap-4 text-sm text-[#5a6070]">
       <a href="#hoe" class="hover:text-[#00ff9d] transition-colors">Hoe werkt het?</a>
       <a href="#vergelijk" class="hover:text-[#00ff9d] transition-colors">Vergelijking</a>
       <a href="#ledger-section" class="hover:text-[#00ff9d] transition-colors">Beveiliging</a>
@@ -847,7 +847,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
   <!-- Top bar -->
   <div class="flex items-center gap-1.5 px-3 h-14 bg-[#111214] border-b border-[#1e2026] flex-shrink-0 min-w-0">
-    <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-[#5a6070] flex-shrink-0">☰</button>
+    <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-[#c8ccd4] flex-shrink-0">☰</button>
 
     <!-- Logo + breadcrumb -->
     <div class="flex items-center gap-1 flex-shrink-0 min-w-0">
@@ -856,24 +856,24 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <span class="font-bold text-[#e2e4e8] text-sm tracking-tight hidden sm:block">PARAMANT</span>
       </button>
       <span id="nav-sep" class="text-slate-700 text-sm mx-0.5 hidden flex-shrink-0">/</span>
-      <button id="nav-home" onclick="showWelcome()" class="hidden text-xs text-[#3d4149] hover:text-[#00ff9d] transition-colors px-1 flex-shrink-0" title="Welkomscherm">Home</button>
+      <button id="nav-home" onclick="showWelcome()" class="hidden text-xs text-[#5a6070] hover:text-[#00ff9d] transition-colors px-1 flex-shrink-0" title="Welkomscherm">Home</button>
       <span id="nav-sep2" class="text-slate-700 text-sm mx-0.5 hidden flex-shrink-0">/</span>
-      <span id="nav-current" class="hidden text-xs text-[#5a6070] truncate max-w-[80px] sm:max-w-[140px]"></span>
+      <span id="nav-current" class="hidden text-xs text-[#c8ccd4] truncate max-w-[80px] sm:max-w-[140px]"></span>
     </div>
 
     <div class="flex-1 min-w-0"></div>
 
     <!-- Relay knop — altijd zichtbaar, compact op mobiel -->
     <button onclick="toggleRelay()" id="relay-btn"
-      class="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs mono text-[#5a6070] transition-all flex-shrink-0"
+      class="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs mono text-[#c8ccd4] transition-all flex-shrink-0"
       title="Zet de relay aan voor automatisch verzenden. Zonder relay kun je ook berichten sturen via kopiëren en plakken.">
       <div id="rl-dot" class="w-2 h-2 rounded-full bg-[#3d4149] flex-shrink-0 transition-all"></div>
       <span id="rl-lbl">Offline</span>
     </button>
-    <span id="relay-hint" class="text-xs text-[#3d4149] mono hidden lg:block flex-shrink-0">^ klik om online te gaan</span>
+    <span id="relay-hint" class="text-xs text-[#5a6070] mono hidden lg:block flex-shrink-0">^ klik om online te gaan</span>
 
     <!-- Online teller — alleen op grotere schermen -->
-    <div id="online-badge" class="hidden items-center gap-1 px-2.5 py-1.5 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-sm text-xs mono text-[#5a6070] flex-shrink-0">
+    <div id="online-badge" class="hidden items-center gap-1 px-2.5 py-1.5 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-sm text-xs mono text-[#c8ccd4] flex-shrink-0">
       <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
       <span id="counter">—</span>
     </div>
@@ -884,19 +884,19 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     </div>
 
     <!-- Ledger knop — alleen desktop -->
-    <button onclick="toggleLedger()" id="ledger-btn" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs text-[#5a6070] transition-all flex-shrink-0">
+    <button onclick="toggleLedger()" id="ledger-btn" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs text-[#c8ccd4] transition-all flex-shrink-0">
        Online
     </button>
 
     <!-- Relay feed knop — desktop -->
-    <a href="/relay-feed.html" target="_blank" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs text-[#5a6070] transition-all flex-shrink-0" title="Live relay feed"> Feed</a>
+    <a href="/relay-feed.html" target="_blank" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xs text-[#c8ccd4] transition-all flex-shrink-0" title="Live relay feed"> Feed</a>
 
     <!-- <- Site knop — alleen desktop -->
-    <button onclick="closeApp()" class="hidden lg:flex px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-xs text-[#5a6070] hover:text-[#e2e4e8] transition-all flex-shrink-0" title="Terug naar landingspagina"><- Site</button>
+    <button onclick="closeApp()" class="hidden lg:flex px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-xs text-[#c8ccd4] hover:text-[#e2e4e8] transition-all flex-shrink-0" title="Terug naar landingspagina"><- Site</button>
 
     <!-- Mobile menu knop voor ledger/site -->
     <div class="relative lg:hidden flex-shrink-0">
-      <button onclick="toggleAppMenu()" class="w-8 h-8 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-[#5a6070] text-sm">⋯</button>
+      <button onclick="toggleAppMenu()" class="w-8 h-8 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-[#c8ccd4] text-sm">⋯</button>
       <div id="app-menu" class="hidden absolute right-0 top-10 bg-[#1a1d22] border border-[#2a2d35] rounded-sm shadow-xl z-50 min-w-max overflow-hidden">
         <button onclick="toggleLedger();closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-[#c8ccd4] hover:bg-[#2a2d35] flex items-center gap-2"> Actief</button>
         <a href="/relay-feed.html" target="_blank" onclick="closeAppMenu()" class="w-full px-4 py-2.5 text-left text-sm text-[#c8ccd4] hover:bg-[#2a2d35] flex items-center gap-2"> Relay feed</a>
@@ -924,7 +924,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             </div>
             <div class="flex-1 min-w-0">
               <div id="my-nick" class="font-bold text-[#e2e4e8] mono text-base truncate">…</div>
-              <div class="text-xs text-[#3d4149] mt-0.5">Jouw naam (uit jouw sleutel)</div>
+              <div class="text-xs text-[#5a6070] mt-0.5">Jouw naam (uit jouw sleutel)</div>
               <span id="pq-badge" class="hidden mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 bg-[#00ff9d]/15 border border-[#00ff9d]/25 rounded-full text-[#00ff9d] text-xs">⚛ Post-quantum (NIST FIPS 203)</span>
             </div>
           </div>
@@ -932,8 +932,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <!-- Adres — leesbaar, volledig zichtbaar -->
           <div class="mb-3">
             <div class="flex items-center justify-between mb-1.5">
-              <div class="mono text-xs text-[#5a6070] tracking-widest uppercase font-semibold">Jouw adres</div>
-              <div class="text-xs text-[#3d4149]">deel dit met je amice</div>
+              <div class="mono text-xs text-[#c8ccd4] tracking-widest uppercase font-semibold">Jouw adres</div>
+              <div class="text-xs text-[#5a6070]">deel dit met je amice</div>
             </div>
             <!-- Adres box: hoogte vergroot, scrollbaar, leesbaar -->
             <div id="my-key-prev"
@@ -956,35 +956,35 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           </div>
           <div class="grid grid-cols-2 gap-2">
             <button onclick="regenIdentity()"
-              class="py-2 bg-[#2a2d35]/60 border border-[#2a2d35] text-[#5a6070] text-xs rounded-sm transition-all hover:border-[#5a6070] hover:text-[#c8ccd4]">
+              class="py-2 bg-[#2a2d35]/60 border border-[#2a2d35] text-[#c8ccd4] text-xs rounded-sm transition-all hover:border-[#5a6070] hover:text-[#c8ccd4]">
               ↺ Nieuw adres
             </button>
             <button onclick="dlPage()"
-              class="py-2 bg-[#2a2d35]/60 border border-[#2a2d35] text-[#5a6070] text-xs rounded-sm transition-all hover:border-[#5a6070] hover:text-[#c8ccd4]"
+              class="py-2 bg-[#2a2d35]/60 border border-[#2a2d35] text-[#c8ccd4] text-xs rounded-sm transition-all hover:border-[#5a6070] hover:text-[#c8ccd4]"
               title="Download volledige app als HTML — werkt op USB, lokaal of offline zonder internet">
               v Download
             </button>
           </div>
           <!-- Offline uitleg -->
-          <div class="mt-2 p-2 bg-[#0c0e10]/80 rounded-sm text-xs text-[#3d4149] leading-relaxed">
+          <div class="mt-2 p-2 bg-[#0c0e10]/80 rounded-sm text-xs text-[#5a6070] leading-relaxed">
             [SAVE] Download = volledige app op USB of lokaal.<br>Open in elke browser — geen internet nodig.
           </div>
 
           <!-- QR Panel -->
           <div id="qr-panel" class="hidden mt-3 text-center">
             <div id="qr-box" class="inline-block bg-white p-2 rounded-sm"></div>
-            <div class="text-xs text-[#3d4149] mt-2">Laat je amice dit scannen</div>
+            <div class="text-xs text-[#5a6070] mt-2">Laat je amice dit scannen</div>
           </div>
         </div>
       </div>
 
       <!-- Conversations -->
       <div class="flex items-center justify-between px-4 py-3 border-b border-[#1e2026] flex-shrink-0">
-        <div class="mono text-xs font-semibold text-[#3d4149] tracking-widest uppercase">Gesprekken</div>
+        <div class="mono text-xs font-semibold text-[#5a6070] tracking-widest uppercase">Gesprekken</div>
         <button id="new-btn" onclick="showConnect()" class="w-7 h-7 flex items-center justify-center bg-[#00ff9d] hover:bg-[#00ff9d] rounded-lg text-[#0c0e10] font-bold text-xl transition-all">+</button>
       </div>
       <div id="conv-list" class="flex-1 overflow-y-auto py-2 px-2">
-        <div id="empty-hint" class="text-center py-8 text-[#3d4149] text-sm leading-loose mono">
+        <div id="empty-hint" class="text-center py-8 text-[#5a6070] text-sm leading-loose mono">
           Klik <strong class="text-[#c8ccd4]">+</strong> om te verbinden
         </div>
       </div>
@@ -995,12 +995,12 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
       <!-- Welcome -->
       <div id="welcome" class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
-        <button onclick="openSidebar()" class="md:hidden absolute top-16 left-4 w-9 h-9 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-[#5a6070] text-lg">☰</button>
+        <button onclick="openSidebar()" class="md:hidden absolute top-16 left-4 w-9 h-9 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-[#c8ccd4] text-lg">☰</button>
         <div class="w-20 h-20 rounded border border-[#00ff9d]/40 overflow-hidden mb-6 shadow-lg shadow-[#00ff9d]/8 mx-auto">
           <canvas id="wl-cv" width="80" height="80"></canvas>
         </div>
         <h2 class="text-2xl font-bold text-[#e2e4e8] mb-3">Welkom bij PARAMANT</h2>
-        <p class="text-[#5a6070] max-w-xs mb-6 leading-relaxed text-sm">Volg deze 4 stappen om veilig te appen met je amice.</p>
+        <p class="text-[#c8ccd4] max-w-xs mb-6 leading-relaxed text-sm">Volg deze 4 stappen om veilig te appen met je amice.</p>
 
         <!-- Relay hint — verdwijnt zodra relay actief is -->
         <div id="relay-welcome-hint" class="w-full max-w-sm mb-4 p-3 bg-[#00ff9d]/8 border border-[#00ff9d]/20 rounded-sm flex items-start gap-2.5 text-left">
@@ -1008,7 +1008,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <div>
             <div class="relay-hint-title text-[#4a7c59] font-medium text-sm">Klik "Offline" (rechtsboven) om berichten automatisch te versturen</div>
             <div class="relay-hint-sub text-[#00ff9d] text-xs mt-0.5">-> Klik op "Offline" — wordt  Online. Duurt max. 30 sec.</div>
-            <div class="text-[#3d4149] text-xs mt-1.5 leading-relaxed">ℹ️ De relay herverbindt automatisch als de verbinding wegvalt.</div>
+            <div class="text-[#5a6070] text-xs mt-1.5 leading-relaxed">ℹ️ De relay herverbindt automatisch als de verbinding wegvalt.</div>
           </div>
         </div>
 
@@ -1017,28 +1017,28 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <div class="w-8 h-8 rounded-lg bg-[#00ff9d]/20 border border-[#00ff9d]/25 flex items-center justify-center text-[#00ff9d] font-bold text-sm flex-shrink-0 mt-0.5">1</div>
             <div>
               <div class="text-[#e2e4e8] font-medium text-sm">[COPY] Kopieer jouw adres</div>
-              <div class="text-[#5a6070] text-xs mt-0.5">Klik op de groene <strong class="text-[#00ff9d]">Kopieer adres</strong> knop links. Jouw unieke adres wordt gekopieerd.</div>
+              <div class="text-[#c8ccd4] text-xs mt-0.5">Klik op de groene <strong class="text-[#00ff9d]">Kopieer adres</strong> knop links. Jouw unieke adres wordt gekopieerd.</div>
             </div>
           </div>
           <div class="flex items-start gap-3 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-sm p-3 text-left">
-            <div class="w-8 h-8 rounded-lg bg-[#2a2d35] flex items-center justify-center text-[#5a6070] font-bold text-sm flex-shrink-0 mt-0.5">2</div>
+            <div class="w-8 h-8 rounded-lg bg-[#2a2d35] flex items-center justify-center text-[#c8ccd4] font-bold text-sm flex-shrink-0 mt-0.5">2</div>
             <div>
               <div class="text-[#e2e4e8] font-medium text-sm">[SEND] Stuur het aan je amice</div>
-              <div class="text-[#5a6070] text-xs mt-0.5">Plak het gekopieerde adres in een WhatsApp-bericht, e-mail of toon de <strong class="text-[#c8ccd4]">QR-code</strong>.</div>
+              <div class="text-[#c8ccd4] text-xs mt-0.5">Plak het gekopieerde adres in een WhatsApp-bericht, e-mail of toon de <strong class="text-[#c8ccd4]">QR-code</strong>.</div>
             </div>
           </div>
           <div class="flex items-start gap-3 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-sm p-3 text-left">
-            <div class="w-8 h-8 rounded-lg bg-[#2a2d35] flex items-center justify-center text-[#5a6070] font-bold text-sm flex-shrink-0 mt-0.5">3</div>
+            <div class="w-8 h-8 rounded-lg bg-[#2a2d35] flex items-center justify-center text-[#c8ccd4] font-bold text-sm flex-shrink-0 mt-0.5">3</div>
             <div>
               <div class="text-[#e2e4e8] font-medium text-sm">> Verbind via + knop</div>
-              <div class="text-[#5a6070] text-xs mt-0.5">Klik op <strong class="text-[#e2e4e8]">+</strong> (rechtsboven in de sidebar) en plak het adres dat jouw amice jou stuurde.</div>
+              <div class="text-[#c8ccd4] text-xs mt-0.5">Klik op <strong class="text-[#e2e4e8]">+</strong> (rechtsboven in de sidebar) en plak het adres dat jouw amice jou stuurde.</div>
             </div>
           </div>
           <div class="flex items-start gap-3 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-sm p-3 text-left">
-            <div class="w-8 h-8 rounded-lg bg-[#2a2d35] flex items-center justify-center text-[#5a6070] font-bold text-sm flex-shrink-0 mt-0.5">4</div>
+            <div class="w-8 h-8 rounded-lg bg-[#2a2d35] flex items-center justify-center text-[#c8ccd4] font-bold text-sm flex-shrink-0 mt-0.5">4</div>
             <div>
               <div class="text-[#e2e4e8] font-medium text-sm"> Verifieer de verbinding</div>
-              <div class="text-[#5a6070] text-xs mt-0.5">Bel je amice en vergelijk de veiligheidsnummers (knop <strong class="text-[#c8ccd4]"> Verifieer</strong> bovenin). Zelfde nummers = veilig.</div>
+              <div class="text-[#c8ccd4] text-xs mt-0.5">Bel je amice en vergelijk de veiligheidsnummers (knop <strong class="text-[#c8ccd4]"> Verifieer</strong> bovenin). Zelfde nummers = veilig.</div>
             </div>
           </div>
         </div>
@@ -1061,21 +1061,21 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <div class="step-next w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold">3</div>
           </div>
           <h2 class="text-xl font-bold text-[#e2e4e8] mb-1">Verbind met je amice</h2>
-          <p class="text-[#5a6070] text-sm mb-2 leading-relaxed">Plak het adres dat je amice jou heeft gestuurd. Heeft je amice jouw adres nog niet? Stuur die dan eerst.</p>
+          <p class="text-[#c8ccd4] text-sm mb-2 leading-relaxed">Plak het adres dat je amice jou heeft gestuurd. Heeft je amice jouw adres nog niet? Stuur die dan eerst.</p>
           <!-- Hint box -->
-          <div class="mb-4 p-3 bg-[#111214] border border-[#2a2d35] rounded-sm text-xs text-[#5a6070] leading-relaxed">
+          <div class="mb-4 p-3 bg-[#111214] border border-[#2a2d35] rounded-sm text-xs text-[#c8ccd4] leading-relaxed">
              <strong class="text-[#c8ccd4]">Hoe werkt het?</strong><br>
             Jij stuurt jouw adres -> je amice plakt het hier.<br>
             Je amice stuurt zijn adres -> jij plakt het hieronder.
           </div>
           <div class="space-y-4">
             <div>
-              <label class="mono text-xs font-semibold text-[#5a6070] uppercase tracking-widest mb-2 block">Naam (optioneel)</label>
+              <label class="mono text-xs font-semibold text-[#c8ccd4] uppercase tracking-widest mb-2 block">Naam (optioneel)</label>
               <input id="peer-name" type="text" maxlength="30" placeholder="bijv. Karin, Papa, Collega Jan…"
                 class="w-full bg-[#111214] border border-[#3d4149] focus:border-[#00ff9d] text-[#e2e4e8] rounded-sm px-4 py-3 text-base outline-none transition-colors placeholder-slate-600">
             </div>
             <div>
-              <label class="mono text-xs font-semibold text-[#5a6070] uppercase tracking-widest mb-2 block">Adres van je amice</label>
+              <label class="mono text-xs font-semibold text-[#c8ccd4] uppercase tracking-widest mb-2 block">Adres van je amice</label>
               <textarea id="peer-key" rows="4" placeholder="Plak hier het adres van je amice…"
                 class="w-full bg-[#111214] border border-[#3d4149] focus:border-[#00ff9d] text-[#4a7c59] mono rounded-sm px-4 py-3 text-xs outline-none resize-none transition-colors placeholder-slate-600 placeholder:font-mono placeholder:text-sm leading-relaxed"></textarea>
             </div>
@@ -1094,7 +1094,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
       <!-- Chat header -->
       <div id="chat-head" style="display:none" class="items-center gap-3 px-4 py-3 bg-[#111214] border-b border-[#1e2026] flex-shrink-0">
-        <button onclick="openSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-lg text-[#5a6070]">☰</button>
+        <button onclick="openSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] rounded-lg text-[#c8ccd4]">☰</button>
         <div id="ch-av" class="w-10 h-10 rounded-full bg-[#2a2d35] overflow-hidden flex-shrink-0 border-2 border-[#00ff9d]/40 flex items-center justify-center font-bold text-[#00ff9d]"></div>
         <div class="flex-1 min-w-0">
           <div id="ch-nm" class="font-bold text-[#e2e4e8] text-base truncate">—</div>
@@ -1102,32 +1102,32 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         </div>
         <div class="flex items-center gap-2 flex-wrap">
           <button onclick="showSN()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-lg text-xs text-[#5a6070] mono transition-all"
+            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
             title="Bel je amice en vergelijk de nummers om te bevestigen dat niemand meeluistert">
              Verifieer
           </button>
           <button id="destruct-btn" onclick="cycleDestruct()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-orange-500/30 rounded-lg text-xs text-[#5a6070] mono transition-all"
+            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-orange-500/30 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
             title="Klik om berichten automatisch te laten verdwijnen na 5, 10 of 30 minuten">
             [TTL] Auto-wis
           </button>
           <button id="voice-btn" onclick="startVoiceCall()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-green-500/30 rounded-lg text-xs text-[#5a6070] mono transition-all"
+            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-green-500/30 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
             title="Start een versleutelde voicecall via WebRTC — signaling gaat via je versleuteld kanaal">
             [CALL] Bellen
           </button>
           <button onclick="showNewGroupDialog()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-blue-500/30 rounded-lg text-xs text-[#5a6070] mono transition-all"
+            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-blue-500/30 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
             title="Maak een groepschat met meerdere verbonden amices">
             [GRP]️ Groep
           </button>
           <button onclick="exportConv()"
-            class="hidden sm:block px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-lg text-xs text-[#5a6070] mono transition-all hover:border-[#3d4149]"
+            class="hidden sm:block px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-lg text-xs text-[#c8ccd4] mono transition-all hover:border-[#3d4149]"
             title="Sla een kopie van dit gesprek op als bestand">
             v Export
           </button>
           <button onclick="endConv()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-red-500/30 rounded-lg text-xs text-[#5a6070] mono transition-all"
+            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-red-500/30 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
             title="Sluit dit gesprek — verbinding wordt verbroken">
             ✕ Sluit
           </button>
@@ -1136,13 +1136,13 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
       <!-- Audit bar (subtle, not scary) -->
       <div id="audit-bar" style="display:none" class="px-4 py-2 bg-[#0c0e10]/80 border-b border-[#1e2026] flex-shrink-0">
-        <div class="flex items-center gap-3 mono text-xs text-[#3d4149] flex-wrap">
-          <span>[SEC]️ <b id="au-kx" class="text-[#3d4149]">—</b></span>
-          <span>Ronde <b id="au-rnd" class="text-[#3d4149]">#0</b></span>
+        <div class="flex items-center gap-3 mono text-xs text-[#5a6070] flex-wrap">
+          <span>[SEC]️ <b id="au-kx" class="text-[#5a6070]">—</b></span>
+          <span>Ronde <b id="au-rnd" class="text-[#5a6070]">#0</b></span>
           <span>OK <b id="au-tags" class="text-[#2a4a35]">0</b></span>
           <span id="au-kem-wrap" class="hidden">⚛ <b id="au-kem" class="text-[#2a4a35]">0</b> KEM</span>
           <span id="au-rep-wrap" class="hidden text-red-600"> <b id="au-rep">0</b></span>
-          <span id="au-cid-wrap" class="hidden">ID: <b id="au-cid" class="text-[#3d4149]">—</b></span>
+          <span id="au-cid-wrap" class="hidden">ID: <b id="au-cid" class="text-[#5a6070]">—</b></span>
         </div>
       </div>
 
@@ -1152,7 +1152,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <!-- Paste overlay -->
         <div id="paste-ov" style="display:none" class="absolute bottom-0 left-0 right-0 bg-[#111214] border-t border-[#2a2d35] p-4 shadow-2xl">
           <div class="text-sm font-semibold text-[#e2e4e8] mb-1">[RECV] Bericht van je amice lezen</div>
-          <div class="text-xs text-[#3d4149] mb-3">Heb je een lang stuk tekst ontvangen (het versleutelde pakket)? Plak het hieronder en klik op Lezen.</div>
+          <div class="text-xs text-[#5a6070] mb-3">Heb je een lang stuk tekst ontvangen (het versleutelde pakket)? Plak het hieronder en klik op Lezen.</div>
           <textarea id="paste-ta" rows="4" placeholder="Plak hier het versleutelde pakket dat je hebt ontvangen (het lange stuk tekst)…"
             class="w-full bg-[#1a1d22] border border-[#3d4149] focus:border-[#00ff9d] text-[#4a7c59] mono rounded-sm px-4 py-3 text-xs outline-none resize-none placeholder-slate-600 placeholder:font-mono placeholder:text-sm leading-relaxed"></textarea>
           <div class="flex items-center gap-3 mt-3 flex-wrap">
@@ -1167,11 +1167,11 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <div id="input-row" style="display:none" class="items-end gap-2 px-3 py-3 bg-[#111214] border-t border-[#1e2026] flex-shrink-0">
         <input type="file" id="file-inp" multiple style="display:none" onchange="handleFiles(this)">
         <button onclick="document.getElementById('file-inp').click()"
-          class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xl text-[#5a6070] transition-all"
+          class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xl text-[#c8ccd4] transition-all"
           title=" Bestand versturen — end-to-end versleuteld met AES-256-GCM. Max 10 MB per bestand."></button>
 
         <button onclick="togglePaste()"
-          class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xl text-[#5a6070] transition-all"
+          class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xl text-[#c8ccd4] transition-all"
           title="[RECV] Bericht ontvangen van je amice? Klik hier en plak het versleutelde pakket">[RECV]</button>
         <textarea id="msg-inp" rows="1" placeholder="Typ een bericht…"
           class="flex-1 bg-[#1a1d22] border border-[#2a2d35] focus:border-[#00ff9d] text-[#e2e4e8] rounded-sm px-4 py-3 text-base outline-none resize-none max-h-32 leading-normal transition-colors placeholder-slate-600"
@@ -1187,22 +1187,22 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <div class="p-3 border-b border-[#1e2026] flex-shrink-0">
         <div class="flex items-center justify-between mb-1">
           <div class="mono text-xs text-[#00ff9d] tracking-widest font-bold">ACTIEVE GEBRUIKERS</div>
-          <button onclick="fetchLedger()" class="mono text-xs text-[#3d4149] hover:text-[#00ff9d] transition-colors" title="Ververs ledger">↺</button>
+          <button onclick="fetchLedger()" class="mono text-xs text-[#5a6070] hover:text-[#00ff9d] transition-colors" title="Ververs ledger">↺</button>
         </div>
-        <div class="text-xs text-[#3d4149] mb-3 leading-relaxed">Wie is er nu online en eerder verstuurde berichten (anoniem — alleen hash zichtbaar).</div>
+        <div class="text-xs text-[#5a6070] mb-3 leading-relaxed">Wie is er nu online en eerder verstuurde berichten (anoniem — alleen hash zichtbaar).</div>
         <!-- Stats row -->
         <div class="grid grid-cols-3 gap-1.5 mb-3">
           <div class="bg-[#1a1d22]/80 border border-[#2a2d35] rounded-lg p-1.5 text-center">
             <div id="ls-msgs" class="mono font-bold text-[#00ff9d] text-xs">—</div>
-            <div class="text-[#3d4149] text-xs" style="font-size:9px">berichten</div>
+            <div class="text-[#5a6070] text-xs" style="font-size:9px">berichten</div>
           </div>
           <div class="bg-[#1a1d22]/80 border border-[#2a2d35] rounded-lg p-1.5 text-center">
             <div id="ls-chats" class="mono font-bold text-[#00ff9d] text-xs">—</div>
-            <div class="text-[#3d4149] text-xs" style="font-size:9px">gesprekken</div>
+            <div class="text-[#5a6070] text-xs" style="font-size:9px">gesprekken</div>
           </div>
           <div class="bg-[#1a1d22]/80 border border-[#2a2d35] rounded-lg p-1.5 text-center">
             <div id="ls-online" class="mono font-bold text-green-400 text-xs">—</div>
-            <div class="text-[#3d4149] text-xs" style="font-size:9px">online</div>
+            <div class="text-[#5a6070] text-xs" style="font-size:9px">online</div>
           </div>
         </div>
         <!-- Search -->
@@ -1210,12 +1210,12 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <input id="ledger-search" type="text" maxlength="16" placeholder="Zoek hash…"
             oninput="filterLedger(this.value)"
             class="w-full bg-[#1a1d22] border border-[#2a2d35] focus:border-[#00ff9d] text-[#4a7c59] mono rounded-lg px-3 py-1.5 text-xs outline-none transition-colors placeholder-slate-600">
-          <span id="ledger-search-clear" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-[#3d4149] cursor-pointer hover:text-[#e2e4e8] text-xs" onclick="clearLedgerSearch()">✕</span>
+          <span id="ledger-search-clear" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-[#5a6070] cursor-pointer hover:text-[#e2e4e8] text-xs" onclick="clearLedgerSearch()">✕</span>
         </div>
       </div>
       <!-- Entries — infinite scroll -->
       <div id="ledger-entries" class="flex-1 overflow-y-auto p-2" onscroll="onLedgerScroll(this)">
-        <div class="text-center py-8 text-[#3d4149] mono text-xs leading-loose"> Verbind om te zien wie online is</div>
+        <div class="text-center py-8 text-[#5a6070] mono text-xs leading-loose"> Verbind om te zien wie online is</div>
       </div>
     </div>
 
@@ -1232,9 +1232,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <div class="flex items-start justify-between mb-4">
       <div>
         <h3 class="text-xl font-bold text-[#e2e4e8]"> Veiligheidsnummers</h3>
-        <p class="text-[#5a6070] text-xs mt-1">SHA-256 vingerafdruk van jullie gedeelde sleutel</p>
+        <p class="text-[#c8ccd4] text-xs mt-1">SHA-256 vingerafdruk van jullie gedeelde sleutel</p>
       </div>
-      <button onclick="hideSN()" class="text-[#3d4149] hover:text-[#e2e4e8] text-2xl leading-none mt-0.5">✕</button>
+      <button onclick="hideSN()" class="text-[#5a6070] hover:text-[#e2e4e8] text-2xl leading-none mt-0.5">✕</button>
     </div>
 
     <!-- Instruction -->
@@ -1768,7 +1768,7 @@ function showRelayConfigTip(){
   const existing=$('relay-tip');if(existing)return;
   const tip=document.createElement('div');tip.id='relay-tip';
   tip.style.cssText='position:fixed;bottom:70px;right:16px;max-width:280px;background:#111214;border:1px solid #2a2d35;color:#8a8e98;padding:14px 16px;border-radius:14px;font-size:12px;z-index:9999;line-height:1.6;box-shadow:0 8px 32px rgba(0,0,0,.5)';
-  tip.innerHTML=`<div style="font-weight:600;color:#c8ccd4;margin-bottom:6px"> Relay instellen (optioneel)</div>
+  tip.innerHTML=`<div style="font-weight:600;color:#d8dce4;margin-bottom:6px"> Relay instellen (optioneel)</div>
 <div style="color:#5a6070;font-size:11px;margin-bottom:8px">Voeg toe aan HTML voor &lt;/head&gt;:</div>
 <div style="font-family:monospace;font-size:10px;background:#0c0e10;padding:8px;border-radius:8px;color:#00ff9d;word-break:break-all">window._PARAMANT_RELAY<br>= 'wss://relay.paramant.app'</div>
 <div style="font-family:monospace;font-size:10px;background:#0c0e10;padding:8px;border-radius:8px;color:#a78bfa;margin-top:6px;word-break:break-all">// Via Tor (.onion):<br>window._PARAMANT_RELAY_ONION<br>= 'ws://xyz.onion'</div>
@@ -1986,7 +1986,7 @@ function showIncomingRequest(nick, bundle, avatarHint){
 
   // Close button
   const closeBtn = document.createElement('button');
-  closeBtn.className = 'text-[#3d4149] hover:text-[#e2e4e8] text-lg leading-none flex-shrink-0';
+  closeBtn.className = 'text-[#5a6070] hover:text-[#e2e4e8] text-lg leading-none flex-shrink-0';
   closeBtn.textContent = '✕';
   closeBtn.onclick = () => toast.remove();
 
@@ -1994,7 +1994,7 @@ function showIncomingRequest(nick, bundle, avatarHint){
 
   // Body text
   const body = document.createElement('p');
-  body.className = 'text-[#5a6070] text-xs mb-3 leading-relaxed';
+  body.className = 'text-[#c8ccd4] text-xs mb-3 leading-relaxed';
   body.textContent = 'Plak ook jouw adres bij je amice, of klik Accepteer om direct terug te verbinden.';
   const bold = document.createElement('strong'); bold.className = 'text-[#e2e4e8]'; bold.textContent = ' Accepteer';
   body.insertBefore(bold, body.childNodes[1]);
@@ -2092,7 +2092,7 @@ function renderPresence(){
   if(el){
     el.querySelectorAll('.pr-row').forEach(e=>e.remove());
     if(peers.length){
-      const hdr=document.createElement('div');hdr.className='pr-row mono text-xs text-[#3d4149] px-2 py-1.5 tracking-widest';hdr.textContent='WIE IS ONLINE';el.insertBefore(hdr,el.firstChild);
+      const hdr=document.createElement('div');hdr.className='pr-row mono text-xs text-[#5a6070] px-2 py-1.5 tracking-widest';hdr.textContent='WIE IS ONLINE';el.insertBefore(hdr,el.firstChild);
       peers.forEach(p=>el.insertBefore(buildPresenceRow(p,false),el.children[1]||null));
     }
   }
@@ -2177,12 +2177,12 @@ function addLedgerEntry(e){
   const hashRow=document.createElement('div');hashRow.className='flex items-center gap-1';
   const hashTxt=document.createElement('span');hashTxt.className='text-[#4a7c59] flex-1 truncate';hashTxt.textContent=e.h+'…';
   const copyBtn=document.createElement('button');
-  copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-[#3d4149] hover:text-[#00ff9d] text-xs leading-none px-1';
+  copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-[#5a6070] hover:text-[#00ff9d] text-xs leading-none px-1';
   copyBtn.textContent='⎘';copyBtn.title='Hash kopiëren';
   copyBtn.onclick=(ev)=>{ev.stopPropagation();navigator.clipboard.writeText(e.h).catch(()=>{});copyBtn.textContent='OK';setTimeout(()=>copyBtn.textContent='⎘',1200);};
   hashRow.appendChild(hashTxt);hashRow.appendChild(copyBtn);
   // Meta row
-  const meta=document.createElement('div');meta.className='text-[#3d4149] mt-0.5';
+  const meta=document.createElement('div');meta.className='text-[#5a6070] mt-0.5';
   meta.textContent=(e.b/1024).toFixed(1)+'KB · '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   div.appendChild(hashRow);div.appendChild(meta);
   // Insert before first non-presence row
@@ -2206,7 +2206,7 @@ function rerenderLedger(){
   const filtered=ledgerFilter?ledgerAll.filter(e=>e.h.startsWith(ledgerFilter)):ledgerAll;
   if(!filtered.length){
     const empty=document.createElement('div');
-    empty.className='lc-empty-msg text-center py-6 text-[#3d4149] mono text-xs';
+    empty.className='lc-empty-msg text-center py-6 text-[#5a6070] mono text-xs';
     empty.textContent=ledgerFilter?'Geen resultaten voor "'+ledgerFilter+'"':'Nog geen entries';
     el.appendChild(empty);return;
   }
@@ -2219,11 +2219,11 @@ function rerenderLedger(){
     const hashRow=document.createElement('div');hashRow.className='flex items-center gap-1';
     const hashTxt=document.createElement('span');hashTxt.className='text-[#4a7c59] flex-1 truncate';hashTxt.textContent=e.h+'…';
     const copyBtn=document.createElement('button');
-    copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-[#3d4149] hover:text-[#00ff9d] text-xs leading-none px-1';
+    copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-[#5a6070] hover:text-[#00ff9d] text-xs leading-none px-1';
     copyBtn.textContent='⎘';copyBtn.title='Hash kopiëren';
     copyBtn.onclick=(ev)=>{ev.stopPropagation();navigator.clipboard.writeText(e.h).catch(()=>{});copyBtn.textContent='OK';setTimeout(()=>copyBtn.textContent='⎘',1200);};
     hashRow.appendChild(hashTxt);hashRow.appendChild(copyBtn);
-    const meta=document.createElement('div');meta.className='text-[#3d4149] mt-0.5';
+    const meta=document.createElement('div');meta.className='text-[#5a6070] mt-0.5';
     meta.textContent=(e.b/1024).toFixed(1)+'KB · '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     div.appendChild(hashRow);div.appendChild(meta);
     el.appendChild(div);
@@ -2231,7 +2231,7 @@ function rerenderLedger(){
   // Load more indicator
   if(filtered.length > LEDGER_PAGE){
     const more=document.createElement('div');more.id='ledger-load-more';
-    more.className='text-center py-3 text-[#3d4149] mono text-xs cursor-pointer hover:text-[#00ff9d] transition-colors';
+    more.className='text-center py-3 text-[#5a6070] mono text-xs cursor-pointer hover:text-[#00ff9d] transition-colors';
     more.textContent='v Meer laden ('+filtered.length+' totaal)';
     more.onclick=()=>loadMoreLedger();
     el.appendChild(more);
@@ -2247,15 +2247,15 @@ function loadMoreLedger(){
     const div=document.createElement('div');div.className='mono text-xs rounded-lg p-2 mb-1 bg-[#1a1d22]/40 border border-[#2a2d35]/40 group relative';div.dataset.hash=e.h;
     const hashRow=document.createElement('div');hashRow.className='flex items-center gap-1';
     const hashTxt=document.createElement('span');hashTxt.className='text-[#4a7c59] flex-1 truncate';hashTxt.textContent=e.h+'…';
-    const copyBtn=document.createElement('button');copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-[#3d4149] hover:text-[#00ff9d] text-xs leading-none px-1';copyBtn.textContent='⎘';
+    const copyBtn=document.createElement('button');copyBtn.className='opacity-0 group-hover:opacity-100 transition-opacity text-[#5a6070] hover:text-[#00ff9d] text-xs leading-none px-1';copyBtn.textContent='⎘';
     copyBtn.onclick=(ev)=>{ev.stopPropagation();navigator.clipboard.writeText(e.h).catch(()=>{});copyBtn.textContent='OK';setTimeout(()=>copyBtn.textContent='⎘',1200);};
     hashRow.appendChild(hashTxt);hashRow.appendChild(copyBtn);
-    const meta=document.createElement('div');meta.className='text-[#3d4149] mt-0.5';meta.textContent=(e.b/1024).toFixed(1)+'KB · '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const meta=document.createElement('div');meta.className='text-[#5a6070] mt-0.5';meta.textContent=(e.b/1024).toFixed(1)+'KB · '+new Date(e.t).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     div.appendChild(hashRow);div.appendChild(meta);el.appendChild(div);
   });
   if(end < filtered.length){
     const more=document.createElement('div');more.id='ledger-load-more';
-    more.className='text-center py-3 text-[#3d4149] mono text-xs cursor-pointer hover:text-[#00ff9d] transition-colors';
+    more.className='text-center py-3 text-[#5a6070] mono text-xs cursor-pointer hover:text-[#00ff9d] transition-colors';
     more.textContent='v Meer laden ('+(filtered.length-end)+' resterend)';
     more.onclick=()=>loadMoreLedger();el.appendChild(more);
   }
@@ -2470,7 +2470,7 @@ function addProgMsg(conv,name,size){
   const bg=document.createElement('div');bg.className='h-1.5 bg-[#2a2d35] rounded-full overflow-hidden';
   const bar=document.createElement('div');bar.className='prog-bar h-full bg-[#00ff9d] rounded-full w-0 transition-all';
   bg.appendChild(bar);
-  const st=document.createElement('div');st.className='prog-st mono text-xs text-[#3d4149] mt-1.5';st.textContent='Laden…';
+  const st=document.createElement('div');st.className='prog-st mono text-xs text-[#5a6070] mt-1.5';st.textContent='Laden…';
   d.appendChild(nm);d.appendChild(bg);d.appendChild(st);
   const wrap=document.createElement('div');wrap.className='flex justify-end px-1 py-0.5';wrap.appendChild(d);
   w._bar=bar;w._st=st;const _sh2=$msgs();const _ho2=$('msgs-host');if(_sh2&&_ho2){_sh2.appendChild(wrap);_ho2.scrollTop=_ho2.scrollHeight;}return w;
@@ -2497,7 +2497,7 @@ function buildMsg(dir,data,t){
   if(dir==='sys'){
     outer.className='flex justify-center my-2';
     const b=document.createElement('div');
-    b.className='bbl-sys px-4 py-1.5 rounded-full text-xs text-[#3d4149] text-center leading-relaxed';
+    b.className='bbl-sys px-4 py-1.5 rounded-full text-xs text-[#5a6070] text-center leading-relaxed';
     b.textContent=data.text;outer.appendChild(b);return outer;
   }
   outer.className=`flex ${dir==='sent'?'justify-end':'justify-start'} mb-1 fade-up`;
@@ -2543,7 +2543,7 @@ function buildMsg(dir,data,t){
   // Timestamp + status
   const foot=document.createElement('div');
   foot.className='flex items-center gap-1 mt-0.5 px-1';
-  const ts=document.createElement('span');ts.className='text-xs text-[#3d4149]';ts.textContent=t;
+  const ts=document.createElement('span');ts.className='text-xs text-[#5a6070]';ts.textContent=t;
   foot.appendChild(ts);
   if(dir==='sent'){
     const ck=document.createElement('span');ck.className='text-[#4a7c59] text-xs';ck.textContent='OK';foot.appendChild(ck);
@@ -2554,7 +2554,7 @@ function buildMsg(dir,data,t){
   // Uitklapbaar encrypted pakket — alleen voor sent
   if(dir==='sent' && data.pkt){
     const toggle=document.createElement('div');
-    toggle.className='text-xs text-slate-700 hover:text-[#3d4149] cursor-pointer px-1 select-none';
+    toggle.className='text-xs text-slate-700 hover:text-[#5a6070] cursor-pointer px-1 select-none';
     const relTxt=data.relayed?'OK · ':'';
     toggle.textContent=relTxt+'[LOCK] pakket tonen ›';
     const detBox=document.createElement('div');detBox.style.display='none';detBox.style.marginTop='4px';
@@ -2687,11 +2687,11 @@ function renderList(){
     if(c.chainKey){const cvEl=document.createElement('canvas');cvEl.width=40;cvEl.height=40;sha256(new Uint8Array(c.chainKey)).then(h=>drawFractal(cvEl,fractalParams(h))).catch(()=>{});av.appendChild(cvEl);}else av.textContent=c.name.charAt(0).toUpperCase();
     const inf=document.createElement('div');inf.className='flex-1 min-w-0';
     const nm=document.createElement('div');nm.className='font-semibold text-[#e2e4e8] text-sm truncate';nm.textContent=c.name;
-    const pv=document.createElement('div');pv.className='text-xs text-[#3d4149] truncate mt-0.5';const last=c.msgs[c.msgs.length-1];pv.textContent=last?(last.dir==='sent'?'[SEND] Verstuurd':last.dir==='recv'?'[RECV] Ontvangen':last.data.text):'RELAY_ONLINE';
+    const pv=document.createElement('div');pv.className='text-xs text-[#5a6070] truncate mt-0.5';const last=c.msgs[c.msgs.length-1];pv.textContent=last?(last.dir==='sent'?'[SEND] Verstuurd':last.dir==='recv'?'[RECV] Ontvangen':last.data.text):'RELAY_ONLINE';
     inf.appendChild(nm);inf.appendChild(pv);
     const right=document.createElement('div');right.className='flex items-center gap-1.5 flex-shrink-0';
     const dot=document.createElement('div');dot.className='w-2 h-2 rounded-full '+(c.connected?'bg-green-400':'bg-[#3d4149]');
-    const x=document.createElement('button');x.className='w-6 h-6 flex items-center justify-center rounded-lg text-[#3d4149] hover:text-red-400 text-xs transition-all opacity-0 group-hover:opacity-100';x.textContent='✕';
+    const x=document.createElement('button');x.className='w-6 h-6 flex items-center justify-center rounded-lg text-[#5a6070] hover:text-red-400 text-xs transition-all opacity-0 group-hover:opacity-100';x.textContent='✕';
     x.onclick=e=>{e.stopPropagation();if(confirm(`Gesprek met ${c.name} verwijderen?`)){if(c.sendChainKey)c.sendChainKey.fill(0);if(c.recvChainKey)c.recvChainKey.fill(0);convs=convs.filter(x=>x.id!==c.id);if(activeId===c.id){if(convs.length>0)showChat(convs[0].id);else showWelcome();}renderList();}};
     right.appendChild(dot);right.appendChild(x);
     div.appendChild(av);div.appendChild(inf);div.appendChild(right);
@@ -2784,7 +2784,7 @@ function closeApp(){$('app').style.display='none';document.body.style.overflow='
 if(location.hash==='#app')openApp();
 
 // ─── TOAST ────────────────────────────────────────────────────────────
-function showToast(msg,_unused,bg){const t=document.createElement('div');t.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${bg||'#111214'};border:1px solid #2a2d35;color:#c8ccd4;padding:12px 20px;border-radius:12px;font-size:14px;z-index:99999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);font-family:Inter,sans-serif`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.transition='opacity .4s';t.style.opacity='0';setTimeout(()=>t.remove(),400);},3500);}
+function showToast(msg,_unused,bg){const t=document.createElement('div');t.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${bg||'#111214'};border:1px solid #2a2d35;color:#d8dce4;padding:12px 20px;border-radius:12px;font-size:14px;z-index:99999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);font-family:Inter,sans-serif`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.transition='opacity .4s';t.style.opacity='0';setTimeout(()=>t.remove(),400);},3500);}
 
 // ─── AUTO-DETECT JSON PASTE ────────────────────────────────────────────
 $('msg-inp').addEventListener('paste',e=>{setTimeout(()=>{const v=$('msg-inp').value.trim();if(v.startsWith('{')){try{const p=JSON.parse(v);if(p.v&&p.iv&&p.ct&&p.seq!==undefined){$('msg-inp').value='';$('msg-inp').style.height='auto';$('paste-ta').value=v;$('paste-ov').style.display='block';$('paste-err').textContent='';doDecrypt();}}catch(e){}}},50);});
