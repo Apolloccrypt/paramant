@@ -5,3 +5,5 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "."
 binding = "ASSETS"
+html_handling = "none"
+not_found_handling = "none"
