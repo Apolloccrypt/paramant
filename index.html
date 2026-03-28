@@ -2524,13 +2524,16 @@ async function encPayload(conv,payload,type){
     if(kemCt)pkt.kemCt=kemCt;if(newKEMPub)pkt.kemPub=newKEMPub;
     conv.tagsCnt++;
     const pktStr=JSON.stringify(pkt);
-    // Timing jitter: 0-2s willekeurige vertraging
-    // Relay timestamp klopt niet met werkelijk verzendmoment → timing-correlatie aanvallen tegengaan
-    await new Promise(r=>setTimeout(r,Math.floor(Math.random()*2000)));
-    const relayed=relaySend(conv,pkt);
-    addMsg(conv,'sent',{pkt:pktStr,type,payload,seq,t:now(),relayed,pq:!!kemCt});
+    // Bericht direct in UI tonen — niet wachten op jitter
+    addMsg(conv,'sent',{pkt:pktStr,type,payload,seq,t:now(),relayed:false,pq:!!kemCt});
     updateAudit(conv);
-    if(relayed){addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:seq,b:pktStr.length,t:Date.now()});fetchStats();}
+    // Timing jitter: 0-2s vertraging vóór relay-verzending
+    // Relay timestamp ≠ werkelijk typtijdstip → timing-correlatie aanvallen tegengaan
+    const _jitter=Math.floor(Math.random()*2000);
+    setTimeout(()=>{
+      const relayed=relaySend(conv,pkt);
+      if(relayed){addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:seq,b:pktStr.length,t:Date.now()});fetchStats();}
+    },_jitter);
   }catch(e){const c=activeConv();if(c)sysMsg(c,'[X] Fout: '+e.message);}
 }
 async function doDecrypt(){const conv=activeConv();if(!conv?.chainKey)return;const raw=$('paste-ta').value.trim();$('paste-err').textContent='';try{let pkt;try{pkt=JSON.parse(raw);}catch(e){throw new Error('Ongeldig pakket — plak de volledige inhoud.');}await decryptPacket(conv,pkt);hidePaste();}catch(e){$('paste-err').textContent=e.message;}}
