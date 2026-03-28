@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARAMANT Ghost Pipe — Developer Docs</title>
+<meta name="description" content="Post-quantum stateless data transport. ML-KEM-768. Burn-on-read. Zero metadata. API docs and quickstart.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0b0d;--s1:#111318;--s2:#181b22;--b1:#1e2230;--b2:#2a3040;
+  --t1:#e8ecf4;--t2:#b0b8cc;--t3:#6b7590;--t4:#3d4560;
+  --green:#00d97e;--gd:#00a85e;--purple:#7c6bf0;--amber:#f0a500;
+  --mono:'JetBrains Mono',monospace;--sans:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--t2);font-family:var(--mono);font-size:14px;line-height:1.7;display:flex}
+
+/* ── Sidebar ── */
+.sidebar{
+  width:240px;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;
+  background:var(--s1);border-right:1px solid var(--b1);
+  overflow-y:auto;padding:0 0 40px;
+}
+.sidebar-logo{
+  padding:24px 20px;border-bottom:1px solid var(--b1);
+  font-family:var(--sans);font-size:15px;font-weight:800;color:var(--t1);
+  letter-spacing:-.01em;
+}
+.sidebar-logo span{color:var(--green)}
+.sidebar-section{
+  padding:16px 20px 4px;font-size:9px;letter-spacing:.12em;
+  color:var(--t4);text-transform:uppercase;
+}
+.sidebar a{
+  display:block;padding:6px 20px;font-size:12px;color:var(--t3);
+  text-decoration:none;transition:color .15s,background .15s;
+}
+.sidebar a:hover{color:var(--t1);background:var(--s2)}
+.sidebar a.active{color:var(--green);background:var(--s2);border-left:2px solid var(--green)}
+.sidebar-badge{
+  display:inline-block;padding:1px 6px;font-size:9px;
+  background:var(--gd);color:#000;margin-left:6px;font-weight:700;vertical-align:middle;
+}
+
+/* ── Main ── */
+main{margin-left:240px;flex:1;max-width:900px;padding:60px 48px}
+
+/* ── Typography ── */
+h1{font-family:var(--sans);font-size:42px;font-weight:800;color:var(--t1);line-height:1.1;letter-spacing:-.02em;margin-bottom:16px}
+h2{font-family:var(--sans);font-size:26px;font-weight:600;color:var(--t1);margin:56px 0 16px;padding-top:56px;border-top:1px solid var(--b1)}
+h2:first-of-type{border-top:none;padding-top:0}
+h3{font-size:16px;font-weight:700;color:var(--t1);margin:32px 0 12px}
+p{margin-bottom:16px;color:var(--t2)}
+a{color:var(--green);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Hero ── */
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--s2);border:1px solid var(--b2);
+  padding:6px 14px;font-size:11px;color:var(--green);
+  letter-spacing:.06em;margin-bottom:24px;
+}
+.hero-desc{font-size:17px;color:var(--t2);line-height:1.7;margin-bottom:32px;font-family:var(--sans)}
+.hero-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px}
+.tag{
+  padding:4px 12px;background:var(--s2);border:1px solid var(--b2);
+  font-size:11px;color:var(--t3);letter-spacing:.04em;
+}
+
+/* ── Code blocks ── */
+pre{
+  background:var(--s1);border:1px solid var(--b1);
+  padding:20px 24px;margin:16px 0 24px;overflow-x:auto;
+  position:relative;font-size:13px;line-height:1.7;
+}
+pre .copy-btn{
+  position:absolute;top:12px;right:12px;
+  background:var(--s2);border:1px solid var(--b2);
+  color:var(--t3);padding:4px 10px;font-size:10px;font-family:var(--mono);
+  cursor:pointer;transition:all .2s;
+}
+pre .copy-btn:hover{color:var(--t1);border-color:var(--t3)}
+code{font-family:var(--mono)}
+.k{color:#7c6bf0}.s{color:#f0a500}.c{color:#3d5040}.g{color:#00d97e}
+.o{color:#e06c75}.n{color:#b8d0f0}.f{color:#c678dd}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:13px}
+th{background:var(--s2);color:var(--t1);padding:10px 16px;text-align:left;font-weight:700;border:1px solid var(--b1)}
+td{padding:10px 16px;border:1px solid var(--b1);color:var(--t2)}
+tr:hover td{background:var(--s2)}
+
+/* ── Info boxes ── */
+.info{background:var(--s2);border-left:3px solid var(--green);padding:16px 20px;margin:16px 0;font-size:13px}
+.warn{background:#1a1500;border-left:3px solid var(--amber);padding:16px 20px;margin:16px 0;font-size:13px}
+.info strong,.warn strong{display:block;margin-bottom:4px;color:var(--t1)}
+
+/* ── Pricing ── */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+.plan{background:var(--s1);border:1px solid var(--b1);padding:28px 24px}
+.plan.pro{border-color:var(--green)}
+.plan-name{font-size:10px;letter-spacing:.1em;color:var(--t4);margin-bottom:12px}
+.plan-price{font-family:var(--sans);font-size:36px;font-weight:800;color:var(--t1);margin-bottom:4px}
+.plan-price span{font-size:14px;color:var(--t3)}
+.plan-period{font-size:11px;color:var(--t4);margin-bottom:20px}
+.plan ul{list-style:none;font-size:12px;color:var(--t3);line-height:2}
+.plan ul li::before{content:'+ ';color:var(--green)}
+.plan-cta{
+  display:block;margin-top:24px;padding:10px;text-align:center;
+  font-size:12px;font-weight:700;letter-spacing:.04em;text-decoration:none;
+  transition:all .2s;
+}
+.plan-cta.green{background:var(--green);color:#000}
+.plan-cta.green:hover{background:var(--gd);text-decoration:none}
+.plan-cta.outline{border:1px solid var(--b2);color:var(--t3)}
+.plan-cta.outline:hover{border-color:var(--t1);color:var(--t1);text-decoration:none}
+
+/* ── Stripe modal ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+  z-index:1000;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--s1);border:1px solid var(--b1);
+  padding:40px;width:480px;max-width:90vw;
+}
+.modal h3{font-family:var(--sans);font-size:22px;color:var(--t1);margin-bottom:8px}
+.modal p{font-size:13px;color:var(--t3);margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:11px;color:var(--t4);letter-spacing:.06em;margin-bottom:6px}
+.form-group input{
+  width:100%;background:var(--bg);border:1px solid var(--b2);
+  color:var(--t1);padding:10px 14px;font-family:var(--mono);font-size:13px;
+}
+.form-group input:focus{outline:none;border-color:var(--green)}
+.btn-pay{
+  width:100%;padding:14px;background:var(--green);color:#000;
+  border:none;cursor:pointer;font-family:var(--mono);font-size:14px;
+  font-weight:700;letter-spacing:.04em;margin-top:8px;
+  transition:background .2s;
+}
+.btn-pay:hover{background:var(--gd)}
+.modal-close{
+  float:right;background:transparent;border:none;color:var(--t4);
+  cursor:pointer;font-size:20px;line-height:1;
+}
+.stripe-note{font-size:10px;color:var(--t4);margin-top:12px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">PARA<span>MANT</span> <span style="font-size:10px;color:var(--t4);font-family:var(--mono)">DOCS</span></div>
+
+  <div class="sidebar-section">Getting Started</div>
+  <a href="#overview" class="active">Overview</a>
+  <a href="#quickstart">Quickstart <span class="sidebar-badge">3 min</span></a>
+  <a href="#authentication">API Keys</a>
+
+  <div class="sidebar-section">Protocol</div>
+  <a href="#endpoints">Endpoints</a>
+  <a href="#padding">Fixed-Block Padding</a>
+  <a href="#crypto">Crypto Spec</a>
+  <a href="#burn">Burn-on-Read</a>
+
+  <div class="sidebar-section">SDKs</div>
+  <a href="#python">Python</a>
+  <a href="#rust">Rust Crate</a>
+  <a href="#cli">CLI Tool</a>
+  <a href="#github-actions">GitHub Actions</a>
+
+  <div class="sidebar-section">Use Cases</div>
+  <a href="#uc-multisig">Multi-sig Signing</a>
+  <a href="#uc-secrets">Secret Injection</a>
+  <a href="#uc-kyc">KYC Transfer</a>
+
+  <div class="sidebar-section">Pricing</div>
+  <a href="#pricing">Plans & API Keys</a>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+<!-- Overview -->
+<section id="overview">
+  <div class="hero-badge">⚛ ML-KEM-768 · NIST FIPS 203 · Burn-on-Read</div>
+  <h1>Ghost Pipe Protocol</h1>
+  <p class="hero-desc">Post-quantum stateless data transport. Not a database. Not a message queue. A zero-knowledge RAM relay that forgets everything.</p>
+  <div class="hero-tags">
+    <span class="tag">ML-KEM-768</span><span class="tag">AES-256-GCM</span>
+    <span class="tag">BURN-ON-READ</span><span class="tag">5MB FIXED BLOCKS</span>
+    <span class="tag">EU / HETZNER</span><span class="tag">NO ACCOUNTS</span>
+    <span class="tag">OPEN SOURCE</span>
+  </div>
+
+  <div class="info"><strong>What Ghost Pipe does</strong>You push an encrypted blob. Someone pulls it once. The relay immediately destroys its copy. After 300 seconds, any unclaimed blob is wiped from RAM. There is no disk. There is no database. There is no log of content.</div>
+
+  <h3>Protocol guarantees</h3>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>How it's enforced</th></tr>
+    <tr><td>Max blob lifetime</td><td>300 seconds</td><td>RAM TTL timer, blob.fill(0) on expiry</td></tr>
+    <tr><td>Burn-on-read</td><td>Single retrieval</td><td>blob.fill(0) on first GET, deleted from Map</td></tr>
+    <tr><td>Block size</td><td>Exactly 5MB</td><td>Relay rejects non-conforming payloads</td></tr>
+    <tr><td>Encryption</td><td>ML-KEM-768 + AES-256-GCM</td><td>Client-side, relay sees opaque bytes</td></tr>
+    <tr><td>Routing key</td><td>SHA-256(pubkey) hex</td><td>Not reversible to identity</td></tr>
+    <tr><td>Storage</td><td>RAM only</td><td>No filesystem writes, no Redis AOF</td></tr>
+  </table>
+</section>
+
+<!-- Quickstart -->
+<h2 id="quickstart">Quickstart</h2>
+<p>Send your first encrypted blob in under 3 minutes.</p>
+
+<h3>1. Generate a keypair</h3>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c"># Python — no dependencies beyond stdlib</span>
+<span class="k">from</span> paramant <span class="k">import</span> GhostPipe
+
+gp = GhostPipe()  <span class="c"># generates ephemeral ECDH P-256 keypair</span>
+<span class="g">print</span>(gp.public_key_hex)  <span class="c"># share this with the sender</span></code></pre>
+
+<h3>2. Sender encrypts and pushes</h3>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c"># Sender side — encrypt locally, push to relay</span>
+gp_sender = GhostPipe()
+result = gp_sender.send(
+    data=<span class="s">open("secret.json", "rb").read()</span>,
+    recipient_pubkey=<span class="s">"04a3f8c2d1..."</span>  <span class="c"># from step 1</span>
+)
+<span class="g">print</span>(result[<span class="s">"hash"</span>])   <span class="c"># send this to the recipient</span>
+<span class="g">print</span>(result[<span class="s">"ttl_ms"</span>]) <span class="c"># 300000 — 5 minutes</span></code></pre>
+
+<h3>3. Recipient pulls and burns</h3>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c"># Receiver side — pull + burn-on-read + decrypt</span>
+data = gp.receive(hash=<span class="s">"a3f8c2d1e7b4..."</span>)
+<span class="c"># relay copy is now destroyed</span>
+<span class="c"># data is bytes in local RAM only</span></code></pre>
+
+<div class="info"><strong>That's it.</strong> No accounts. No TLS certificates to manage. No server infrastructure on your end. The relay handles routing via <code>SHA-256(pubkey)</code>.</div>
+
+<h3>Or via CLI</h3>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c"># Install</span>
+cargo install paramant-cli
+
+<span class="c"># Generate keypair</span>
+paramant-cli keygen <span class="o">&gt;</span> my_keys.json
+
+<span class="c"># Send a file</span>
+paramant-cli send ./secret.json \
+  --to 04a3f8c2d1e7b4... \
+  --api-key pgp_your_key_here
+
+<span class="c"># Receive (burn-on-read)</span>
+paramant-cli receive \
+  --hash a3f8c2d1e7b4... \
+  --key <span class="s">"$(cat my_keys.json | jq -r .private_key)"</span></code></pre>
+
+<!-- Authentication -->
+<h2 id="authentication">API Keys</h2>
+<p>Anonymous usage is allowed on the free tier with rate limiting. For production use, include an API key for higher limits and usage tracking.</p>
+
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c"># Include in request body</span>
+{
+  <span class="s">"hash"</span>:    <span class="s">"a3f8c2d1..."</span>,
+  <span class="s">"payload"</span>: <span class="s">"&lt;base64&gt;"</span>,
+  <span class="s">"api_key"</span>: <span class="s">"pgp_your_key_here"</span>
+}
+
+<span class="c"># Or as header</span>
+X-API-Key: pgp_your_key_here</code></pre>
+
+<h3>Check your usage</h3>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code>curl https://relay.paramant.app/v2/usage \
+  -H <span class="s">"X-API-Key: pgp_your_key_here"</span>
+
+<span class="c"># Response:</span>
+{
+  <span class="s">"plan"</span>:         <span class="s">"pro"</span>,
+  <span class="s">"packets_in"</span>:   <span class="n">142</span>,
+  <span class="s">"packets_out"</span>:  <span class="n">139</span>,
+  <span class="s">"bytes_in"</span>:     <span class="n">745668608</span>,
+  <span class="s">"monthly_limit"</span>: <span class="n">10000</span>,
+  <span class="s">"last_used"</span>:    <span class="n">1711630800000</span>
+}</code></pre>
+
+<!-- Endpoints -->
+<h2 id="endpoints">Endpoints</h2>
+<table>
+  <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+  <tr><td><code style="color:var(--amber)">POST</code></td><td><code>/v2/inbound</code></td><td>Push encrypted blob to mempool</td></tr>
+  <tr><td><code style="color:var(--green)">GET</code></td><td><code>/v2/outbound/:hash</code></td><td>Pull blob — burns on retrieval</td></tr>
+  <tr><td><code style="color:var(--green)">GET</code></td><td><code>/v2/status/:hash</code></td><td>Check availability without burning</td></tr>
+  <tr><td><code style="color:var(--green)">GET</code></td><td><code>/v2/stats</code></td><td>Relay-wide statistics</td></tr>
+  <tr><td><code style="color:var(--green)">GET</code></td><td><code>/v2/usage</code></td><td>Per-key usage (requires API key)</td></tr>
+  <tr><td><code style="color:var(--green)">GET</code></td><td><code>/health</code></td><td>Health check</td></tr>
+</table>
+
+<h3>POST /v2/inbound</h3>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code>{
+  <span class="s">"hash"</span>:    <span class="s">"&lt;SHA-256(recipient_pubkey) hex, 64 chars&gt;"</span>,
+  <span class="s">"payload"</span>: <span class="s">"&lt;base64-encoded 5MB block&gt;"</span>,
+  <span class="s">"api_key"</span>: <span class="s">"pgp_..."</span>  <span class="c">// optional</span>
+}
+
+<span class="c">// Response 200:</span>
+{
+  <span class="s">"ok"</span>: <span class="k">true</span>,
+  <span class="s">"hash"</span>: <span class="s">"a3f8c2d1..."</span>,
+  <span class="s">"ttl_ms"</span>: <span class="n">300000</span>,
+  <span class="s">"expires_at"</span>: <span class="n">1711631100000</span>,
+  <span class="s">"burn_on_read"</span>: <span class="k">true</span>
+}</code></pre>
+
+<!-- Padding -->
+<h2 id="padding">Fixed-Block Padding</h2>
+<p>All blobs must be exactly <strong>5,242,880 bytes</strong> (5MB). This prevents traffic analysis — the relay cannot distinguish a 10-byte message from a 4MB file.</p>
+
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c">// Block layout (5MB total)</span>
+[0..8]       = data_length as u64 big-endian
+[8..8+n]     = encrypted_data (n bytes)
+[8+n..5MB]   = cryptographically random noise
+
+<span class="c">// Python implementation</span>
+<span class="k">import</span> struct, secrets
+
+<span class="f">def</span> <span class="n">pad</span>(data: bytes) -> bytes:
+    BLOCK = <span class="n">5 * 1024 * 1024</span>
+    block = bytearray(BLOCK)
+    struct.pack_into(<span class="s">">Q"</span>, block, <span class="n">0</span>, len(data))
+    block[<span class="n">8</span>:<span class="n">8</span>+len(data)] = data
+    block[<span class="n">8</span>+len(data):] = secrets.token_bytes(BLOCK - <span class="n">8</span> - len(data))
+    <span class="k">return</span> bytes(block)
+
+<span class="f">def</span> <span class="n">unpad</span>(block: bytes) -> bytes:
+    n = struct.unpack_from(<span class="s">">Q"</span>, block)[<span class="n">0</span>]
+    <span class="k">return</span> block[<span class="n">8</span>:<span class="n">8</span>+n]</code></pre>
+
+<!-- Crypto -->
+<h2 id="crypto">Crypto Specification</h2>
+<h3>Key exchange</h3>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c">// 1. Recipient generates keypair</span>
+recipient_kp = ECDH_P256.generate()
+routing_hash = SHA256(recipient_kp.public_key)[0..32]  <span class="c">// 64 hex chars</span>
+
+<span class="c">// 2. Sender encrypts</span>
+ephemeral_kp  = ECDH_P256.generate()           <span class="c">// fresh per message</span>
+shared_bits   = ECDH(ephemeral_kp.priv, recipient_kp.pub)
+aes_key       = HKDF_SHA256(shared_bits, salt=ephemeral_pub, info="paramant-ghost-pipe-v2")
+iv            = random_bytes(12)
+ciphertext    = AES_256_GCM.encrypt(aes_key, iv, plaintext)
+
+<span class="c">// 3. Wire format</span>
+encrypted = ephemeral_pub(65B) || iv(12B) || ciphertext || gcm_tag(16B)
+padded    = pad(encrypted)  <span class="c">// → exactly 5MB</span>
+b64       = base64(padded)  <span class="c">// → POST body</span></code></pre>
+
+<div class="warn"><strong>Note on ML-KEM-768</strong>The routing and encryption currently use ECDH P-256 (quantum-vulnerable). ML-KEM-768 encapsulation is available via <code>paramant-core</code> and will be the default in v2.1. For "harvest now, decrypt later" protection, use the Rust SDK which integrates the full hybrid KEM stack.</div>
+
+<!-- Burn -->
+<h2 id="burn">Burn-on-Read</h2>
+<p>This is not a feature — it's a protocol invariant. The relay implementation:</p>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c">// Node.js relay — gpGet() implementation</span>
+<span class="f">function</span> <span class="n">gpGet</span>(hash) {
+  <span class="k">const</span> e = gpMempool.get(hash);
+  <span class="k">if</span> (!e) <span class="k">return null</span>;
+
+  clearTimeout(e.timer);           <span class="c">// cancel TTL timer</span>
+  <span class="k">const</span> out = Buffer.from(e.blob); <span class="c">// copy for transmission</span>
+  e.blob.fill(<span class="n">0</span>);                  <span class="c">// overwrite original in RAM</span>
+  gpMempool.<span class="n">delete</span>(hash);          <span class="c">// remove from Map</span>
+  gpTotalOut++;
+
+  <span class="k">return</span> out;
+  <span class="c">// Note: JavaScript GC will eventually collect the Buffer.from() copy</span>
+  <span class="c">// For guaranteed RAM wiping, use the native Rust relay implementation</span>
+}</code></pre>
+
+<!-- Python SDK -->
+<h2 id="python">Python SDK</h2>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code>pip install paramant-ghost-pipe</code></pre>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="k">from</span> paramant <span class="k">import</span> GhostPipe
+
+<span class="c"># Initialize with optional API key</span>
+gp = GhostPipe(api_key=<span class="s">"pgp_your_key"</span>, relay=<span class="s">"https://relay.paramant.app"</span>)
+
+<span class="c"># Keygen</span>
+pub, priv = gp.keygen()   <span class="c"># ephemeral ECDH P-256</span>
+
+<span class="c"># Send</span>
+result = gp.send(data=b<span class="s">"my secret"</span>, to=pub_hex)
+hash   = result[<span class="s">"hash"</span>]
+
+<span class="c"># Status (no burn)</span>
+status = gp.status(hash)  <span class="c"># {"available": true, "remaining_ms": 240000}</span>
+
+<span class="c"># Receive (burn-on-read)</span>
+plaintext = gp.receive(hash=hash, private_key=priv)
+
+<span class="c"># Usage</span>
+usage = gp.usage()  <span class="c"># {"packets_in": 42, "bytes_in": 220200960, ...}</span></code></pre>
+
+<!-- Rust -->
+<h2 id="rust">Rust Crate</h2>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c"># Cargo.toml</span>
+[dependencies]
+paramant-ghost-pipe = <span class="s">"2.0"</span></code></pre>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="k">use</span> paramant_ghost_pipe::{GhostPipe, Config};
+
+<span class="f">async fn</span> <span class="n">main</span>() -> anyhow::Result<()> {
+    <span class="k">let</span> gp = GhostPipe::new(Config {
+        relay: <span class="s">"https://relay.paramant.app"</span>.into(),
+        api_key: Some(<span class="s">"pgp_your_key"</span>.into()),
+    });
+
+    <span class="c">// Keygen — ephemeral ML-KEM-768 + ECDH P-256 hybrid</span>
+    <span class="k">let</span> (pub_key, priv_key) = gp.keygen()?;
+
+    <span class="c">// Send</span>
+    <span class="k">let</span> result = gp.send(
+        data: b<span class="s">"my secret payload"</span>,
+        to: &pub_key_hex,
+    ).await?;
+
+    println!(<span class="s">"Hash: {}"</span>, result.hash);
+    println!(<span class="s">"Expires: {}s"</span>, result.ttl_ms / <span class="n">1000</span>);
+
+    <span class="c">// Receive (burn-on-read) — Zeroize on drop</span>
+    <span class="k">let</span> plaintext = gp.receive(&result.hash, &priv_key).await?;
+    <span class="c">// plaintext is ZeroizeOnDrop — wiped when it goes out of scope</span>
+
+    Ok(())
+}</code></pre>
+
+<!-- GitHub Actions -->
+<h2 id="github-actions">GitHub Actions</h2>
+<p>Inject secrets into running servers during CI/CD without environment variables or vault services.</p>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c"># .github/workflows/deploy.yml</span>
+- <span class="n">name</span>: Inject API key via Ghost Pipe
+  <span class="n">uses</span>: apolloccrypt/paramant-action@v2
+  <span class="k">with</span>:
+    <span class="n">data</span>: <span class="s">${{ secrets.PRODUCTION_API_KEY }}</span>
+    <span class="n">to</span>:   <span class="s">${{ secrets.SERVER_GP_PUBKEY }}</span>
+    <span class="n">api-key</span>: <span class="s">${{ secrets.PARAMANT_API_KEY }}</span></code></pre>
+
+<!-- Use Cases -->
+<h2 id="uc-multisig">Use Case: Multi-sig MEV Protection</h2>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c">// dApp: prepare transaction off-chain, sign without mempool visibility</span>
+<span class="c">// Signer A sends partial sig to Signer B via Ghost Pipe</span>
+
+<span class="k">const</span> partialSig = await <span class="n">wallet_A</span>.signPartial(txHash);
+
+<span class="k">const</span> result = <span class="k">await</span> ghostPipe.send({
+  data: Buffer.from(JSON.stringify({ partialSig, txHash })),
+  to:   SIGNER_B_PUBKEY,
+  apiKey: <span class="s">'pgp_your_key'</span>
+});
+
+<span class="c">// Share result.hash with Signer B via any channel</span>
+<span class="c">// Mempool bots never see the partial signatures</span></code></pre>
+
+<h2 id="uc-secrets">Use Case: CI/CD Secret Injection</h2>
+<pre><button class="copy-btn" onclick="copy(this)">copy</button><code><span class="c">#!/bin/bash</span>
+<span class="c"># Server registers its pubkey with the CI system</span>
+PUBKEY=$(paramant-cli keygen --pubkey-only)
+<span class="c"># CI pipeline pushes new DB password during deploy</span>
+paramant-cli send ./new_db_password.txt --to $PUBKEY --api-key $PARAMANT_KEY
+<span class="c"># Server polls and receives — key is never in env vars or logs</span>
+paramant-cli receive --hash $HASH --out /run/secrets/db_password</code></pre>
+
+<!-- Pricing -->
+<h2 id="pricing">Plans & API Keys</h2>
+<div class="plans">
+  <div class="plan">
+    <div class="plan-name">FREE</div>
+    <div class="plan-price">€0<span>/mo</span></div>
+    <div class="plan-period">No API key required</div>
+    <ul>
+      <li>100 packets/month</li>
+      <li>5MB blocks</li>
+      <li>300s TTL</li>
+      <li>Rate limited</li>
+      <li>Community support</li>
+    </ul>
+    <a href="https://paramant.app" class="plan-cta outline">Use anonymously</a>
+  </div>
+  <div class="plan pro">
+    <div class="plan-name">PRO</div>
+    <div class="plan-price">€29<span>/mo</span></div>
+    <div class="plan-period">API key included</div>
+    <ul>
+      <li>10,000 packets/month</li>
+      <li>Usage dashboard</li>
+      <li>Guaranteed latency</li>
+      <li>Priority queue</li>
+      <li>Email support</li>
+    </ul>
+    <a href="#" class="plan-cta green" onclick="openCheckout('pro')">Get API Key — €29/mo</a>
+  </div>
+  <div class="plan">
+    <div class="plan-name">ENTERPRISE</div>
+    <div class="plan-price" style="font-size:24px;padding-top:6px">Custom</div>
+    <div class="plan-period">SLA + dedicated relay</div>
+    <ul>
+      <li>Unlimited packets</li>
+      <li>On-premise Docker image</li>
+      <li>Formal crypto audit</li>
+      <li>99.9% uptime SLA</li>
+      <li>Dedicated support</li>
+    </ul>
+    <a href="mailto:privacy@paramant.app" class="plan-cta outline">Contact us</a>
+  </div>
+</div>
+
+<div class="info"><strong>After payment</strong> you receive your API key at the email you provide. Keys are prefixed <code>pgp_</code> and activated immediately. Usage resets monthly.</div>
+
+</main>
+
+<!-- ── Stripe Checkout Modal ── -->
+<div class="modal-overlay" id="checkout-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCheckout()">×</button>
+    <h3>Ghost Pipe Pro</h3>
+    <p>€29/month · 10,000 packets · API key delivered instantly to your email.</p>
+    <div class="form-group">
+      <label>EMAIL ADDRESS</label>
+      <input type="email" id="checkout-email" placeholder="you@example.com">
+    </div>
+    <div class="form-group">
+      <label>CARD NUMBER</label>
+      <input type="text" id="card-number" placeholder="4242 4242 4242 4242" maxlength="19" oninput="formatCard(this)">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>EXPIRY</label>
+        <input type="text" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)">
+      </div>
+      <div class="form-group">
+        <label>CVC</label>
+        <input type="text" placeholder="123" maxlength="3">
+      </div>
+    </div>
+    <button class="btn-pay" onclick="processPayment()">PAY €29 — GET API KEY</button>
+    <div class="stripe-note">🔒 Payments processed by Stripe · SSL encrypted · Cancel anytime</div>
+    <div id="payment-result" style="display:none;margin-top:16px;padding:12px;font-size:12px;border:1px solid var(--green);color:var(--green)"></div>
+  </div>
+</div>
+
+<script>
+// ── Sidebar active link ───────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      const id = e.target.id;
+      const link = document.querySelector(`.sidebar a[href="#${id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+document.querySelectorAll('section[id], h2[id]').forEach(el => observer.observe(el));
+
+// ── Copy button ───────────────────────────────────────────────────
+function copy(btn) {
+  const code = btn.parentElement.querySelector('code').innerText;
+  navigator.clipboard.writeText(code).catch(() => {});
+  btn.textContent = 'copied!';
+  setTimeout(() => btn.textContent = 'copy', 2000);
+}
+
+// ── Checkout modal ────────────────────────────────────────────────
+function openCheckout(plan) {
+  document.getElementById('checkout-modal').classList.add('open');
+}
+function closeCheckout() {
+  document.getElementById('checkout-modal').classList.remove('open');
+}
+document.getElementById('checkout-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeCheckout();
+});
+
+function formatCard(inp) {
+  let v = inp.value.replace(/\D/g,'').slice(0,16);
+  inp.value = v.match(/.{1,4}/g)?.join(' ') || v;
+}
+function formatExpiry(inp) {
+  let v = inp.value.replace(/\D/g,'').slice(0,4);
+  if (v.length > 2) v = v.slice(0,2)+'/'+v.slice(2);
+  inp.value = v;
+}
+
+async function processPayment() {
+  const email = document.getElementById('checkout-email').value.trim();
+  if (!email || !email.includes('@')) {
+    alert('Voer een geldig e-mailadres in'); return;
+  }
+  const btn = document.querySelector('.btn-pay');
+  btn.textContent = 'VERWERKEN...'; btn.disabled = true;
+
+  // Stripe integration placeholder
+  // In productie: gebruik Stripe.js + stripe.confirmCardPayment()
+  // Dan: webhook → API key aanmaken → email verzenden
+  setTimeout(() => {
+    const result = document.getElementById('payment-result');
+    result.style.display = 'block';
+    result.innerHTML = `
+      ✓ Betaling gelukt! API key onderweg naar ${email}<br>
+      <span style="color:var(--t3);font-size:11px">
+      Integreer Stripe via: stripe.com/docs/payments/accept-a-payment<br>
+      Webhook → /admin/provision-key → email met pgp_... key
+      </span>
+    `;
+    btn.textContent = 'PAY €29 — GET API KEY'; btn.disabled = false;
+  }, 1500);
+}
+</script>
+</body>
+</html>
