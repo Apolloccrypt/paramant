@@ -1883,7 +1883,18 @@ function toggleStealth(){
     const b=document.getElementById(id);
     if(b){b.textContent=stealthMode?'👻 Stealth':'👁 Zichtbaar';b.style.color=stealthMode?'#a78bfa':'';}
   });
-  if(!stealthMode){broadcastPresence();}
+  if(stealthMode){
+    // Stuur "invisible" pakket — andere clients verwijderen ons meteen uit hun lijst
+    if(relayOn&&relayWS&&relayWS.readyState===1&&myNick){
+      relayJoinOnce('__presence__');
+      relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{
+        pType:'presence',nick:myNick,invisible:true,ts:Date.now()
+      }}));
+    }
+  } else {
+    // Direct zichtbaar worden
+    broadcastPresence();
+  }
   showToast(stealthMode?'👻 Stealth — onzichtbaar in "Wie is online"':'👁 Zichtbaar — aanwezig in "Wie is online"',null,stealthMode?'#1a1a2e':'#0f4c3a');
 }
 const seenConnRequests=new Set();
@@ -2156,6 +2167,13 @@ async function broadcastConnRequest(theirBundle){
 }
 // Broadcast presence elke 10s (was 25s — te traag voor peer discovery)
 setInterval(()=>{if(relayOn)broadcastPresence();},10000);
+// Presence TTL cleanup — verwijder entries ouder dan 25s (2.5× broadcast interval)
+setInterval(()=>{
+  const cutoff=Date.now()-25000;
+  let changed=false;
+  presenceMap.forEach((v,k)=>{if((v.ts||0)<cutoff){presenceMap.delete(k);changed=true;}});
+  if(changed)renderPresenceDebounced();
+},5000);
 // Stats elke 15s
 setInterval(()=>{if(relayOn)fetchStats();},15000);
 // Keep-alive ping elke 10 min (Render gratis tier)
@@ -2170,7 +2188,14 @@ function onRelayMsg(msg){
     const pay=msg.payload;
 
     // Presence broadcast
-    if(pay?.pType==='presence'&&pay.nick&&pay.bundle&&pay.nick!==myNick){
+    if(pay?.pType==='presence'&&pay.nick&&pay.nick!==myNick){
+      // Invisible pakket — verwijder uit lijst
+      if(pay.invisible){
+        presenceMap.delete(pay.nick);
+        renderPresenceDebounced();
+        return;
+      }
+      if(!pay.bundle)return;
       if(!validNick(pay.nick))return;
       try{const b=JSON.parse(pay.bundle);if(!b?.ecdh||!isHex(b.ecdh,130))return;}catch{return;}
       presenceMap.set(pay.nick,{nick:pay.nick,bundle:pay.bundle,avatarHint:pay.avatarHint,ts:pay.ts});
