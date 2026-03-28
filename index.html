@@ -10,10 +10,10 @@
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230f172a'/><circle cx='16' cy='16' r='8' fill='none' stroke='%2314b8a6' stroke-width='2'/><circle cx='16' cy='16' r='3' fill='%2314b8a6'/></svg>">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PARAMANT — Niemand kan meelezen. Letterlijk niemand.</title>
+<title>PARAMANT Ghost Pipe — Post-Quantum Data Transport Protocol</title>
 <meta name="description" content="Post-quantum versleuteld appen zonder account. ML-KEM-768 + ECDH P-256 + AES-256-GCM. Relay bewaart geen inhoud — alleen hash + grootte, max 5 min. Open-source.">
 <meta name="theme-color" content="#0c0e10">
-<meta property="og:title" content="PARAMANT — Niemand kan meelezen. Letterlijk niemand.">
+<meta property="og:title" content="PARAMANT Ghost Pipe — Post-Quantum Data Transport Protocol">
 <meta property="og:description" content="Post-quantum versleuteld appen. ML-KEM-768 (NIST FIPS 203). Niemand kan meelezen — ook wij niet.">
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22PARAMANT%22%2C%22short_name%22%3A%22PARAMANT%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230c0e10%22%2C%22theme_color%22%3A%22%230c0e10%22%7D">
 <!-- CDNs -->
@@ -290,6 +290,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     
     <a href="/privacy" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#b0b4bc;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#e2e4e8'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">PRIVACY</a>
     <a href="/relay-feed" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#b0b4bc;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026" onmouseover="this.style.color='#00ff9d'" onmouseout="this.style.color='#8a8e98'">RELAY_FEED</a>
+<a href="/legal.html" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#8a8e98;">VOOR ADVOCATEN</a>
+<a href="/docs.html" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#8a8e98;">DEV DOCS</a>
       </div>
 
     
@@ -313,7 +315,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
 </nav>
 <div id="mob-nav" style="display:none;position:fixed;top:52px;left:0;right:0;background:#0c0e10;border-bottom:1px solid #1e2026;z-index:99;padding:12px 24px;gap:12px;font-family:var(--mono);flex-direction:column">
-  <a href="/" onclick="closeMobNav()" style="font-size:12px;color:#b0b4bc;text-decoration:none;padding:6px 0;border-bottom:1px solid #1e2026">HOME</a>
+  <a href="/" onclick="closeMobNav()" style="font-size:12px;color:#b0b4bc;text-decoration:none;padding:6px 0;border-bottom:1px solid #1e2026">GHOST PIPE</a>
   <a href="/download" onclick="closeMobNav()" style="font-size:12px;color:#b0b4bc;text-decoration:none;padding:6px 0;border-bottom:1px solid #1e2026">[DL] NATIVE APP</a>
   
   <a href="/privacy" onclick="closeMobNav()" style="font-size:12px;color:#b0b4bc;text-decoration:none;padding:6px 0">PRIVACY</a>
@@ -350,13 +352,13 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     </div>
 
     <h1 class="text-4xl md:text-6xl font-extrabold text-[#e2e4e8] leading-[1.1] tracking-tight mb-5">
-      Niemand kan meelezen.<br>
-      <span class="text-[#00ff9d]" style="animation:glow 3s ease-in-out infinite">Letterlijk niemand.</span>
+      Niemand zonder spoor.<br>
+      <span class="text-[#00ff9d]" style="animation:glow 3s ease-in-out infinite">Wiskundig bewijsbaar.</span>
     </h1>
 
     <p class="text-lg md:text-xl text-[#e2e4e8] font-light max-w-xl mx-auto mb-10 leading-relaxed">
-      Berichten die letterlijk niemand kan lezen — ook geen enkele server.
-      Net als bitcoin openbaar aantoonbaar, maar volledig onleesbaar.
+      Post-quantum versleuteld transport voor advocaten, banken en developers.
+      Burn-on-read relay: data verdwijnt direct na ontvangst. Geen opslag. Geen spoor.
     </p>
 
     <!-- Trust pills -->
@@ -370,7 +372,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
     <div class="flex flex-col sm:flex-row gap-3 justify-center">
       <button onclick="openApp()" class="px-8 py-4 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-lg rounded transition-all hover:shadow-xl hover:shadow-[#00ff9d]/10 active:scale-95">
-        >> OPEN APP // GRATIS
+        >> OPEN GHOST PIPE
       </button>
       <a href="#hoe" class="px-8 py-4 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] text-[#e2e4e8] font-semibold text-lg rounded transition-all text-center">
         Hoe werkt het? v
@@ -461,12 +463,80 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 })();
 </script>
 
+
+<!-- GHOST PIPE USECASES -->
+<section class="py-20 px-5" style="background:linear-gradient(180deg,#0c0e10 0%,#0f1419 100%)">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="mono text-xs text-[#00ff9d] tracking-widest mb-3">// GHOST PIPE PROTOCOL</div>
+      <h2 class="text-3xl md:text-4xl font-bold text-[#e2e4e8] mb-4">Niet alleen chat. Een protocol.</h2>
+      <p class="text-[#8a8e98] max-w-2xl mx-auto">ML-KEM-768 stateless transport voor gevoelige data. Burn-on-read: de relay vernietigt elke kopie direct na ophalen. Geen opslag, nooit.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#1e2026] mb-16">
+      <!-- Juridisch -->
+      <div class="bg-[#0c0e10] p-8">
+        <div class="text-2xl mb-4">⚖️</div>
+        <div class="mono text-xs text-[#00ff9d] tracking-widest mb-2">ADVOCATUUR</div>
+        <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Ephemeral KYC</h3>
+        <p class="text-[#5a6070] text-sm leading-relaxed">Cliënt stuurt paspoort-scan. Bank ziet het in RAM. Relay verbrandt direct. Geen digitale kopie op een server die gehackt kan worden. AVG-risico naar nul.</p>
+        <a href="/legal.html" class="inline-block mt-4 mono text-xs text-[#00ff9d] hover:underline">Meer voor advocaten →</a>
+      </div>
+      <!-- Finance -->
+      <div class="bg-[#0c0e10] p-8" style="border-left:1px solid #1e2026">
+        <div class="text-2xl mb-4">🏦</div>
+        <div class="mono text-xs text-[#00ff9d] tracking-widest mb-2">FINANCIEEL</div>
+        <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Settlement Protection</h3>
+        <p class="text-[#5a6070] text-sm leading-relaxed">ML-KEM-768 beveiligt settlement instructions tegen "Harvest Now, Decrypt Later" aanvallen. Kwantumcomputers over 10 jaar lezen uw huidig verkeer niet.</p>
+        <a href="/docs.html#uc-multisig" class="inline-block mt-4 mono text-xs text-[#00ff9d] hover:underline">Technische spec →</a>
+      </div>
+      <!-- Dev -->
+      <div class="bg-[#0c0e10] p-8" style="border-left:1px solid #1e2026">
+        <div class="text-2xl mb-4">⚙️</div>
+        <div class="mono text-xs text-[#00ff9d] tracking-widest mb-2">DEVELOPERS</div>
+        <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Secret Injection</h3>
+        <p class="text-[#5a6070] text-sm leading-relaxed">Push API keys, database credentials en signing keys naar servers via CI/CD zonder dat ze ooit in logs of environment variables staan.</p>
+        <a href="/docs.html" class="inline-block mt-4 mono text-xs text-[#00ff9d] hover:underline">Developer docs →</a>
+      </div>
+    </div>
+
+    <!-- Protocol stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#1e2026]">
+      <div class="bg-[#111214] p-6 text-center">
+        <div class="font-bold text-3xl text-[#00ff9d] mono mb-1">300s</div>
+        <div class="text-[#5a6070] text-xs mono">Max TTL</div>
+      </div>
+      <div class="bg-[#111214] p-6 text-center">
+        <div class="font-bold text-3xl text-[#00ff9d] mono mb-1">5MB</div>
+        <div class="text-[#5a6070] text-xs mono">Vaste blokgrootte</div>
+      </div>
+      <div class="bg-[#111214] p-6 text-center">
+        <div class="font-bold text-3xl text-[#00ff9d] mono mb-1">1x</div>
+        <div class="text-[#5a6070] text-xs mono">Burn-on-read</div>
+      </div>
+      <div class="bg-[#111214] p-6 text-center">
+        <div class="font-bold text-3xl text-[#00ff9d] mono mb-1">768</div>
+        <div class="text-[#5a6070] text-xs mono">ML-KEM bits</div>
+      </div>
+    </div>
+
+    <div class="text-center mt-10">
+      <button onclick="openGhostPipe()" class="px-8 py-4 bg-[#00ff9d] text-[#0c0e10] font-bold mono text-sm tracking-wider hover:bg-[#00cc7a] transition-colors mr-4">
+        👻 OPEN GHOST PIPE
+      </button>
+      <a href="/docs.html" class="px-8 py-4 bg-[#1a1d22] border border-[#2a2d35] text-[#8a8e98] mono text-sm hover:border-[#00ff9d] hover:text-[#00ff9d] transition-colors">
+        DEV DOCS →
+      </a>
+    </div>
+  </div>
+</section>
+
 <!-- HOW IT WORKS -->
 <section id="hoe" class="py-20 px-5">
   <div class="max-w-4xl mx-auto">
     <div class="text-center mb-10">
       <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">Hoe werkt het?</div>
-      <h2 class="text-3xl md:text-5xl font-bold text-[#e2e4e8] mb-4 tracking-tight">Van leek tot expert</h2>
+      <h2 class="text-3xl md:text-5xl font-bold text-[#e2e4e8] mb-4 tracking-tight">Van leek tot expert — Chat &amp; File Transfer</h2>
       <p class="text-[#b0b4bc] text-lg max-w-xl mx-auto">Kies je niveau — van simpele uitleg tot volledige crypto-specificatie.</p>
     </div>
 
@@ -943,7 +1013,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
     <!-- Browser knop -->
     <button onclick="openApp()" aria-label="Open PARAMANT app" class="w-full sm:w-auto px-10 py-5 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-xl rounded transition-all hover:shadow-2xl hover:shadow-[#00ff9d]/10 active:scale-95 mb-4">
-      >> OPEN APP // GRATIS
+      >> OPEN GHOST PIPE
     </button>
 
     <!-- Native downloads -->
@@ -1065,6 +1135,11 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
     <!-- Relay feed knop — desktop -->
     
+
+    <!-- Ghost Pipe knop -->
+    <button onclick="openGhostPipe()" class="hidden lg:flex px-2.5 py-1.5 bg-[#1a1d22] border border-[#a78bfa]/40 rounded-sm text-xs mono text-[#a78bfa] items-center gap-1.5 hover:border-[#a78bfa]/70 transition-all" title="Ghost Pipe — post-quantum file transfer">
+      <span>👻</span><span>Ghost Pipe</span>
+    </button>
 
     <!-- <- Site knop — alleen desktop -->
     <button onclick="closeApp()" class="hidden lg:flex px-2.5 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-sm text-xs text-[#e2e4e8] hover:text-[#e2e4e8] transition-all flex-shrink-0" title="Terug naar landingspagina"><- Site</button>
@@ -3813,5 +3888,422 @@ window.verifyWithGitHub = function() {
   location.reload();
 };
 
+</script>
+
+<!-- GHOST PIPE MODAL -->
+<div id="ghost-pipe-modal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(12,14,16,.97);overflow-y:auto">
+  <div style="max-width:640px;margin:0 auto;padding:32px 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
+      <div>
+        <div style="font-family:monospace;font-size:18px;font-weight:700;color:#a78bfa">&#128123; Ghost Pipe</div>
+        <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-top:2px">Post-quantum · Burn-on-read · RAM-only · 5 min TTL</div>
+      </div>
+      <button onclick="closeGhostPipe()" style="background:transparent;border:1px solid #2a2d35;color:#5a6070;padding:6px 12px;cursor:pointer;font-family:monospace;font-size:12px">x Sluiten</button>
+    </div>
+    <div style="display:flex;gap:1px;margin-bottom:24px;background:#1e2026">
+      <button id="gp-tab-send" onclick="gpTab('send')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#1a1d22;color:#a78bfa;font-weight:700">Versturen</button>
+      <button id="gp-tab-receive" onclick="gpTab('receive')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#111214;color:#5a6070">Ontvangen</button>
+      <button id="gp-tab-keygen" onclick="gpTab('keygen')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#111214;color:#5a6070">Sleutels</button>
+    </div>
+    <!-- Versturen -->
+    <div id="gp-panel-send">
+      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Bestand wordt lokaal versleuteld met ML-KEM-768 voor verzending. De relay ziet alleen een opaque blob.</div>
+      <div style="margin-bottom:16px">
+        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">PUBLIEKE SLEUTEL ONTVANGER (hex)</label>
+        <textarea id="gp-recv-pubkey" placeholder="04a3f8c2d1... (publieke sleutel van ontvanger)" style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:11px;height:80px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">BESTAND (max 4.9MB)</label>
+        <div id="gp-dropzone" onclick="document.getElementById('gp-file-input').click()" style="border:2px dashed #2a2d35;padding:32px;text-align:center;cursor:pointer;background:#111214" ondragover="event.preventDefault();this.style.borderColor='#a78bfa'" ondragleave="this.style.borderColor='#2a2d35'" ondrop="gpHandleDrop(event)">
+          <div style="font-family:monospace;font-size:13px;color:#5a6070">Sleep bestand hierheen of klik</div>
+        </div>
+        <input type="file" id="gp-file-input" style="display:none" onchange="gpFileSelected(this)">
+        <div id="gp-file-info" style="display:none;margin-top:8px;font-family:monospace;font-size:11px;color:#a78bfa;background:#1a1020;padding:8px;border:1px solid #a78bfa30"></div>
+      </div>
+      <button onclick="gpSend()" style="width:100%;padding:12px;background:#a78bfa;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">VERSLEUTELEN &amp; VERSTUREN</button>
+      <div id="gp-send-result" style="display:none;margin-top:16px;background:#111214;border:1px solid #a78bfa30;padding:16px;font-family:monospace;font-size:11px"></div>
+    </div>
+    <!-- Ontvangen -->
+    <div id="gp-panel-receive" style="display:none">
+      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Na ophalen wordt de relay-kopie onmiddellijk verbrand (burn-on-read).</div>
+      <div style="margin-bottom:16px">
+        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">HASH (van verzender)</label>
+        <input id="gp-recv-hash" type="text" placeholder="a3f8c2d1e7b4..." style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:12px;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">JOUW PRIVÉ SLEUTEL (hex)</label>
+        <textarea id="gp-priv-key" placeholder="Privésleutel voor ontsleuteling..." style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:11px;height:80px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+        <button onclick="gpCheckStatus()" style="padding:8px 16px;background:#1a1d22;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-family:monospace;font-size:11px">Check beschikbaarheid</button>
+        <span id="gp-status-result" style="font-family:monospace;font-size:11px;color:#5a6070"></span>
+      </div>
+      <button onclick="gpReceive()" style="width:100%;padding:12px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">OPHALEN + BURN-ON-READ</button>
+      <div id="gp-receive-result" style="display:none;margin-top:16px"></div>
+    </div>
+    <!-- Sleutels -->
+    <div id="gp-panel-keygen" style="display:none">
+      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Genereer een tijdelijk ECDH-sleutelpaar. Deel de publieke sleutel met de verzender.</div>
+      <button onclick="gpKeygen()" style="width:100%;padding:12px;background:#1a1d22;border:1px solid #a78bfa40;color:#a78bfa;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">GENEREER SLEUTELPAAR</button>
+      <div id="gp-keygen-result" style="display:none;margin-top:16px">
+        <div style="margin-bottom:12px">
+          <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:4px">PUBLIEKE SLEUTEL (deel met verzender)</label>
+          <div style="display:flex;gap:8px">
+            <textarea id="gp-pubkey-out" readonly style="flex:1;background:#0c0e10;border:1px solid #00ff9d40;color:#00ff9d;padding:8px;font-family:monospace;font-size:10px;height:80px;resize:none"></textarea>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('gp-pubkey-out').value)" style="padding:8px;background:#1a1d22;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-size:10px">Kopie</button>
+          </div>
+        </div>
+        <div>
+          <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:4px">PRIVE SLEUTEL (bewaar veilig, deel NOOIT)</label>
+          <textarea id="gp-privkey-out" readonly style="width:100%;background:#0c0e10;border:1px solid #ef444440;color:#ef4444;padding:8px;font-family:monospace;font-size:10px;height:80px;resize:none;box-sizing:border-box"></textarea>
+        </div>
+      </div>
+    </div>
+    <div id="gp-log" style="margin-top:24px;background:#0c0e10;border:1px solid #1e2026;padding:12px;font-family:monospace;font-size:10px;color:#5a6070;min-height:60px;max-height:160px;overflow-y:auto;line-height:1.8">Ghost Pipe gereed. Relay: relay.paramant.app</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  GHOST PIPE — Post-quantum stateless file transfer
+// ══════════════════════════════════════════════════════════════
+
+let _gpFile = null;
+let _gpKeys = null; // { pub: CryptoKey, priv: CryptoKey, pubHex: string, privHex: string }
+
+function openGhostPipe() {
+  document.getElementById('ghost-pipe-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  gpLog('Ghost Pipe geopend.');
+}
+function closeGhostPipe() {
+  document.getElementById('ghost-pipe-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  // Wis sleutels uit geheugen
+  _gpKeys = null;
+  _gpFile = null;
+  document.getElementById('gp-keygen-result').style.display = 'none';
+  document.getElementById('gp-pubkey-out').value = '';
+  document.getElementById('gp-privkey-out').value = '';
+}
+function gpTab(name) {
+  ['send','receive','keygen'].forEach(t => {
+    document.getElementById('gp-panel-'+t).style.display = t===name?'':'none';
+    const btn = document.getElementById('gp-tab-'+t);
+    btn.style.background = t===name?'#1a1d22':'#111214';
+    btn.style.color = t===name?'#a78bfa':'#5a6070';
+    btn.style.fontWeight = t===name?'700':'400';
+  });
+}
+function gpLog(msg) {
+  const el = document.getElementById('gp-log');
+  if (!el) return;
+  const ts = new Date().toISOString().slice(11,19);
+  el.innerHTML += `[${ts}] ${msg}<br>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── Sleutel generatie ─────────────────────────────────────────
+async function gpKeygen() {
+  const hasKEM = mlOK();
+  gpLog(hasKEM ? 'Genereer ML-KEM-768 + ECDH P-256 hybride keypair...' : 'Genereer ECDH P-256 keypair (ML-KEM niet beschikbaar)...');
+  try {
+    // ECDH P-256
+    const ecdhKP   = await crypto.subtle.generateKey({ name:'ECDH', namedCurve:'P-256' }, true, ['deriveBits']);
+    const ecdhPub  = new Uint8Array(await crypto.subtle.exportKey('raw', ecdhKP.publicKey));
+    const ecdhPriv = new Uint8Array(await crypto.subtle.exportKey('pkcs8', ecdhKP.privateKey));
+    const ecdhPubHex  = Array.from(ecdhPub).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const ecdhPrivHex = Array.from(ecdhPriv).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+    let pubHex = ecdhPubHex, privHex = ecdhPrivHex;
+
+    if (hasKEM) {
+      // ML-KEM-768 keypair
+      const ml = getML();
+      const kemKP    = ml.keygen();
+      const kemPubHex  = Array.from(kemKP.publicKey).map(b=>b.toString(16).padStart(2,'0')).join('');
+      // Hybride pubkey: [1184B kemPub][65B ecdhPub]
+      pubHex = kemPubHex + ecdhPubHex;
+      // Hybride privkey als base64(JSON) voor eenvoud
+      privHex = btoa(JSON.stringify({
+        kem:  Array.from(kemKP.secretKey),
+        ecdh: ecdhPrivHex
+      }));
+      gpLog('ML-KEM-768 + ECDH P-256 hybride keypair gegenereerd (NIST FIPS 203).');
+    } else {
+      gpLog('ECDH P-256 keypair gegenereerd. Installeer Noble Post-Quantum voor ML-KEM-768.');
+    }
+
+    _gpKeys = { pubHex, privHex, ecdhPub: ecdhKP.publicKey, ecdhPriv: ecdhKP.privateKey };
+    document.getElementById('gp-pubkey-out').value  = pubHex;
+    document.getElementById('gp-privkey-out').value = privHex;
+    document.getElementById('gp-keygen-result').style.display = 'block';
+  } catch(e) { gpLog('FOUT: '+e.message); }
+}
+
+// ── Hash berekening ───────────────────────────────────────────
+async function gpPubkeyHash(pubHex) {
+  const bytes = new Uint8Array(pubHex.match(/.{2}/g).map(b=>parseInt(b,16)));
+  const hash  = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Padding (vaste blokgrootte) ───────────────────────────────
+function gpPad(data, blockSize=5*1024*1024) {
+  const arr = new Uint8Array(blockSize);
+  // Eerste 8 bytes = werkelijke lengte (big-endian u64)
+  const len = BigInt(data.length);
+  for (let i=0;i<8;i++) arr[7-i] = Number((len >> BigInt(i*8)) & 0xffn);
+  arr.set(data, 8);
+  // Random noise in de rest
+  crypto.getRandomValues(arr.subarray(8 + data.length));
+  return arr;
+}
+function gpUnpad(block) {
+  let len = 0n;
+  for (let i=0;i<8;i++) len = (len << 8n) | BigInt(block[i]);
+  const n = Number(len);
+  if (n > block.length - 8) throw new Error('Gecorrumpeerde length header');
+  return block.subarray(8, 8+n);
+}
+
+// ── Encryptie: ML-KEM-768 + ECDH P-256 hybride (echt post-quantum) ──
+// Gebruikt noblePostQuantum.ml_kem768 — zelfde bibliotheek als de chat
+// Wire format: [1184B kemCt][65B ephEcdhPub][12B iv][ct][16B gcmTag]
+async function gpEncrypt(data, recipientPubHex) {
+  const pubBytes = new Uint8Array(recipientPubHex.match(/.{2}/g).map(b=>parseInt(b,16)));
+
+  // Splits pubkey: eerste 1184B = ML-KEM publieke sleutel, volgende 65B = ECDH publieke sleutel
+  // Als de pubkey 65B is: alleen ECDH (legacy). Als 1249B: hybride.
+  const isHybrid = pubBytes.length >= 1249;
+  const kemPubBytes  = isHybrid ? pubBytes.slice(0, 1184) : null;
+  const ecdhPubBytes = isHybrid ? pubBytes.slice(1184, 1249) : pubBytes.slice(0, 65);
+
+  // 1. ECDH P-256 ephemeral
+  const recipECDH = await crypto.subtle.importKey('raw', ecdhPubBytes, { name:'ECDH', namedCurve:'P-256' }, false, []);
+  const ephKP     = await crypto.subtle.generateKey({ name:'ECDH', namedCurve:'P-256' }, true, ['deriveBits']);
+  const ephPubRaw = new Uint8Array(await crypto.subtle.exportKey('raw', ephKP.publicKey));
+  const ecdhBits  = new Uint8Array(await crypto.subtle.deriveBits({ name:'ECDH', public: recipECDH }, ephKP.privateKey, 256));
+
+  // 2. ML-KEM-768 encapsulatie (indien beschikbaar)
+  let kemCt = new Uint8Array(0);
+  let kemSS = new Uint8Array(32);
+  if (isHybrid && mlOK()) {
+    try {
+      const ml = getML();
+      const { cipherText, sharedSecret } = ml.encapsulate(kemPubBytes);
+      kemCt = cipherText;   // 1088 bytes
+      kemSS = sharedSecret; // 32 bytes
+      gpLog('ML-KEM-768 encapsulatie geslaagd — volledig post-quantum');
+    } catch(e) {
+      gpLog('ML-KEM fallback naar ECDH-only: ' + e.message);
+    }
+  } else {
+    gpLog(isHybrid ? 'ML-KEM niet beschikbaar — ECDH only' : 'Legacy pubkey — ECDH P-256 only');
+  }
+
+  // 3. Combineer secrets: HKDF(ECDH_shared || KEM_shared)
+  const combined = new Uint8Array(ecdhBits.length + kemSS.length);
+  combined.set(ecdhBits); combined.set(kemSS, ecdhBits.length);
+  const hkdfKey = await crypto.subtle.importKey('raw', combined, 'HKDF', false, ['deriveKey']);
+  const aesKey  = await crypto.subtle.deriveKey(
+    { name:'HKDF', hash:'SHA-256', salt: ephPubRaw, info: new TextEncoder().encode('paramant-ghost-pipe-v2') },
+    hkdfKey, { name:'AES-GCM', length:256 }, false, ['encrypt']
+  );
+
+  // 4. AES-256-GCM encrypt
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name:'AES-GCM', iv }, aesKey, data));
+
+  // 5. Wire format: [4B kemCtLen][kemCt][65B ephEcdhPub][12B iv][ct]
+  const kemCtLen = new Uint8Array(4);
+  new DataView(kemCtLen.buffer).setUint32(0, kemCt.length, false);
+  const result = new Uint8Array(4 + kemCt.length + 65 + 12 + ct.length);
+  let off = 0;
+  result.set(kemCtLen, off); off += 4;
+  result.set(kemCt, off);    off += kemCt.length;
+  result.set(ephPubRaw, off);off += 65;
+  result.set(iv, off);       off += 12;
+  result.set(ct, off);
+  return result;
+}
+
+async function gpDecrypt(encrypted, privHex) {
+  // Privkey format: [32B kemPriv hex] of [pkcs8 hex voor ECDH] of [JSON {kem, ecdh}]
+  let kemPriv = null, ecdhPrivHex = privHex;
+  try {
+    const parsed = JSON.parse(atob(privHex));
+    kemPriv = parsed.kem ? new Uint8Array(parsed.kem) : null;
+    ecdhPrivHex = parsed.ecdh || privHex;
+  } catch(e) {}
+
+  // Lees wire format
+  const view = new DataView(encrypted.buffer, encrypted.byteOffset);
+  const kemCtLen = view.getUint32(0, false);
+  let off = 4;
+  const kemCtBytes = encrypted.subarray(off, off + kemCtLen); off += kemCtLen;
+  const ephPubRaw  = encrypted.subarray(off, off + 65);       off += 65;
+  const iv         = encrypted.subarray(off, off + 12);        off += 12;
+  const ct         = encrypted.subarray(off);
+
+  // ECDH
+  const privBytes = new Uint8Array(ecdhPrivHex.match(/.{2}/g).map(b=>parseInt(b,16)));
+  const privKey   = await crypto.subtle.importKey('pkcs8', privBytes, { name:'ECDH', namedCurve:'P-256' }, false, ['deriveBits']);
+  const ephKey    = await crypto.subtle.importKey('raw', ephPubRaw, { name:'ECDH', namedCurve:'P-256' }, false, []);
+  const ecdhBits  = new Uint8Array(await crypto.subtle.deriveBits({ name:'ECDH', public: ephKey }, privKey, 256));
+
+  // ML-KEM decapsulatie
+  let kemSS = new Uint8Array(32);
+  if (kemCtLen > 0 && kemPriv && mlOK()) {
+    try {
+      const ml = getML();
+      const { sharedSecret } = ml.decapsulate(kemCtBytes, kemPriv);
+      kemSS = sharedSecret;
+    } catch(e) { gpLog('KEM decaps fout: ' + e.message); }
+  }
+
+  // Herstel AES sleutel
+  const combined = new Uint8Array(ecdhBits.length + kemSS.length);
+  combined.set(ecdhBits); combined.set(kemSS, ecdhBits.length);
+  const hkdfKey = await crypto.subtle.importKey('raw', combined, 'HKDF', false, ['deriveKey']);
+  const aesKey  = await crypto.subtle.deriveKey(
+    { name:'HKDF', hash:'SHA-256', salt: ephPubRaw, info: new TextEncoder().encode('paramant-ghost-pipe-v2') },
+    hkdfKey, { name:'AES-GCM', length:256 }, false, ['decrypt']
+  );
+  return new Uint8Array(await crypto.subtle.decrypt({ name:'AES-GCM', iv }, aesKey, ct));
+}
+
+// ── File handling ─────────────────────────────────────────────
+function gpHandleDrop(e) {
+  e.preventDefault();
+  document.getElementById('gp-dropzone').style.borderColor = '#2a2d35';
+  const file = e.dataTransfer.files[0];
+  if (file) gpSetFile(file);
+}
+function gpFileSelected(inp) {
+  if (inp.files[0]) gpSetFile(inp.files[0]);
+}
+function gpSetFile(file) {
+  _gpFile = file;
+  const infoEl = document.getElementById('gp-file-info');
+  infoEl.style.display = 'block';
+  infoEl.textContent = `${file.name}  (${(file.size/1024).toFixed(1)} KB)`;
+  gpLog(`Bestand geselecteerd: ${file.name} (${file.size} bytes)`);
+}
+
+// ── Versturen ─────────────────────────────────────────────────
+async function gpSend() {
+  const pubHex = document.getElementById('gp-recv-pubkey').value.trim();
+  if (!pubHex) { gpLog('FOUT: voer de publieke sleutel van de ontvanger in'); return; }
+  if (!_gpFile) { gpLog('FOUT: selecteer een bestand'); return; }
+  if (_gpFile.size > 4.9 * 1024 * 1024) { gpLog('FOUT: bestand te groot (max 4.9MB)'); return; }
+
+  try {
+    gpLog('Bestand inlezen...');
+    const data = new Uint8Array(await _gpFile.arrayBuffer());
+
+    gpLog('Versleutelen met ECDH + AES-256-GCM...');
+    const encrypted = await gpEncrypt(data, pubHex);
+
+    gpLog(`Padding naar 5MB vaste blokgrootte...`);
+    const padded = gpPad(encrypted);
+
+    gpLog('Hash berekenen van ontvanger pubkey...');
+    const hash = await gpPubkeyHash(pubHex);
+
+    gpLog(`Versturen naar relay (hash: ${hash.slice(0,16)}...)...`);
+    const relay = (window._PARAMANT_RELAY || 'https://relay.paramant.app').replace('wss://','https://').replace('ws://','http://');
+    const b64   = btoa(String.fromCharCode(...padded));
+    const resp  = await fetch(`${relay}/v2/inbound`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hash, payload: b64 })
+    });
+    const result = await resp.json();
+    if (!result.ok) throw new Error(result.error || 'Relay fout');
+
+    const expiresIn = Math.floor(result.ttl_ms / 1000);
+    gpLog(`Verstuurd! TTL: ${expiresIn}s. Burn-on-read actief.`);
+
+    const el = document.getElementById('gp-send-result');
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div style="color:#a78bfa;font-weight:700;margin-bottom:8px">Verstuurd!</div>
+      <div style="color:#5a6070;margin-bottom:4px">Hash (stuur naar ontvanger):</div>
+      <div style="color:#00ff9d;word-break:break-all;margin-bottom:12px;cursor:pointer" onclick="navigator.clipboard.writeText('${hash}')">${hash}</div>
+      <div style="color:#5a6070;font-size:10px">Verloopt over ${expiresIn}s · ${_gpFile.name} · ${(padded.length/1024).toFixed(0)}KB (gepaddeerd)</div>
+      <div style="color:#5a6070;font-size:10px;margin-top:4px">Relay ziet: opaque blob · geen bestandsnaam · geen metadata</div>
+    `;
+  } catch(e) { gpLog('FOUT: '+e.message); }
+}
+
+// ── Status check (zonder burn) ────────────────────────────────
+async function gpCheckStatus() {
+  const hash = document.getElementById('gp-recv-hash').value.trim();
+  if (!hash) { gpLog('Voer eerst een hash in'); return; }
+  try {
+    const relay = (window._PARAMANT_RELAY || 'https://relay.paramant.app').replace('wss://','https://').replace('ws://','http://');
+    const resp  = await fetch(`${relay}/v2/status/${hash}`);
+    const data  = await resp.json();
+    const el    = document.getElementById('gp-status-result');
+    if (data.available) {
+      const rem = Math.floor(data.remaining_ms / 1000);
+      el.style.color = '#00ff9d';
+      el.textContent = `Beschikbaar · ${(data.size/1024).toFixed(0)}KB · verloopt over ${rem}s`;
+      gpLog(`Status: beschikbaar, verloopt over ${rem}s`);
+    } else {
+      el.style.color = '#ef4444';
+      el.textContent = 'Niet gevonden (al opgehaald of verlopen)';
+      gpLog('Status: niet gevonden');
+    }
+  } catch(e) { gpLog('FOUT: '+e.message); }
+}
+
+// ── Ontvangen ─────────────────────────────────────────────────
+async function gpReceive() {
+  const hash    = document.getElementById('gp-recv-hash').value.trim();
+  const privHex = document.getElementById('gp-priv-key').value.trim();
+  if (!hash)    { gpLog('FOUT: voer de hash in'); return; }
+  if (!privHex) { gpLog('FOUT: voer je privésleutel in'); return; }
+
+  try {
+    gpLog(`Ophalen van relay (hash: ${hash.slice(0,16)}...) — burn-on-read actief...`);
+    const relay = (window._PARAMANT_RELAY || 'https://relay.paramant.app').replace('wss://','https://').replace('ws://','http://');
+    const resp  = await fetch(`${relay}/v2/outbound/${hash}`);
+    if (resp.status === 404) throw new Error('Niet gevonden — al opgehaald of verlopen (5 min)');
+    if (!resp.ok) throw new Error(`Relay fout: ${resp.status}`);
+
+    const blobBuf = new Uint8Array(await resp.arrayBuffer());
+    gpLog(`Ontvangen: ${(blobBuf.length/1024).toFixed(0)}KB · relay-kopie verbrand`);
+
+    gpLog('Unpadding...');
+    const encrypted = gpUnpad(blobBuf);
+
+    gpLog('Ontsleutelen...');
+    const plaintext = await gpDecrypt(encrypted, privHex);
+    gpLog(`Ontsleuteld: ${plaintext.length} bytes`);
+
+    // Aanbied als download
+    const blob = new Blob([plaintext]);
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'ontvangen_bestand';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    const el = document.getElementById('gp-receive-result');
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div style="background:#0f4c3a;border:1px solid #00ff9d40;padding:12px;font-family:monospace;font-size:11px">
+        <div style="color:#00ff9d;font-weight:700;margin-bottom:6px">Ontvangen &amp; relay verbrand!</div>
+        <div style="color:#5a6070">${plaintext.length} bytes ontsleuteld</div>
+        <div style="color:#5a6070">Relay-kopie: vernietigd (burn-on-read)</div>
+        <div style="color:#5a6070">Download gestart automatisch</div>
+      </div>
+    `;
+    gpLog('Download gestart. Relay-kopie vernietigd.');
+  } catch(e) { gpLog('FOUT: '+e.message); }
+}
 </script>
 </body>
