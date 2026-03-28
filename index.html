@@ -1290,26 +1290,14 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           class="px-3 py-1.5 text-xs bg-[#1a1d22] border border-[#2a2d35] hover:border-[#f59e0b]/40 text-[#f59e0b] rounded-sm transition-all font-mono"
           title="Sessie-timer — app sluit automatisch">⏱ Timer</button>
         <span class="session-countdown text-xs font-mono font-bold" style="display:none"></span>
-          <button id="voice-btn" onclick="startVoiceCall()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-green-500/30 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
-            title="Start een versleutelde voicecall via WebRTC — signaling gaat via je versleuteld kanaal">
-            [CALL] Bellen
-          </button>
-          <button onclick="showNewGroupDialog()"
-            class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/30 rounded-sm text-xs text-[#c8ccd4] mono transition-all"
-            title="Maak een groepschat met meerdere verbonden amices">
-            [GRP]️ Groep
-          </button>
+          
+          
           <button onclick="testVerbinding()"
             class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/30 rounded-sm text-xs text-[#c8ccd4] mono transition-all"
             aria-label="Test verbinding" title="Stuur test-ping om verbinding te controleren">
             [TEST]
           </button>
-          <button onclick="exportConv()"
-            class="hidden sm:block px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-lg text-xs text-[#c8ccd4] mono transition-all hover:border-[#3d4149]"
-            title="Sla een kopie van dit gesprek op als bestand">
-            v Export
-          </button>
+          
           <button onclick="endConv()"
             class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-red-500/30 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
             title="Sluit dit gesprek — verbinding wordt verbroken">
@@ -2120,7 +2108,7 @@ function queueDecrypt(conv, pkt){
   const next = last.then(async()=>{
     try{
       await decryptPacket(conv,pkt);
-      addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:pkt.seq,b:JSON.stringify(pkt).length,t:Date.now()});
+      addLedgerEntry({h:(conv.chatId||'').slice(0,8),s:pkt.seq,b:JSON.stringify(pkt).length,t:Date.now()});
     }catch(e){
       // Stil negeren: stale relay-buffer pakketten van vorige sessie
       // tonen nooit een foutmelding — alleen echte pakket-fouten tonen we
@@ -2750,7 +2738,7 @@ async function encPayload(conv,payload,type){
       .then(()=>new Promise(r=>setTimeout(r,_jitterMs)))
       .then(()=>{
         const relayed=relaySend(conv,pkt);
-        if(relayed){addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:seq,b:pktStr.length,t:Date.now()});fetchStats();}
+        if(relayed){addLedgerEntry({h:(conv.chatId||'').slice(0,8),s:seq,b:pktStr.length,t:Date.now()});fetchStats();}
       });
   }catch(e){const c=activeConv();if(c)sysMsg(c,'[X] Fout: '+e.message);}
 }
@@ -3183,14 +3171,20 @@ $('msg-inp').addEventListener('paste',e=>{setTimeout(()=>{const v=$('msg-inp').v
 $('msg-inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doEncrypt();}});
 $('paste-ta').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doDecrypt();}});
 $('peer-key').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doConnect();}});
-document.addEventListener('keydown',e=>{
-  if(e.key==='PrintScreen'||(e.metaKey&&e.shiftKey&&['3','4','5'].includes(e.key))){
-    const c=activeConv();
-    if(c){
-      sysMsg(c,'[⚠️] Screenshot gedetecteerd — je amice wordt gewaarschuwd.');
-      // Stuur notificatie naar peer via versleuteld kanaal
-      encPayload(c,'⚠️ Screenshot gedetecteerd aan jouw kant','text').catch(()=>{});
-    }
+// Stuur screenshot-notificatie naar ALLE verbonden gesprekken
+function notifyScreenshot(reason) {
+  const connected = convs.filter(c => c.connected && c.sendChainKey);
+  if (!connected.length) { showToast('[⚠️] Screenshot — geen actief gesprek om te waarschuwen'); return; }
+  connected.forEach(c => {
+    sysMsg(c, '[⚠️] Screenshot gedetecteerd — je amice wordt gewaarschuwd.');
+    encPayload(c, '⚠️ [WAARSCHUWING] Screenshot of schermopname gedetecteerd aan jouw kant', 'text').catch(()=>{});
+  });
+}
+
+// Cmd+Shift+3/4/5 (macOS) — PrtScr wordt door browsers geblokkeerd op OS-niveau
+document.addEventListener('keydown', e => {
+  if (e.metaKey && e.shiftKey && ['3','4','5'].includes(e.key)) {
+    notifyScreenshot('keydown');
   }
 });
 
@@ -3712,11 +3706,8 @@ function blurMsgs(on) {
   const _orig = md.getDisplayMedia.bind(md);
   md.getDisplayMedia = async function(...args) {
     blurMsgs(true);
-    const c = activeConv ? activeConv() : null;
-    if (c) {
-      encPayload(c, '⚠️ Scherm-opname of scherm-delen gedetecteerd aan de andere kant', 'text').catch(()=>{});
-    }
-    showToast('[⚠️] Scherm-opname gedetecteerd — berichten zijn vervaagd', null, '#7c2d12');
+    notifyScreenshot('getDisplayMedia');
+    showToast('[⚠️] Scherm-opname gedetecteerd — berichten vervaagd, peers gewaarschuwd', null, '#7c2d12');
     try {
       const stream = await _orig(...args);
       // Scherm-opname gestopt → unblur
