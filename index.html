@@ -1756,7 +1756,7 @@ function isTorBrowser(){
 const RELAY_ONION  = window._PARAMANT_RELAY_ONION || '';
 const RELAY_CLEAR  = (()=>{
   if(window._PARAMANT_RELAY) return window._PARAMANT_RELAY;
-  if(location.hostname==='localhost'||location.hostname==='127.0.0.1') return 'ws://localhost:8080';
+  if(location.protocol==='file:'||location.hostname==='localhost'||location.hostname==='127.0.0.1') return 'ws://localhost:8080';
   return '';
 })();
 
