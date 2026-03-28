@@ -270,823 +270,376 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 <div id="landing">
 
 <!-- NAV -->
-<nav style="position:fixed;top:0;left:0;right:0;z-index:50;height:52px;background:#0c0e10;border-bottom:1px solid #1e2026;display:flex;align-items:stretch;font-family:'JetBrains Mono',ui-monospace,monospace">
-
-  <!-- LOGO -->
-  <div style="display:flex;align-items:center;gap:10px;padding:0 20px;border-right:1px solid #1e2026;flex-shrink:0">
-    <div style="width:28px;height:28px;overflow:hidden;border:1px solid rgba(0,255,157,.3);flex-shrink:0">
-      <canvas id="hero-cv" width="28" height="28"></canvas>
-    </div>
-    <span style="font-size:14px;font-weight:800;color:#e2e4e8;letter-spacing:.04em">PARAMANT</span>
-    <span style="font-size:9px;color:#3d4149;border:1px solid #2a2d35;padding:1px 5px;font-weight:400">v0.2.1</span>
+<nav style="position:fixed;top:0;left:0;right:0;z-index:50;height:52px;background:#0c0e10;border-bottom:1px solid #1e2026;display:flex;align-items:center;padding:0 24px;gap:20px;font-family:monospace">
+  <a href="/" style="font-size:14px;font-weight:800;color:#e2e4e8;text-decoration:none;flex-shrink:0;letter-spacing:-.01em">PARA<span style="color:#00ff9d">MANT</span></a>
+  <span style="color:#1e2026;margin:0 4px">|</span>
+  <a href="#usecases" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">USE CASES</a>
+  <a href="/legal.html" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">ADVOCATEN</a>
+  <a href="/docs.html" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">DEV DOCS</a>
+  <a href="/relay-feed.html" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">RELAY FEED</a>
+  <a href="/privacy.html" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">PRIVACY</a>
+  <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+    <span style="font-size:9px;color:#4a7c59;letter-spacing:.06em;font-family:monospace">ML-KEM-768 · NIST FIPS 203</span>
+    <button onclick="openApp()" style="padding:6px 18px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:11px;font-weight:700;letter-spacing:.04em">OPEN APP →</button>
   </div>
-
-  <!-- NAV LINKS (desktop) -->
-  <div class="hidden md:flex" style="align-items:stretch">
-    <a href="#hoe" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#b0b4bc;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#e2e4e8'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">HOE WERKT HET</a>
-    <a href="#vergelijk" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#b0b4bc;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#e2e4e8'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">VERGELIJKING</a>
-    <a href="#ledger-section" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#b0b4bc;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#e2e4e8'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">BEVEILIGING</a>
-    <a href="/download" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#b0b4bc;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#00ff9d'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">[DL] NATIVE</a>
-    
-    <a href="/privacy" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#b0b4bc;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026;transition:all .15s" onmouseover="this.style.background='#111214';this.style.color='#e2e4e8'" onmouseout="this.style.background='transparent';this.style.color='#8a8e98'">PRIVACY</a>
-    <a href="/relay-feed" style="display:flex;align-items:center;padding:0 18px;font-size:11px;color:#b0b4bc;text-decoration:none;letter-spacing:.05em;border-right:1px solid #1e2026" onmouseover="this.style.color='#00ff9d'" onmouseout="this.style.color='#8a8e98'">RELAY_FEED</a>
-<a href="/legal.html" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#8a8e98;">VOOR ADVOCATEN</a>
-<a href="/docs.html" style="font-size:11px;letter-spacing:.06em;padding:4px 0;text-decoration:none;color:#8a8e98;">DEV DOCS</a>
-      </div>
-
-    
-  <!-- SPACER -->
-  <div style="flex:1"></div>
-
-  <!-- STATUS + CTA -->
-  <div style="display:flex;align-items:stretch">
-    <span style="display:flex;align-items:center;padding:0 16px;font-size:9px;color:#4a7c59;letter-spacing:.08em;border-left:1px solid #1e2026" class="hidden md:flex">SYS_READY</span>
-    <button id="pwa-install-btn" onclick="installPWA()" style="display:none;align-items:center;padding:0 16px;background:transparent;border:none;border-left:1px solid #1e2026;color:#00ff9d;font-size:11px;cursor:pointer;font-family:inherit;letter-spacing:.05em">
-      + INSTALL
-    </button>
-    <button onclick="openApp()" aria-label="Open PARAMANT app" style="display:flex;align-items:center;padding:0 24px;background:#00ff9d;border:none;color:#0c0e10;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.06em;transition:background .15s" onmouseover="this.style.background='#00cc7a'" onmouseout="this.style.background='#00ff9d'">
-      >> START
-    </button>
-    <!-- Mobile hamburger -->
-    <button onclick="toggleMobNav()" aria-label="Menu" class="md:hidden" style="display:flex;align-items:center;padding:0 16px;background:transparent;border:none;border-left:1px solid #1e2026;color:#b0b4bc;font-size:18px;cursor:pointer">
-      &#9776;
-    </button>
-  </div>
-
 </nav>
-<div id="mob-nav" style="display:none;position:fixed;top:52px;left:0;right:0;background:#0c0e10;border-bottom:1px solid #1e2026;z-index:99;padding:12px 24px;gap:12px;font-family:var(--mono);flex-direction:column">
-  <a href="/" onclick="closeMobNav()" style="font-size:12px;color:#b0b4bc;text-decoration:none;padding:6px 0;border-bottom:1px solid #1e2026">GHOST PIPE</a>
-  <a href="/download" onclick="closeMobNav()" style="font-size:12px;color:#b0b4bc;text-decoration:none;padding:6px 0;border-bottom:1px solid #1e2026">[DL] NATIVE APP</a>
-  
-  <a href="/privacy" onclick="closeMobNav()" style="font-size:12px;color:#b0b4bc;text-decoration:none;padding:6px 0">PRIVACY</a>
-</div>
-<!-- Mobile nav overlay -->
-<div id="mob-nav" style="display:none;position:fixed;top:52px;left:0;right:0;background:#0c0e10;border-bottom:1px solid #1e2026;z-index:99;padding:12px 24px;flex-direction:column;gap:12px;font-family:var(--mono)">
-  <a href="/" style="font-size:12px;color:#b0b4bc;text-decoration:none;letter-spacing:.06em" onclick="closeMobNav()">HOME</a>
-  <a href="/download" style="font-size:12px;color:#b0b4bc;text-decoration:none;letter-spacing:.06em" onclick="closeMobNav()">[DL] NATIVE APP</a>
-  
-  <a href="/privacy" style="font-size:12px;color:#b0b4bc;text-decoration:none;letter-spacing:.06em" onclick="closeMobNav()">PRIVACY</a>
-</div>
 
 <!-- HERO -->
-<section class="relative min-h-screen flex flex-col items-center justify-center text-center px-5 pt-24 pb-16 overflow-hidden">
-  <!-- Grid -->
-  <div class="absolute inset-0 bg-[linear-gradient(to_right,#111214_1px,transparent_1px),linear-gradient(to_bottom,#111214_1px,transparent_1px)] bg-[size:44px_44px] opacity-[0.22]"></div>
-  <!-- Glow -->
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#00ff9d]/5 rounded-full blur-3xl pointer-events-none"></div>
-
-  <div class="relative z-10 max-w-3xl mx-auto">
-    <!-- Logo canvas -->
-    <div class="w-20 h-20 rounded border-2 border-[#00ff9d]/40 overflow-hidden mx-auto mb-8 cursor-pointer hover:border-[#00ff9d]/70 transition-all shadow-xl shadow-[#00ff9d]/8" onclick="openApp()">
-      <canvas id="hero-main-cv" width="80" height="80"></canvas>
-    </div>
-
-    <!-- Badge -->
-    <div class="inline-flex items-center gap-2 px-4 py-2 mb-3 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-full text-xs text-[#e2e4e8] font-medium">
-      ️ Onafhankelijke open-source privacytool &nbsp;·&nbsp; gemaakt door één persoon &nbsp;·&nbsp; <span style="color:#b0b4bc;font-family:var(--mono)">gemaakt in NL</span>
-    </div>
-
-    <div class="inline-flex items-center gap-2 px-4 py-2 mb-7 bg-[#00ff9d]/10 border border-[#00ff9d]/25 rounded-full text-sm text-[#00ff9d] font-medium">
-      <span class="w-2 h-2 rounded-full bg-[#00ff9d] pulse-badge flex-shrink-0"></span>
-      ML-KEM-768 (NIST FIPS 203) · Post-quantum
-    </div>
-
-    <h1 class="text-4xl md:text-6xl font-extrabold text-[#e2e4e8] leading-[1.1] tracking-tight mb-5">
-      Niemand zonder spoor.<br>
-      <span class="text-[#00ff9d]" style="animation:glow 3s ease-in-out infinite">Wiskundig bewijsbaar.</span>
-    </h1>
-
-    <p class="text-lg md:text-xl text-[#e2e4e8] font-light max-w-xl mx-auto mb-10 leading-relaxed">
-      Post-quantum versleuteld transport voor advocaten, banken en developers.
-      Burn-on-read relay: data verdwijnt direct na ontvangst. Geen opslag. Geen spoor.
-    </p>
-
-    <!-- Trust pills -->
-    <div class="flex flex-wrap justify-center gap-2.5 mb-10">
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#e2e4e8]">[LOCK] Eind-tot-eind versleuteld</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#e2e4e8]"> Nul account, nul telefoon</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/30 rounded-full text-sm text-[#00ff9d]">⚛ Post-quantum (NIST FIPS 203)</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#e2e4e8]"> Geen installatie — werkt overal</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#e2e4e8]" style="font-family:var(--mono);font-size:11px;letter-spacing:.04em">// gemaakt in Nederland</div>
-    </div>
-
-    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-      <button onclick="openApp()" class="px-8 py-4 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-lg rounded transition-all hover:shadow-xl hover:shadow-[#00ff9d]/10 active:scale-95">
-        >> OPEN GHOST PIPE
-      </button>
-      <a href="#hoe" class="px-8 py-4 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] text-[#e2e4e8] font-semibold text-lg rounded transition-all text-center">
-        Hoe werkt het? v
-      </a>
-    </div>
+<section style="padding:120px 24px 80px;max-width:1000px;margin:0 auto;text-align:center">
+  <div style="display:inline-flex;align-items:center;gap:8px;background:#111214;border:1px solid #1e2026;padding:6px 16px;font-family:monospace;font-size:10px;color:#00ff9d;letter-spacing:.08em;margin-bottom:28px">
+    <span>⚛</span> GHOST PIPE PROTOCOL · POST-QUANTUM · BURN-ON-READ
   </div>
-</section>
-
-<!-- MEMPOOL STRIP — blockchain-achtige live relay visualisatie -->
-<div style="background:#0c0e10;border-top:1px solid #1e2026;border-bottom:1px solid #1e2026;padding:20px 0">
-  <div style="max-width:1100px;margin:0 auto;padding:0 24px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div style="font-size:10px;color:#3d4149;font-family:var(--mono);letter-spacing:.1em">// RELAY_MEMPOOL · LIVE · PUBLIEK AANTOONBAAR · ONLEESBAAR</div>
-      <div style="display:flex;gap:16px;font-size:10px;font-family:var(--mono)">
-        <span style="color:#3d4149">MSGS: <span id="mp-msgs" style="color:#b0b4bc">—</span></span>
-        <span style="color:#3d4149">ONLINE: <span id="mp-online" style="color:#00ff9d">—</span></span>
-        <span style="color:#3d4149">UPTIME: <span id="mp-uptime" style="color:#b0b4bc">—</span></span>
-        <span style="color:#3d4149">FLUSH IN: <span class="flush-countdown" style="color:#00ff9d;font-weight:700">—</span></span>
-      </div>
-    </div>
-    <div id="mp-chain" style="display:flex;gap:0;align-items:stretch;overflow-x:auto;padding-bottom:4px;min-height:72px">
-      <div style="font-size:11px;color:#2a2d35;font-family:var(--mono);align-self:center;padding:0 12px">Wachten op pakketten...</div>
-    </div>
-    <div style="margin-top:10px;font-size:10px;color:#2a2d35;font-family:var(--mono)">
-      Dit is alles wat de relay weet. Hash · Grootte · Tijdstempel. De inhoud is wiskundig onleesbaar.
-    </div>
-  </div>
-</div>
-<script>
-(function(){
-  const RH=(window._PARAMANT_RELAY||'wss://relay.paramant.app').replace('wss://','https://').replace('ws://','http://');
-  const COLORS=['#00ff9d','#00cc7a','#4a7c59'];
-
-  function fmtB(b){if(b<1024)return b+'B';return(b/1024).toFixed(1)+'KB';}
-  function fmtT(ts){const d=new Date(ts);return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');}
-  function fmtUp(s){if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'u'+Math.floor((s%3600)/60)+'m';}
-
-  function buildBlock(e, i, total){
-    const age = Math.max(0, Math.min(1, (Date.now()-e.timestamp)/300000));
-    const opacity = 1 - age*0.6;
-    const col = age < 0.3 ? '#00ff9d' : age < 0.6 ? '#4a7c59' : '#2a2d35';
-    const hash = e.chatHash.replace('…','').slice(0,8);
-    const isLast = i === total-1;
-    return `<div style="display:flex;align-items:stretch;flex-shrink:0">
-      <div style="background:#111214;border:1px solid ${col};padding:10px 14px;min-width:140px;opacity:${opacity}">
-        <div style="font-size:10px;color:${col};font-family:var(--mono);letter-spacing:.06em;margin-bottom:4px">#${String(i+1).padStart(3,'0')}</div>
-        <div style="font-size:12px;color:#e2e4e8;font-family:var(--mono);margin-bottom:4px">${hash}…</div>
-        <div style="font-size:10px;color:#b0b4bc;font-family:var(--mono)">${fmtB(e.bytes)} · ${fmtT(e.timestamp)}</div>
-      </div>
-      ${!isLast ? '<div style="display:flex;align-items:center;padding:0 6px;color:#2a2d35;font-family:var(--mono);font-size:14px;flex-shrink:0">→</div>' : ''}
-    </div>`;
-  }
-
-  function render(stats, entries){
-    const el = document.getElementById('mp-msgs');
-    const eo = document.getElementById('mp-online');
-    const eu = document.getElementById('mp-uptime');
-    if(el) el.textContent = stats.messages||0;
-    if(eo) eo.textContent = stats.online||0;
-    if(eu) eu.textContent = fmtUp(stats.uptime_s||0);
-    if(stats.next_flush_ts) startFlushCountdown(stats.next_flush_ts);
-
-    const chain = document.getElementById('mp-chain');
-    if(!chain) return;
-    if(!entries||!entries.length){
-      chain.innerHTML='<div style="font-size:11px;color:#2a2d35;font-family:var(--mono);align-self:center;padding:0 12px">Geen pakketten in de laatste 5 minuten — stuur een bericht in PARAMANT om er één te zien.</div>';
-      return;
-    }
-    const blocks = entries.slice(0,8);
-    chain.innerHTML = blocks.map((e,i)=>buildBlock(e,i,blocks.length)).join('');
-    // Fade-in nieuwste blok
-    const first = chain.querySelector('div[style*="flex-shrink"]');
-    if(first) first.style.animation='fadeUp .3s ease';
-  }
-
-  async function tick(){
-    try{
-      const [stats, ledger] = await Promise.all([
-        fetch(RH+'/api/stats').then(r=>r.json()).catch(()=>({})),
-        fetch(RH+'/api/ledger').then(r=>r.json()).catch(()=>({}))
-      ]);
-      render(stats, ledger.entries||[]);
-    }catch(e){}
-  }
-
-  tick();
-  setInterval(tick, 10000);
-})();
-</script>
-
-
-<!-- GHOST PIPE USECASES -->
-<section class="py-20 px-5" style="background:linear-gradient(180deg,#0c0e10 0%,#0f1419 100%)">
-  <div class="max-w-5xl mx-auto">
-    <div class="text-center mb-16">
-      <div class="mono text-xs text-[#00ff9d] tracking-widest mb-3">// GHOST PIPE PROTOCOL</div>
-      <h2 class="text-3xl md:text-4xl font-bold text-[#e2e4e8] mb-4">Niet alleen chat. Een protocol.</h2>
-      <p class="text-[#8a8e98] max-w-2xl mx-auto">ML-KEM-768 stateless transport voor gevoelige data. Burn-on-read: de relay vernietigt elke kopie direct na ophalen. Geen opslag, nooit.</p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#1e2026] mb-16">
-      <!-- Juridisch -->
-      <div class="bg-[#0c0e10] p-8">
-        <div class="text-2xl mb-4">⚖️</div>
-        <div class="mono text-xs text-[#00ff9d] tracking-widest mb-2">ADVOCATUUR</div>
-        <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Ephemeral KYC</h3>
-        <p class="text-[#5a6070] text-sm leading-relaxed">Cliënt stuurt paspoort-scan. Bank ziet het in RAM. Relay verbrandt direct. Geen digitale kopie op een server die gehackt kan worden. AVG-risico naar nul.</p>
-        <a href="/legal.html" class="inline-block mt-4 mono text-xs text-[#00ff9d] hover:underline">Meer voor advocaten →</a>
-      </div>
-      <!-- Finance -->
-      <div class="bg-[#0c0e10] p-8" style="border-left:1px solid #1e2026">
-        <div class="text-2xl mb-4">🏦</div>
-        <div class="mono text-xs text-[#00ff9d] tracking-widest mb-2">FINANCIEEL</div>
-        <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Settlement Protection</h3>
-        <p class="text-[#5a6070] text-sm leading-relaxed">ML-KEM-768 beveiligt settlement instructions tegen "Harvest Now, Decrypt Later" aanvallen. Kwantumcomputers over 10 jaar lezen uw huidig verkeer niet.</p>
-        <a href="/docs.html#uc-multisig" class="inline-block mt-4 mono text-xs text-[#00ff9d] hover:underline">Technische spec →</a>
-      </div>
-      <!-- Dev -->
-      <div class="bg-[#0c0e10] p-8" style="border-left:1px solid #1e2026">
-        <div class="text-2xl mb-4">⚙️</div>
-        <div class="mono text-xs text-[#00ff9d] tracking-widest mb-2">DEVELOPERS</div>
-        <h3 class="text-[#e2e4e8] font-bold text-lg mb-3">Secret Injection</h3>
-        <p class="text-[#5a6070] text-sm leading-relaxed">Push API keys, database credentials en signing keys naar servers via CI/CD zonder dat ze ooit in logs of environment variables staan.</p>
-        <a href="/docs.html" class="inline-block mt-4 mono text-xs text-[#00ff9d] hover:underline">Developer docs →</a>
-      </div>
-    </div>
-
-    <!-- Protocol stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#1e2026]">
-      <div class="bg-[#111214] p-6 text-center">
-        <div class="font-bold text-3xl text-[#00ff9d] mono mb-1">300s</div>
-        <div class="text-[#5a6070] text-xs mono">Max TTL</div>
-      </div>
-      <div class="bg-[#111214] p-6 text-center">
-        <div class="font-bold text-3xl text-[#00ff9d] mono mb-1">5MB</div>
-        <div class="text-[#5a6070] text-xs mono">Vaste blokgrootte</div>
-      </div>
-      <div class="bg-[#111214] p-6 text-center">
-        <div class="font-bold text-3xl text-[#00ff9d] mono mb-1">1x</div>
-        <div class="text-[#5a6070] text-xs mono">Burn-on-read</div>
-      </div>
-      <div class="bg-[#111214] p-6 text-center">
-        <div class="font-bold text-3xl text-[#00ff9d] mono mb-1">768</div>
-        <div class="text-[#5a6070] text-xs mono">ML-KEM bits</div>
-      </div>
-    </div>
-
-    <div class="text-center mt-10">
-      <button onclick="openGhostPipe()" class="px-8 py-4 bg-[#00ff9d] text-[#0c0e10] font-bold mono text-sm tracking-wider hover:bg-[#00cc7a] transition-colors mr-4">
-        👻 OPEN GHOST PIPE
-      </button>
-      <a href="/docs.html" class="px-8 py-4 bg-[#1a1d22] border border-[#2a2d35] text-[#8a8e98] mono text-sm hover:border-[#00ff9d] hover:text-[#00ff9d] transition-colors">
-        DEV DOCS →
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section id="hoe" class="py-20 px-5">
-  <div class="max-w-4xl mx-auto">
-    <div class="text-center mb-10">
-      <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">Hoe werkt het?</div>
-      <h2 class="text-3xl md:text-5xl font-bold text-[#e2e4e8] mb-4 tracking-tight">Van leek tot expert — Chat &amp; File Transfer</h2>
-      <p class="text-[#b0b4bc] text-lg max-w-xl mx-auto">Kies je niveau — van simpele uitleg tot volledige crypto-specificatie.</p>
-    </div>
-
-    <div style="font-family:'JetBrains Mono',ui-monospace,monospace">
-
-      <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:1.5rem">
-        <button class="how-tab how-on" onclick="howTab('leek',this)" style="padding:8px 18px;font-size:13px;cursor:pointer;color:#e2e4e8;border-bottom:2px solid #00ff9d;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit">Gewone gebruiker</button>
-        <button class="how-tab" onclick="howTab('tech',this)" style="padding:8px 18px;font-size:13px;cursor:pointer;color:#b0b4bc;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit">Technisch</button>
-        <button class="how-tab" onclick="howTab('xprt',this)" style="padding:8px 18px;font-size:13px;cursor:pointer;color:#b0b4bc;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit">Expert / code</button>
-      </div>
-
-      <!-- LEEK -->
-      <div id="how-leek" class="how-panel">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
-          <div style="background:#111214;border:0.5px solid #1e2026;border-radius:8px;padding:16px">
-            <div style="font-size:22px;font-weight:500;color:#e2e4e8;margin-bottom:4px">0</div>
-            <div style="font-size:12px;color:#e2e4e8;font-weight:500;margin-bottom:6px">Accounts</div>
-            <div style="font-size:12px;color:#b0b4bc;line-height:1.6">Geen naam, email of wachtwoord. Open de site en klaar.</div>
-          </div>
-          <div style="background:#111214;border:0.5px solid #1e2026;border-radius:8px;padding:16px">
-            <div style="font-size:22px;font-weight:500;color:#e2e4e8;margin-bottom:4px">0</div>
-            <div style="font-size:12px;color:#e2e4e8;font-weight:500;margin-bottom:6px">Opgeslagen berichten</div>
-            <div style="font-size:12px;color:#b0b4bc;line-height:1.6">Berichten verdwijnen na 5 minuten van de server.</div>
-          </div>
-          <div style="background:#111214;border:0.5px solid #1e2026;border-radius:8px;padding:16px">
-            <div style="font-size:22px;font-weight:500;color:#e2e4e8;margin-bottom:4px">0</div>
-            <div style="font-size:12px;color:#e2e4e8;font-weight:500;margin-bottom:6px">Meelezers</div>
-            <div style="font-size:12px;color:#b0b4bc;line-height:1.6">Zelfs de server die berichten doorstuurt kan de inhoud niet lezen.</div>
-          </div>
-        </div>
-
-        <div style="border-top:1px solid #1e2026;padding-top:20px;margin-bottom:20px">
-          <div style="font-size:10px;color:#b0b4bc;letter-spacing:.1em;margin-bottom:14px">// STAP VOOR STAP</div>
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;border-radius:50%;background:rgba(0,255,157,.1);border:1px solid rgba(0,255,157,.25);color:#00ff9d;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">1</div>
-              <div><div style="font-size:13px;color:#e2e4e8;line-height:1.6">Je opent paramant.app — de app maakt automatisch een geheim sleutelpaar aan.</div>
-              <div style="font-size:12px;color:#b0b4bc;margin-top:3px">Vergelijk het met een kluis: een publiek hangslot en een geheime sleutel. Het hangslot deel je. De sleutel hou je voor jezelf.</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;border-radius:50%;background:rgba(0,255,157,.1);border:1px solid rgba(0,255,157,.25);color:#00ff9d;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">2</div>
-              <div><div style="font-size:13px;color:#e2e4e8;line-height:1.6">Je stuurt jouw adres naar je amice — via WhatsApp, sms, het maakt niet uit.</div>
-              <div style="font-size:12px;color:#b0b4bc;margin-top:3px">Je amice doet hetzelfde. Met die twee hangsloten wordt een geheim afgeleid dat alleen jullie kennen.</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;border-radius:50%;background:rgba(0,255,157,.1);border:1px solid rgba(0,255,157,.25);color:#00ff9d;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">3</div>
-              <div><div style="font-size:13px;color:#e2e4e8;line-height:1.6">Elk bericht wordt vergrendeld met dit geheim voordat het verstuurd wordt.</div>
-              <div style="font-size:12px;color:#b0b4bc;margin-top:3px">De relay ziet alleen een verzegelde envelop. Na 5 minuten gooit hij hem weg.</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;border-radius:50%;background:rgba(0,255,157,.1);border:1px solid rgba(0,255,157,.25);color:#00ff9d;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">4</div>
-              <div><div style="font-size:13px;color:#e2e4e8;line-height:1.6">Bel je amice en vergelijk de 8 veiligheidsnummers.</div>
-              <div style="font-size:12px;color:#b0b4bc;margin-top:3px">Gelijk? Dan luistert niemand mee. Dit is de enige stap die menselijke actie vereist.</div></div>
-            </div>
-          </div>
-        </div>
-
-        <div style="border-top:1px solid #1e2026;padding-top:16px">
-          <div style="font-size:10px;color:#b0b4bc;letter-spacing:.1em;margin-bottom:10px">// WAT ZIET DE SERVER?</div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px">
-            <span style="background:#1a1d22;border:0.5px solid #2a2d35;padding:8px 12px;border-radius:6px;color:#e2e4e8">"Hé, alles goed?"</span>
-            <span style="color:#b0b4bc">→ vergrendelen →</span>
-            <span style="background:rgba(0,100,255,.1);border:0.5px solid rgba(0,100,255,.2);padding:8px 12px;border-radius:6px;color:#6b9fff;font-family:monospace">a3f8c2d1e7b4...</span>
-            <span style="color:#b0b4bc">→ relay →</span>
-            <span style="background:#1a1d22;border:0.5px dashed #2a2d35;padding:8px 12px;border-radius:6px;color:#b0b4bc;font-family:monospace">???? (onleesbaar)</span>
-            <span style="color:#b0b4bc">→ ontgrendelen →</span>
-            <span style="background:#1a1d22;border:0.5px solid #2a2d35;padding:8px 12px;border-radius:6px;color:#e2e4e8">"Hé, alles goed?"</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- TECHNISCH -->
-      <div id="how-tech" class="how-panel" style="display:none">
-        <div style="font-size:10px;color:#b0b4bc;letter-spacing:.1em;margin-bottom:12px">// WAT DE RELAY ZIET VS NIET ZIET</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-          <div style="background:#111214;border:0.5px solid #1e2026;border-radius:8px;padding:16px">
-            <div style="font-size:13px;font-weight:500;color:#e2e4e8;margin-bottom:10px">Relay ziet WEL</div>
-            <div style="font-size:12px;color:#b0b4bc;line-height:2">
-              <span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:6px">hash-prefix</span>16 hex tekens van SHA-256<br>
-              <span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:6px">grootte</span>pakketgrootte in bytes<br>
-              <span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:6px">tijdstip</span>timestamp ontvangst<br>
-              <span style="font-size:11px;color:#3d4149;margin-top:6px;display:block">Bewaard max. 5 minuten — daarna auto-delete</span>
-            </div>
-          </div>
-          <div style="background:#111214;border:0.5px solid rgba(239,68,68,.2);border-radius:8px;padding:16px">
-            <div style="font-size:13px;font-weight:500;color:#e2e4e8;margin-bottom:10px">Relay ziet NOOIT</div>
-            <div style="font-size:12px;color:#b0b4bc;line-height:2">
-              <span style="background:rgba(239,68,68,.1);color:#f87171;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:6px">inhoud</span>tekst, bestanden<br>
-              <span style="background:rgba(239,68,68,.1);color:#f87171;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:6px">sleutels</span>publiek noch privé<br>
-              <span style="background:rgba(239,68,68,.1);color:#f87171;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:6px">identiteit</span>namen, IP-adressen<br>
-              <span style="background:rgba(239,68,68,.1);color:#f87171;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:6px">relaties</span>wie met wie praat
-            </div>
-          </div>
-        </div>
-
-        <div style="font-size:10px;color:#b0b4bc;letter-spacing:.1em;margin-bottom:12px">// SLEUTELUITWISSELING — HYBRIDE</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px">
-          <tr style="border-bottom:0.5px solid #1e2026"><th style="text-align:left;padding:8px 12px;color:#b0b4bc;font-weight:400">Laag</th><th style="text-align:left;padding:8px 12px;color:#b0b4bc;font-weight:400">Algoritme</th><th style="text-align:left;padding:8px 12px;color:#b0b4bc;font-weight:400">Waartegen beschermt</th></tr>
-          <tr style="border-bottom:0.5px solid #1e2026"><td style="padding:8px 12px;color:#b0b4bc">Klassiek</td><td style="padding:8px 12px;color:#e2e4e8">ECDH P-256</td><td style="padding:8px 12px;color:#b0b4bc">Huidige aanvallen, MITM</td></tr>
-          <tr style="border-bottom:0.5px solid #1e2026"><td style="padding:8px 12px;color:#b0b4bc">Post-quantum</td><td style="padding:8px 12px;color:#00ff9d">ML-KEM-768 (NIST FIPS 203)</td><td style="padding:8px 12px;color:#b0b4bc">Toekomstige kwantumcomputers</td></tr>
-          <tr style="border-bottom:0.5px solid #1e2026"><td style="padding:8px 12px;color:#b0b4bc">Master secret</td><td style="padding:8px 12px;color:#e2e4e8">HKDF-SHA-256</td><td style="padding:8px 12px;color:#b0b4bc">Beide gecombineerd</td></tr>
-          <tr style="border-bottom:0.5px solid #1e2026"><td style="padding:8px 12px;color:#b0b4bc">Berichten</td><td style="padding:8px 12px;color:#e2e4e8">AES-256-GCM</td><td style="padding:8px 12px;color:#b0b4bc">Versleuteling + authenticatie</td></tr>
-          <tr><td style="padding:8px 12px;color:#b0b4bc">KEM re-injectie</td><td style="padding:8px 12px;color:#e2e4e8">Elke 8 berichten</td><td style="padding:8px 12px;color:#b0b4bc">Post-compromise recovery</td></tr>
-        </table>
-
-        <div style="font-size:10px;color:#b0b4bc;letter-spacing:.1em;margin-bottom:12px">// DREIGINGSMODEL</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">
-          <div style="background:#111214;border:0.5px solid rgba(0,255,157,.2);border-radius:8px;padding:14px">
-            <div style="font-size:12px;font-weight:500;color:#00ff9d;margin-bottom:6px">Geen risico</div>
-            <div style="font-size:11px;color:#b0b4bc;line-height:1.7">Passief afluisteren · kwantumcomputer · harvest-now/decrypt-later · replay-aanval</div>
-          </div>
-          <div style="background:#111214;border:0.5px solid rgba(245,158,11,.2);border-radius:8px;padding:14px">
-            <div style="font-size:12px;font-weight:500;color:#f59e0b;margin-bottom:6px">Laag risico</div>
-            <div style="font-size:11px;color:#b0b4bc;line-height:1.7">Relay-compromis (ziet alleen hash+bytes) · MITM (opgelost met veiligheidsnummers)</div>
-          </div>
-          <div style="background:#111214;border:0.5px solid rgba(239,68,68,.2);border-radius:8px;padding:14px">
-            <div style="font-size:12px;font-weight:500;color:#f87171;margin-bottom:6px">Buiten scope</div>
-            <div style="font-size:11px;color:#b0b4bc;line-height:1.7">Malware op apparaat · browser-extensies met DOM-toegang · fysieke toegang tot scherm</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- EXPERT -->
-      <div id="how-xprt" class="how-panel" style="display:none">
-        <div style="font-size:10px;color:#b0b4bc;letter-spacing:.1em;margin-bottom:12px">// KEY DERIVATION</div>
-        <div style="background:#0a0c0e;border:0.5px solid #1e2026;border-radius:8px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#e2e4e8;line-height:2;overflow-x:auto;margin-bottom:20px">
-          <span style="color:#b0b4bc">// Handshake</span><br>
-          ecdh_shared = ECDH-P256(alice_priv, bob_pub)<br>
-          kem_shared&nbsp;&nbsp;= ML-KEM-768.Decapsulate(ct, alice_sk)<br>
-          master&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= HKDF-SHA256(ecdh_shared ‖ kem_shared, <span style="color:#00ff9d">"paramant-master-v1"</span>)<br><br>
-          <span style="color:#b0b4bc">// Ratchet chains</span><br>
-          chain_A = HKDF(master, <span style="color:#00ff9d">"paramant-chain-A-v2"</span>) &nbsp;<span style="color:#b0b4bc">← A→B</span><br>
-          chain_B = HKDF(master, <span style="color:#00ff9d">"paramant-chain-B-v2"</span>) &nbsp;<span style="color:#b0b4bc">← B→A</span><br><br>
-          <span style="color:#b0b4bc">// Per bericht</span><br>
-          msg_key &nbsp;&nbsp;&nbsp;= HKDF(CK[n], <span style="color:#00ff9d">"msg"</span>)<br>
-          CK[n+1] &nbsp;&nbsp;&nbsp;= HKDF(CK[n], <span style="color:#00ff9d">"chain"</span>)<br>
-          ciphertext = AES-256-GCM(msg_key, plaintext, iv, aad)<br>
-          aad&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span style="color:#00ff9d">"paramant:{seq}:{type}"</span><br><br>
-          <span style="color:#b0b4bc">// KEM re-injectie elke 8 berichten</span><br>
-          CK[n+1] = HKDF(CK[n] ‖ new_kem_shared, <span style="color:#00ff9d">"kem-ratchet"</span>)
-        </div>
-
-        <div style="font-size:10px;color:#b0b4bc;letter-spacing:.1em;margin-bottom:12px">// BEKENDE BEPERKINGEN</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <tr style="border-bottom:0.5px solid #1e2026"><th style="text-align:left;padding:8px 12px;color:#b0b4bc;font-weight:400">Beperking</th><th style="text-align:left;padding:8px 12px;color:#b0b4bc;font-weight:400">Impact</th><th style="text-align:left;padding:8px 12px;color:#b0b4bc;font-weight:400">Mitigatie</th></tr>
-          <tr style="border-bottom:0.5px solid #1e2026"><td style="padding:8px 12px;color:#b0b4bc">JS GC timing</td><td style="padding:8px 12px;color:#e2e4e8">fill(0) niet gegarandeerd na V8-optimalisatie</td><td style="padding:8px 12px;color:#b0b4bc">Native app — Rust zeroize gegarandeerd</td></tr>
-          <tr style="border-bottom:0.5px solid #1e2026"><td style="padding:8px 12px;color:#b0b4bc">Browser DOM</td><td style="padding:8px 12px;color:#e2e4e8">Extensies kunnen pre-encrypt tekst lezen</td><td style="padding:8px 12px;color:#b0b4bc">Incognito / native app</td></tr>
-          <tr><td style="padding:8px 12px;color:#b0b4bc">Geen formele audit</td><td style="padding:8px 12px;color:#e2e4e8">Side-channel timing niet geauditeerd</td><td style="padding:8px 12px;color:#b0b4bc">Open-source — community-verificatie</td></tr>
-        </table>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- COMPARISON TABLE -->
-<section id="vergelijk" class="py-20 px-5 bg-[#111214] border-y border-[#1e2026]">
-  <div class="max-w-3xl mx-auto text-center">
-    <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">Het eerlijke verhaal</div>
-    <h2 class="text-3xl md:text-4xl font-bold text-[#e2e4e8] mb-4 tracking-tight">PARAMANT vs de rest</h2>
-    <p class="text-[#e2e4e8] mb-10 text-lg">Andere apps zijn goed. Maar PARAMANT is beter.</p>
-
-    <div class="overflow-hidden rounded border border-[#2a2d35]">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-[#1a1d22] border-b border-[#2a2d35]">
-            <th class="text-left p-4 text-[#e2e4e8] font-medium">Eigenschap</th>
-            <th class="p-3 text-center">
-              <div class="text-[#e2e4e8] font-medium text-xs"></div>
-              <div class="text-[#e2e4e8] font-medium">WhatsApp</div>
-            </th>
-            <th class="p-3 text-center">
-              <div class="text-[#e2e4e8] font-medium text-xs"></div>
-              <div class="text-[#e2e4e8] font-medium">Signal</div>
-            </th>
-            <th class="p-3 text-center">
-              <div class="text-[#e2e4e8] font-medium text-xs">️</div>
-              <div class="text-[#e2e4e8] font-medium">Telegram</div>
-            </th>
-            <th class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20">
-              <div class="text-[#00ff9d] text-xs">[LOCK]</div>
-              <div class="text-[#00ff9d] font-bold">PARAMANT</div>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-800">
-          <tr class="hover:bg-[#1a1d22]/30 transition-colors">
-            <td class="p-4 text-[#e2e4e8] font-medium text-left">Account nodig?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Telefoonnummer</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Telefoonnummer</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Telefoonnummer</div></td>
-            <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Helemaal niets</div></td>
-          </tr>
-          <tr class="bg-[#111214]/40 hover:bg-[#1a1d22]/30 transition-colors">
-            <td class="p-4 text-[#e2e4e8] font-medium text-left">Server leest mee?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Meta-servers</div></td>
-            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-[#b0b4bc]">Signal-servers</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Telegram cloud</div></td>
-            <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Optionele relay</div></td>
-          </tr>
-          <tr class="hover:bg-[#1a1d22]/30 transition-colors">
-            <td class="p-4 text-[#e2e4e8] font-medium text-left">Post-quantum?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Niet bestand</div></td>
-            <td class="p-3 text-center"><span class="text-yellow-400 font-bold text-base">~</span><div class="text-xs text-[#b0b4bc]">Deels (PQXDH)</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Niet bestand</div></td>
-            <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">ML-KEM-768</div></td>
-          </tr>
-          <tr class="bg-[#111214]/40 hover:bg-[#1a1d22]/30 transition-colors">
-            <td class="p-4 text-[#e2e4e8] font-medium text-left">Metadata bewaard?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Wie, wanneer, wie</div></td>
-            <td class="p-3 text-center"><span class="text-[#00ff9d] font-bold text-base">~</span><div class="text-xs text-[#b0b4bc]">Hash + grootte · max 5 min</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Volledig</div></td>
-            <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Nul metadata</div></td>
-          </tr>
-          <tr class="hover:bg-[#1a1d22]/30 transition-colors">
-            <td class="p-4 text-[#e2e4e8] font-medium text-left">Geen installatie nodig?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span></td>
-            <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Altijd</div></td>
-          </tr>
-          <tr class="bg-[#111214]/40 hover:bg-[#1a1d22]/30 transition-colors">
-            <td class="p-4 text-[#e2e4e8] font-medium text-left">App installeren?</td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Verplicht</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Verplicht</div></td>
-            <td class="p-3 text-center"><span class="text-red-400 font-bold text-base">✗</span><div class="text-xs text-[#b0b4bc]">Verplicht</div></td>
-            <td class="p-3 text-center bg-[#00ff9d]/5 border-l border-[#00ff9d]/20"><span class="text-[#00ff9d] font-bold text-base">OK</span><div class="text-xs text-[#00ff9d]">Browser, klaar</div></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- BLOCKCHAIN LEDGER SECTION -->
-<section id="ledger-section" class="py-20 px-5">
-  <div class="max-w-4xl mx-auto">
-    <div class="text-center mb-14">
-      <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">Net als blockchain</div>
-      <h2 class="text-3xl md:text-4xl font-bold text-[#e2e4e8] mb-4 tracking-tight">Openbaar. Encrypted.<br>Transparant maar onleesbaar.</h2>
-      <p class="text-[#e2e4e8] text-lg max-w-xl mx-auto">Iedereen kan zien <em class="text-[#e2e4e8] not-italic font-medium">dát</em> er een gesprek plaatsvond. Maar niemand kan zien <em class="text-[#e2e4e8] not-italic font-medium">wie</em>, <em class="text-[#e2e4e8] not-italic font-medium">wat</em> of <em class="text-[#e2e4e8] not-italic font-medium">met wie</em>.</p>
-    </div>
-
-    <div class="grid md:grid-cols-2 gap-8 items-start">
-      <!-- What the relay sees -->
-      <div>
-        <h3 class="text-[#e2e4e8] font-bold text-lg mb-4 flex items-center gap-2">
-          <span class="w-8 h-8 rounded-lg bg-[#00ff9d]/20 flex items-center justify-center text-sm"></span>
-          Wat de relay ziet
-        </h3>
-        <div class="bg-[#111214] border border-[#2a2d35] rounded overflow-hidden">
-          <div class="px-4 py-2 bg-[#1a1d22] border-b border-[#2a2d35] mono text-xs text-[#e2e4e8] flex justify-between">
-            <span>ACTIEVE GEBRUIKERS</span><span class="text-[#00ff9d]">LIVE</span>
-          </div>
-          <div class="p-4 space-y-2 mono text-xs">
-            <div class="flex justify-between items-center py-2 border-b border-[#1e2026]">
-              <span class="text-[#4a7c59]">a3f8c2d1e7b4…</span>
-              <span class="text-[#b0b4bc]">1.2 KB</span>
-              <span class="text-[#b0b4bc]">14:23:41</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b border-[#1e2026]">
-              <span class="text-[#4a7c59]">7e9b1a4f2c8d…</span>
-              <span class="text-[#b0b4bc]">2.8 KB</span>
-              <span class="text-[#b0b4bc]">14:23:44</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b border-[#1e2026]">
-              <span class="text-[#4a7c59]">a3f8c2d1e7b4…</span>
-              <span class="text-[#b0b4bc]">1.1 KB</span>
-              <span class="text-[#b0b4bc]">14:24:02</span>
-            </div>
-            <div class="flex justify-between items-center py-2">
-              <span class="text-[#4a7c59]">f1d7a2e9c3b5…</span>
-              <span class="text-[#b0b4bc]">10.3 KB</span>
-              <span class="text-[#b0b4bc]">14:24:18</span>
-            </div>
-          </div>
-          <div class="px-4 py-3 bg-[#1a1d22]/50 border-t border-[#2a2d35] text-xs text-[#b0b4bc] mono">
-            Hash-prefix · pakketgrootte · tijdstempel · max 5 min · daarna auto-delete
-          </div>
-        </div>
-        <div class="mt-3 flex items-start gap-2 text-sm text-[#00ff9d]">
-          <span class="mt-0.5 flex-shrink-0">OK</span>
-          <span>Dit is alles. De relay is als een openbare postbus — hij ziet alleen verzegelde enveloppen met een serienummer.</span>
-        </div>
-      </div>
-
-      <!-- What nobody sees -->
-      <div>
-        <h3 class="text-[#e2e4e8] font-bold text-lg mb-4 flex items-center gap-2">
-          <span class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center text-sm"></span>
-          Wat niemand ziet
-        </h3>
-        <div class="space-y-3">
-          <div class="flex items-center gap-3 p-4 bg-[#111214] border border-[#1e2026] rounded-sm">
-            <span class="text-2xl"></span>
-            <div>
-              <div class="text-[#e2e4e8] font-medium text-sm">Namen en identiteiten</div>
-              <div class="text-[#b0b4bc] text-xs mt-0.5">Wie het stuurde is onbekend. Adressen zijn wiskundige sleutels, geen namen.</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4 bg-[#111214] border border-[#1e2026] rounded-sm">
-            <span class="text-2xl"></span>
-            <div>
-              <div class="text-[#e2e4e8] font-medium text-sm">De inhoud van berichten</div>
-              <div class="text-[#b0b4bc] text-xs mt-0.5">Versleuteld met AES-256-GCM. Zonder de sleutel is het onleesbare ruis.</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4 bg-[#111214] border border-[#1e2026] rounded-sm">
-            <span class="text-2xl">[NET]</span>
-            <div>
-              <div class="text-[#e2e4e8] font-medium text-sm">IP-adressen en locatie</div>
-              <div class="text-[#b0b4bc] text-xs mt-0.5">De relay zelf logt geen IPs. Cloudflare logt verbindingen op infrastructuurniveau — buiten onze controle. Gebruik Tor voor volledige IP-anonimiteit.</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 p-4 bg-[#111214] border border-[#1e2026] rounded-sm">
-            <span class="text-2xl"></span>
-            <div>
-              <div class="text-[#e2e4e8] font-medium text-sm">Met wie, wanneer, hoe lang</div>
-              <div class="text-[#b0b4bc] text-xs mt-0.5">De hash koppelt niet terug naar personen. Twee berichten met dezelfde hash — dat is alles.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SECURITY FEATURES -->
-<section class="py-20 px-5 bg-[#111214] border-t border-[#1e2026]">
-  <div class="max-w-5xl mx-auto text-center">
-    <div class="inline-block px-4 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/20 rounded-full text-[#00ff9d] text-sm font-medium mono mb-4">De beveiliging</div>
-    <h2 class="text-3xl font-bold text-[#e2e4e8] mb-4 tracking-tight">Zes lagen bescherming</h2>
-    <p class="text-[#e2e4e8] mb-12 max-w-xl mx-auto">U hoeft dit niet te begrijpen. Maar het is er. Allemaal.</p>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-left">
-      <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
-        <div class="text-3xl mb-3">⚛</div>
-        <div class="text-[#e2e4e8] font-semibold mb-1.5">Quantum-bestendig</div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">ML-KEM-768 + ECDH P-256. Beschermt ook als kwantumcomputers ooit beschikbaar worden.</div>
-        <div class="mt-3 mono text-xs text-[#4a7c59]">NIST FIPS 203</div>
-      </div>
-      <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
-        <div class="text-3xl mb-3">[KEY]</div>
-        <div class="text-[#e2e4e8] font-semibold mb-1.5">Elke bericht eigen sleutel</div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">AES-256-GCM ratchet. Oude berichten blijven veilig zelfs als iets later uitlekt.</div>
-        <div class="mt-3 mono text-xs text-[#4a7c59]">Forward secrecy</div>
-      </div>
-      <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
-        <div class="text-3xl mb-3">[SYNC]</div>
-        <div class="text-[#e2e4e8] font-semibold mb-1.5">Zelf-herstellend</div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">Elke 8 berichten een nieuwe kwantumsleutel. Een aanval op één bericht raakt nooit de rest.</div>
-        <div class="mt-3 mono text-xs text-[#4a7c59]">KEM-injectie</div>
-      </div>
-      <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
-        <div class="text-3xl mb-3">[SEC]️</div>
-        <div class="text-[#e2e4e8] font-semibold mb-1.5">Geen herhaling mogelijk</div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">Elk bericht heeft een uniek nonce. Hetzelfde pakket twee keer? Geblokkeerd.</div>
-        <div class="mt-3 mono text-xs text-[#4a7c59]">Replay-bescherming</div>
-      </div>
-      <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
-        <div class="text-3xl mb-3"></div>
-        <div class="text-[#e2e4e8] font-semibold mb-1.5">Verifieer de verbinding</div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">Bel je amice en vergelijk veiligheidsnummers. Gelijk? Niemand luistert mee.</div>
-        <div class="mt-3 mono text-xs text-[#4a7c59]">Safety numbers</div>
-      </div>
-      <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-tune-500/30 transition-all">
-        <div class="text-3xl mb-3"></div>
-        <div class="text-[#e2e4e8] font-semibold mb-1.5">Wiskundig uniek avatar</div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">Jouw fractal-avatar én naam worden afgeleid van je sleutel via SHA-256. Altijd hetzelfde voor dezelfde sleutel.</div>
-        <div class="mt-3 mono text-xs text-[#4a7c59]">SHA-256(pubKey)</div>
-      </div>
-    </div>
-
-    <!-- Infrastructuur sectie -->
-    <div class="mt-14 mb-2">
-      <div class="inline-block px-4 py-1.5 bg-[#1a1d22] border border-[#2a2d35] rounded-full text-[#e2e4e8] text-sm font-medium mono mb-6">De infrastructuur</div>
-      <h3 class="text-xl font-bold text-[#e2e4e8] mb-2">Eigendom. Europees. Controleerbaar.</h3>
-      <p class="text-[#b0b4bc] text-sm mb-8 max-w-lg mx-auto">Relay op Hetzner (Duitsland, EU). Website via Cloudflare CDN. Geen opslag, geen logs van inhoud — onder Europees recht.</p>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left mb-6">
-      <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-sm bg-red-500/10 border border-red-500/20 flex items-center justify-center text-xl flex-shrink-0">🇩🇪</div>
-          <div>
-            <div class="text-[#e2e4e8] font-semibold text-sm">Hetzner — Neurenberg</div>
-            <div class="mono text-xs text-[#b0b4bc]">relay.paramant.app</div>
-          </div>
-        </div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">De relay draait op een dedicated server in Duitsland. Striktste GDPR-handhaving in Europa. Geen Amerikaanse wetgeving (FISA, NSL).</div>
-        <div class="mt-3 mono text-xs text-[#4a7c59]">EU · GDPR · eigendom</div>
-      </div>
-      <div class="bg-[#1a1d22]/40 border border-[#2a2d35] rounded p-5 hover:border-[#00ff9d]/30 transition-all">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-sm bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-xl flex-shrink-0">[CLOUD]️</div>
-          <div>
-            <div class="text-[#e2e4e8] font-semibold text-sm">Cloudflare — tunnel</div>
-            <div class="mono text-xs text-[#b0b4bc]">paramant.app</div>
-          </div>
-        </div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">De app en relay zijn bereikbaar via Cloudflare tunnel. Cloudflare ziet alleen versleuteld verkeer — nooit de inhoud van berichten.</div>
-        <div class="mt-3 mono text-xs text-[#4a7c59]">TLS · DDoS-bescherming</div>
-      </div>
-      <div class="bg-[#1a1d22]/40 border border-[#00ff9d]/20 rounded p-5 hover:border-[#00ff9d]/40 transition-all">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-sm bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-xl flex-shrink-0">[TOR]</div>
-          <div>
-            <div class="text-[#e2e4e8] font-semibold text-sm">Tor — hidden service</div>
-            <div class="mono text-xs text-[#b0b4bc]">.onion adres</div>
-          </div>
-        </div>
-        <div class="text-[#e2e4e8] text-sm leading-relaxed">Voor maximale anonimiteit. Via Tor Browser is zelfs het IP-adres van de gebruiker onzichtbaar. Geen enkel knooppunt ziet het volledige pad.</div>
-        <div class="mt-3 p-2.5 bg-[#111214] rounded-sm border border-purple-500/15 cursor-pointer" onclick="navigator.clipboard.writeText('http://csnmdkpqikrf6abad7ej4mqsftiyh2z2fg3nzpf4x4zbnh2ulbmq5mid.onion/').catch(()=>{})">
-          <div class="mono text-xs text-purple-400 break-all leading-relaxed">csnmdkpqikrf6abad7ej4mqsftiyh2z2fg3nzpf4x4zbnh2ulbmq5mid.onion</div>
-          <div class="mono text-xs text-[#b0b4bc] mt-1">^ klik om te kopiëren · open in Tor Browser</div>
-        </div>
-        <div class="mt-3 mono text-xs text-purple-500">IP anoniem · Tor Browser</div>
-      </div>
-    </div>
-
-    <!-- Eerlijke beperkingen -->
-    <div class="mt-10 max-w-2xl mx-auto border border-[#2a2d35]/60 rounded overflow-hidden">
-      <div class="bg-[#1a1d22]/40 px-5 py-3 border-b border-[#2a2d35]/60 flex items-center gap-2">
-        <span class="text-[#e2e4e8] text-sm font-semibold">Eerlijk over de beperkingen</span>
-        <span class="ml-auto mono text-xs text-[#b0b4bc]">transparantie</span>
-      </div>
-      <div class="divide-y divide-slate-800/60">
-        <div class="px-5 py-3.5 flex items-start gap-3">
-          <span class="text-yellow-500 flex-shrink-0 mt-0.5">[!]</span>
-          <div>
-            <div class="text-[#e2e4e8] text-sm font-medium">Geheugenisolatie is niet absoluut</div>
-            <div class="text-[#b0b4bc] text-xs mt-0.5 leading-relaxed">Sleutels worden na gebruik gewist (<code class="text-[#4a7c59]">fill(0)</code>), maar JavaScript-engines kunnen data eerder kopiëren in RAM. Absolute geheugenisolatie vereist een native app — niet een browser.</div>
-          </div>
-        </div>
-        <div class="px-5 py-3.5 flex items-start gap-3">
-          <span class="text-yellow-500 flex-shrink-0 mt-0.5">[!]</span>
-          <div>
-            <div class="text-[#e2e4e8] text-sm font-medium">Browser-extensies vallen buiten onze CSP</div>
-            <div class="text-[#b0b4bc] text-xs mt-0.5 leading-relaxed">Een kwaadaardige extensie met DOM-toegang kan tekst onderscheppen vóór versleuteling. Gebruik PARAMANT in een browser zonder onbekende extensies — of in een privévenster.</div>
-          </div>
-        </div>
-        <div class="px-5 py-3.5 flex items-start gap-3">
-          <span class="text-yellow-500 flex-shrink-0 mt-0.5">[!]</span>
-          <div>
-            <div class="text-[#e2e4e8] text-sm font-medium">Cloudflare ziet verbindingsmetadata</div>
-            <div class="text-[#b0b4bc] text-xs mt-0.5 leading-relaxed">Cloudflare logt IP-adressen en tijdstempels van verbindingen op infrastructuurniveau — buiten onze controle. Gebruik Tor Browser voor volledige IP-anonimiteit.</div>
-          </div>
-        </div>
-        <div class="px-5 py-3.5 flex items-start gap-3">
-          <span class="text-yellow-500 flex-shrink-0 mt-0.5">[!]</span>
-          <div>
-            <div class="text-[#e2e4e8] text-sm font-medium">Geen formele cryptografische audit</div>
-            <div class="text-[#b0b4bc] text-xs mt-0.5 leading-relaxed">De implementatiechecks verifiëren dat alle componenten aanwezig en correct verbonden zijn — geen vervanging voor handmatig werk door gespecialiseerde cryptografen.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-      <!-- Warrant Canary -->
-      <div class="mt-6 p-4 bg-[#111214] border border-[#2a2d35] rounded-sm">
-        <div class="mono text-xs text-[#b0b4bc] tracking-widest mb-2">// WARRANT CANARY</div>
-        <p class="text-xs text-[#b0b4bc] leading-relaxed">
-          PARAMANT heeft tot en met <strong class="text-[#e2e4e8]">maart 2026</strong> geen juridische bevelen,
-          dagvaardingen, NSL-brieven of geheime overheidsopdrachten ontvangen om gebruikersdata te verstrekken,
-          softwarewijzigingen door te voeren of encryptie te verzwakken.<br>
-          <span class="text-[#b0b4bc]">Deze verklaring wordt maandelijks bijgewerkt. Als zij ontbreekt of niet bijgewerkt is — neem aan dat er iets mis is.</span>
-        </p>
-        <div class="mono text-xs text-[#3d4149] mt-2">Laatste update: 28 maart 2026 · Mick Beer</div>
-      </div>
-</section>
-<section class="py-24 px-5 text-center relative overflow-hidden">
-  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a1a0f]/8 to-transparent pointer-events-none"></div>
-  <div class="relative z-10 max-w-xl mx-auto">
-    <h2 class="text-4xl md:text-5xl font-extrabold text-[#e2e4e8] mb-5 tracking-tight">Klaar voor echte privacy?</h2>
-    <p class="text-[#e2e4e8] text-lg mb-6">In de browser of als native app. Jouw keuze.</p>
-
-    <!-- Browser knop -->
-    <button onclick="openApp()" aria-label="Open PARAMANT app" class="w-full sm:w-auto px-10 py-5 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-xl rounded transition-all hover:shadow-2xl hover:shadow-[#00ff9d]/10 active:scale-95 mb-4">
-      >> OPEN GHOST PIPE
+  <h1 style="font-size:clamp(36px,7vw,72px);font-weight:900;color:#e2e4e8;line-height:1.05;letter-spacing:-.03em;margin-bottom:20px">
+    Gevoelige data versturen.<br>
+    <span style="color:#00ff9d">Zonder spoor. Wiskundig.</span>
+  </h1>
+  <p style="font-size:18px;color:#8a8e98;max-width:640px;margin:0 auto 40px;line-height:1.7;font-weight:300">
+    ML-KEM-768 versleuteld transport. De relay vernietigt elke kopie direct na ophalen.
+    Geen opslag. Geen logs. Geen account. Klaar in 30 seconden.
+  </p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <button onclick="openGhostPipe()" style="padding:14px 32px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:14px;font-weight:900;letter-spacing:.04em">
+      👻 GHOST PIPE OPENEN
     </button>
-
-    <!-- Native downloads -->
-    <div class="mt-6 mb-2 text-[#b0b4bc] text-sm">Of download de native app:</div>
-    <div class="flex flex-wrap justify-center gap-3 mt-3">
-      <a href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.1.0/PARAMANT_0.1.0_amd64.deb"
-         class="flex items-center gap-2 px-5 py-2.5 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] hover:border-[#00ff9d]/40 text-[#e2e4e8] text-sm font-semibold rounded-sm transition-all">
-        [LNX] Linux .deb
-      </a>
-      <a href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.1.0/PARAMANT-0.1.0-1.x86_64.rpm"
-         class="flex items-center gap-2 px-5 py-2.5 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] hover:border-[#00ff9d]/40 text-[#e2e4e8] text-sm font-semibold rounded-sm transition-all">
-        [LNX] Linux .rpm
-      </a>
-      <a href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.1.0/PARAMANT-0.1.0-windows.exe"
-         class="flex items-center gap-2 px-5 py-2.5 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] hover:border-[#00ff9d]/40 text-[#e2e4e8] text-sm font-semibold rounded-sm transition-all">
-        [WIN] Windows .exe
-      </a>
-      <a href="https://github.com/Apolloccrypt/paramant-app/releases/download/v0.1.0/PARAMANT-0.1.0-android.apk"
-         class="flex items-center gap-2 px-5 py-2.5 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] hover:border-[#00ff9d]/40 text-[#e2e4e8] text-sm font-semibold rounded-sm transition-all">
-        [APK] Android .apk
-      </a>
-    </div>
-    <div class="mt-4 mono text-xs text-[#b0b4bc] tracking-widest">POST-QUANTUM · GEEN ACCOUNT · GEEN SERVER · GEEN COMPROMIS</div>
-    <p class="text-[#b0b4bc] text-xs mt-2">Native app: Rust + Tauri 2 + ML-KEM-768 · <a href="https://github.com/Apolloccrypt/paramant-app" class="text-[#2a4a35] hover:text-[#00ff9d]">GitHub</a></p>
-  </div>
-</section>
-
-<!-- Donation section -->
-<section class="py-12 px-5 bg-[#0c0e10] border-t border-[#1e2026]">
-  <div class="max-w-lg mx-auto text-center">
-    <div class="mono text-xs text-[#4a7c59] tracking-widest mb-3">PARAMANT DRAAIT OP DONATIES</div>
-    <h3 class="text-[#e2e4e8] font-bold text-xl mb-3 leading-snug">
-      Geen advertenties. Geen investeerders.<br>
-      <span class="text-[#00ff9d]">Alleen jouw versleutelde bericht.</span>
-    </h3>
-    <p class="text-[#e2e4e8] text-sm leading-relaxed mb-2">
-      PARAMANT is vrij, open-source en zonder bedrijf erachter. Gemaakt in Nederland, alles in het Nederlands. De relay, hosting en ontwikkeling worden uitsluitend betaald uit vrijwillige donaties van gebruikers.
-    </p>
-    <p class="text-[#b0b4bc] text-sm leading-relaxed mb-6">
-      Geen donatie? Geen probleem — de tool blijft gratis. Vind je privacy het waard? Dan houd je met een bijdrage de relay online.
-    </p>
-    <a href="https://buymeacoffee.com/mickbeer" target="_blank" rel="noopener noreferrer"
-      class="inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-base rounded transition-all hover:shadow-lg hover:shadow-[#00ff9d]/10 active:scale-95">
-      [LOCK] Houd de relay online
+    <button onclick="openApp()" style="padding:14px 32px;background:transparent;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-family:monospace;font-size:14px;letter-spacing:.04em">
+      CHAT OPENEN
+    </button>
+    <a href="/docs.html" style="padding:14px 32px;background:transparent;border:1px solid #2a2d35;color:#8a8e98;font-family:monospace;font-size:14px;letter-spacing:.04em;text-decoration:none">
+      DEV DOCS →
     </a>
-    <p class="text-[#b0b4bc] text-xs mt-3 mono">buymeacoffee.com/mickbeer</p>
+  </div>
+
+  <!-- Protocol stats -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e2026;max-width:700px;margin:60px auto 0">
+    <div style="background:#111214;padding:20px;text-align:center">
+      <div style="font-family:monospace;font-size:28px;font-weight:900;color:#00ff9d;line-height:1">300s</div>
+      <div style="font-family:monospace;font-size:9px;color:#5a6070;margin-top:4px;letter-spacing:.06em">MAX TTL</div>
+    </div>
+    <div style="background:#111214;padding:20px;text-align:center">
+      <div style="font-family:monospace;font-size:28px;font-weight:900;color:#00ff9d;line-height:1">5MB</div>
+      <div style="font-family:monospace;font-size:9px;color:#5a6070;margin-top:4px;letter-spacing:.06em">VASTE BLOKGROOTTE</div>
+    </div>
+    <div style="background:#111214;padding:20px;text-align:center">
+      <div style="font-family:monospace;font-size:28px;font-weight:900;color:#00ff9d;line-height:1">1×</div>
+      <div style="font-family:monospace;font-size:9px;color:#5a6070;margin-top:4px;letter-spacing:.06em">BURN-ON-READ</div>
+    </div>
+    <div style="background:#111214;padding:20px;text-align:center">
+      <div style="font-family:monospace;font-size:28px;font-weight:900;color:#00ff9d;line-height:1">768</div>
+      <div style="font-family:monospace;font-size:9px;color:#5a6070;margin-top:4px;letter-spacing:.06em">ML-KEM BITS</div>
+    </div>
   </div>
 </section>
 
-<footer class="py-6 px-6 bg-[#111214] border-t border-[#1e2026]">
-  <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <div class="font-bold text-[#e2e4e8] text-lg tracking-tight">PARAMANT</div>
-      <div class="text-xs text-[#b0b4bc] mt-0.5">Onafhankelijke open-source privacytool &nbsp;·&nbsp; gemaakt in Nederland</div>
+<!-- USE CASE TABS -->
+<section id="usecases" style="padding:80px 24px;background:#0f1419;border-top:1px solid #1e2026">
+  <div style="max-width:1000px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:48px">
+      <div style="font-family:monospace;font-size:10px;color:#5a6070;letter-spacing:.12em;margin-bottom:12px">// USE CASES</div>
+      <h2 style="font-size:clamp(24px,4vw,40px);font-weight:900;color:#e2e4e8;letter-spacing:-.02em">Voor elk vertrouwelijk kanaal.</h2>
     </div>
-    <div class="flex flex-wrap gap-4 text-sm text-[#b0b4bc]">
-      <a href="#hoe" class="hover:text-[#00ff9d] transition-colors">Hoe werkt het?</a>
-      <a href="#vergelijk" class="hover:text-[#00ff9d] transition-colors">Vergelijking</a>
-      <a href="#ledger-section" class="hover:text-[#00ff9d] transition-colors">Beveiliging</a>
-      <a href="javascript:openApp()" class="hover:text-[#00ff9d] transition-colors">Open app</a>
-      <a href="https://github.com/Apolloccrypt/paramant" target="_blank" rel="noopener" class="hover:text-[#00ff9d] transition-colors">GitHub</a>
-      <a href="https://buymeacoffee.com/mickbeer" target="_blank" rel="noopener" class="hover:text-[#00ff9d] transition-colors">[LOCK] Steun de relay</a>
+
+    <!-- Tab knoppen -->
+    <div style="display:flex;gap:1px;background:#1e2026;margin-bottom:1px;overflow-x:auto" id="uc-tabs">
+      <button onclick="showTab('advocaten')" id="tab-advocaten" class="uc-tab active" style="flex:1;min-width:120px;padding:14px 8px;background:#1a1d22;border:none;cursor:pointer;font-family:monospace;font-size:11px;color:#00ff9d;font-weight:700;letter-spacing:.04em;border-bottom:2px solid #00ff9d">
+        ⚖️ ADVOCATEN
+      </button>
+      <button onclick="showTab('klokkenluiders')" id="tab-klokkenluiders" class="uc-tab" style="flex:1;min-width:120px;padding:14px 8px;background:#111214;border:none;cursor:pointer;font-family:monospace;font-size:11px;color:#5a6070;letter-spacing:.04em;border-bottom:2px solid transparent">
+        🔔 KLOKKENLUIDERS
+      </button>
+      <button onclick="showTab('banken')" id="tab-banken" class="uc-tab" style="flex:1;min-width:120px;padding:14px 8px;background:#111214;border:none;cursor:pointer;font-family:monospace;font-size:11px;color:#5a6070;letter-spacing:.04em;border-bottom:2px solid transparent">
+        🏦 BANKEN
+      </button>
+      <button onclick="showTab('blockchain')" id="tab-blockchain" class="uc-tab" style="flex:1;min-width:120px;padding:14px 8px;background:#111214;border:none;cursor:pointer;font-family:monospace;font-size:11px;color:#5a6070;letter-spacing:.04em;border-bottom:2px solid transparent">
+        ⛓ BLOCKCHAIN
+      </button>
+      <button onclick="showTab('iot')" id="tab-iot" class="uc-tab" style="flex:1;min-width:120px;padding:14px 8px;background:#111214;border:none;cursor:pointer;font-family:monospace;font-size:11px;color:#5a6070;letter-spacing:.04em;border-bottom:2px solid transparent">
+        🏭 INFRA / IOT
+      </button>
+      <button onclick="showTab('chat')" id="tab-chat" class="uc-tab" style="flex:1;min-width:120px;padding:14px 8px;background:#111214;border:none;cursor:pointer;font-family:monospace;font-size:11px;color:#5a6070;letter-spacing:.04em;border-bottom:2px solid transparent">
+        💬 CHAT
+      </button>
     </div>
-    <div class="mono text-xs text-[#3d4149]">ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</div>
-  <div class="w-full mt-3 pt-3 border-t border-[#1e2026] text-center text-xs text-[#3d4149] mono">
-    PARAMANT gebruikt geen cookies, geen trackers en geen analytics. Punt. &nbsp;·&nbsp; <a href="/privacy" style="color:#b0b4bc;text-decoration:none" onmouseover="this.style.color='#00ff9d'" onmouseout="this.style.color='#5a6070'">Privacy policy</a>
+
+    <!-- Tab content wrapper -->
+    <div style="background:#111214;border:1px solid #1e2026;border-top:none;min-height:360px">
+
+      <!-- ADVOCATEN -->
+      <div id="panel-advocaten" style="padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start">
+        <div>
+          <div style="font-family:monospace;font-size:10px;color:#00ff9d;letter-spacing:.1em;margin-bottom:12px">// EPHEMERAL KYC</div>
+          <h3 style="font-size:22px;font-weight:900;color:#e2e4e8;margin-bottom:16px;line-height:1.2">Beroepsgeheim. <br>Technisch gegarandeerd.</h3>
+          <p style="font-size:14px;color:#8a8e98;line-height:1.8;margin-bottom:20px">Cliënt stuurt paspoort-scan. U ziet het in RAM. Relay verbrandt direct. Geen digitale kopie op een server die gehackt kan worden. AVG-aansprakelijkheid naar nul.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;font-family:monospace;font-size:12px">
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Geen verwerkersovereenkomst nodig (geen opslag)</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Post-quantum: kvantumcomputer leest nooit mee</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Geen account voor cliënt — alleen link openen</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Hetzner EU — geen FISA/NSL/CLOUD Act</span></div>
+          </div>
+          <a href="/legal.html" style="display:inline-block;margin-top:24px;padding:10px 24px;background:#1a1d22;border:1px solid #2a2d35;color:#00ff9d;font-family:monospace;font-size:12px;text-decoration:none;letter-spacing:.04em">Meer voor advocaten →</a>
+        </div>
+        <div style="background:#0c0e10;border:1px solid #1e2026;padding:24px;font-family:monospace;font-size:12px">
+          <div style="color:#5a6070;font-size:10px;letter-spacing:.08em;margin-bottom:16px">// WORKFLOW: EPHEMERAL KYC</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="background:#1a1d22;border:1px solid #2a2d35;padding:2px 8px;color:#00ff9d;flex-shrink:0">01</span>
+              <span style="color:#8a8e98">Officer genereert tijdelijk ML-KEM-768 sleutelpaar in browser</span>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="background:#1a1d22;border:1px solid #2a2d35;padding:2px 8px;color:#00ff9d;flex-shrink:0">02</span>
+              <span style="color:#8a8e98">Publieke sleutel als link/QR naar cliënt (via gewoon email)</span>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="background:#1a1d22;border:1px solid #2a2d35;padding:2px 8px;color:#00ff9d;flex-shrink:0">03</span>
+              <span style="color:#8a8e98">Cliënt sleept paspoort in app → versleuteld <em>in browser</em> → push</span>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="background:#1a1d22;border:1px solid #2a2d35;padding:2px 8px;color:#00ff9d;flex-shrink:0">04</span>
+              <span style="color:#8a8e98">Officer klikt ophalen → relay verbrandt kopie → officer ziet document in RAM</span>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="background:#1a1d22;border:1px solid #2a2d35;padding:2px 8px;color:#00ff9d;flex-shrink:0">05</span>
+              <span style="color:#8a8e98">Browser sluiten → sleutel + document overschreven met fill(0)</span>
+            </div>
+            <div style="margin-top:12px;padding:10px;background:#0f2a1a;border:1px solid #00ff9d30;color:#00ff9d;font-size:11px">
+              Resultaat: bank heeft KYC voldaan. Geen kopie bestaat.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KLOKKENLUIDERS -->
+      <div id="panel-klokkenluiders" style="padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;display:none">
+        <div>
+          <div style="font-family:monospace;font-size:10px;color:#00ff9d;letter-spacing:.1em;margin-bottom:12px">// WHISTLEBLOWER PROTECTION</div>
+          <h3 style="font-size:22px;font-weight:900;color:#e2e4e8;margin-bottom:16px;line-height:1.2">Documenten lekken <br>zonder te worden gevonden.</h3>
+          <p style="font-size:14px;color:#8a8e98;line-height:1.8;margin-bottom:20px">Geen account. Geen IP-log in de app. De relay weet niet wie u bent. Via Tor is zelfs het IP-adres onzichtbaar. Documenten verdwijnen na ophalen — forensisch onderzoek vindt niets op de server.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;font-family:monospace;font-size:12px">
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Geen account — nul koppeling naar identiteit</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Tor hidden service (.onion) — IP volledig verborgen</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Burn-on-read — na ophalen niets op server</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Vaste 5MB blokken — bestandstype onzichtbaar</span></div>
+          </div>
+          <div style="margin-top:20px;padding:12px;background:#1a0a0a;border:1px solid #ef444430;font-family:monospace;font-size:11px;color:#ef4444;line-height:1.7">
+            ⚠ Voor maximale anonimiteit: gebruik het .onion adres via Tor Browser.<br>
+            <span style="color:#5a6070">csnmdkpqikrf6abad7ej4mqsftiyh2z2fg3nzpf4x4zbnh2ulbmq5mid.onion</span>
+          </div>
+        </div>
+        <div style="background:#0c0e10;border:1px solid #1e2026;padding:24px;font-family:monospace;font-size:12px">
+          <div style="color:#5a6070;font-size:10px;letter-spacing:.08em;margin-bottom:16px">// THREAT MODEL: KLOKKENLUIDER</div>
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <tr><td style="padding:8px 0;border-bottom:1px solid #1e2026;color:#5a6070">Relay-beheerder</td><td style="padding:8px 0;border-bottom:1px solid #1e2026;color:#00ff9d">Ziet alleen hash + blob</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #1e2026;color:#5a6070">Hetzner / ISP</td><td style="padding:8px 0;border-bottom:1px solid #1e2026;color:#00ff9d">Ziet versleuteld verkeer</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #1e2026;color:#5a6070">Overheidsbevel</td><td style="padding:8px 0;border-bottom:1px solid #1e2026;color:#00ff9d">Geen data na 300s</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #1e2026;color:#5a6070">Forensisch image server</td><td style="padding:8px 0;border-bottom:1px solid #1e2026;color:#00ff9d">RAM-only, geen schijf</td></tr>
+            <tr><td style="padding:8px 0;color:#5a6070">IP-adres (via Tor)</td><td style="padding:8px 0;color:#00ff9d">Onzichtbaar</td></tr>
+          </table>
+          <div style="margin-top:16px;padding:10px;background:#0f2a1a;border:1px solid #00ff9d30;color:#00ff9d;font-size:11px">
+            Warrant canary: geen bevelen ontvangen tot maart 2026.
+          </div>
+        </div>
+      </div>
+
+      <!-- BANKEN -->
+      <div id="panel-banken" style="padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;display:none">
+        <div>
+          <div style="font-family:monospace;font-size:10px;color:#00ff9d;letter-spacing:.1em;margin-bottom:12px">// QUANTUM-SAFE FINANCE</div>
+          <h3 style="font-size:22px;font-weight:900;color:#e2e4e8;margin-bottom:16px;line-height:1.2">"Harvest Now, Decrypt Later" <br>is kansloos.</h3>
+          <p style="font-size:14px;color:#8a8e98;line-height:1.8;margin-bottom:20px">Statelijke actoren slaan nu al versleuteld bankverkeer op. Over 10 jaar, met een kwantumcomputer, lezen ze uw settlement instructions. ML-KEM-768 (NIST FIPS 203) maakt dat onmogelijk — voor altijd.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;font-family:monospace;font-size:12px">
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Settlement instructions via side-channel naast SWIFT</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">OTC pre-trade: pakketgrootte verraadt geen transactievolume</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Multi-sig coördinatie zonder interne mail-logs</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">GDPR: geen persistent opgeslagen KYC-documenten</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">DORA-compliant: gecertificeerde crypto, minimale retentie</span></div>
+          </div>
+          <a href="mailto:privacy@paramant.app" style="display:inline-block;margin-top:24px;padding:10px 24px;background:#00ff9d;color:#0c0e10;font-family:monospace;font-size:12px;text-decoration:none;font-weight:700;letter-spacing:.04em">Enterprise gesprek →</a>
+        </div>
+        <div style="background:#0c0e10;border:1px solid #1e2026;padding:24px;font-family:monospace;font-size:12px">
+          <div style="color:#5a6070;font-size:10px;letter-spacing:.08em;margin-bottom:16px">// VERGELIJKING</div>
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <tr style="background:#1a1d22"><td style="padding:8px;color:#5a6070"></td><td style="padding:8px;color:#5a6070">SWIFT/EBICS</td><td style="padding:8px;color:#00ff9d">PARAMANT</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #1e2026;color:#5a6070">Post-quantum</td><td style="padding:8px;border-bottom:1px solid #1e2026;color:#ef4444">✗ RSA/ECC</td><td style="padding:8px;border-bottom:1px solid #1e2026;color:#00ff9d">✓ ML-KEM-768</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #1e2026;color:#5a6070">Data opslag</td><td style="padding:8px;border-bottom:1px solid #1e2026;color:#ef4444">Database</td><td style="padding:8px;border-bottom:1px solid #1e2026;color:#00ff9d">RAM 300s</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #1e2026;color:#5a6070">Vaste pakketgrootte</td><td style="padding:8px;border-bottom:1px solid #1e2026;color:#ef4444">✗ Variabel</td><td style="padding:8px;border-bottom:1px solid #1e2026;color:#00ff9d">✓ 5MB fixed</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #1e2026;color:#5a6070">Account vereist</td><td style="padding:8px;border-bottom:1px solid #1e2026;color:#ef4444">✗ Ja</td><td style="padding:8px;border-bottom:1px solid #1e2026;color:#00ff9d">✓ Nee</td></tr>
+            <tr><td style="padding:8px;color:#5a6070">EU jurisdictie</td><td style="padding:8px;color:#8a8e98">Gemengd</td><td style="padding:8px;color:#00ff9d">✓ Hetzner DE</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- BLOCKCHAIN -->
+      <div id="panel-blockchain" style="padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;display:none">
+        <div>
+          <div style="font-family:monospace;font-size:10px;color:#00ff9d;letter-spacing:.1em;margin-bottom:12px">// MEV PROTECTION · SECRET SHARING</div>
+          <h3 style="font-size:22px;font-weight:900;color:#e2e4e8;margin-bottom:16px;line-height:1.2">Off-chain privacy <br>voor on-chain acties.</h3>
+          <p style="font-size:14px;color:#8a8e98;line-height:1.8;margin-bottom:20px">Mempool-bots kunnen geen partial signatures onderscheppen als ze via Ghost Pipe reizen. Shamir shards versturen zonder spoor. Validator config pushen zonder publiek P2P netwerk.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;font-family:monospace;font-size:12px">
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Multi-sig partial signatures off-chain (MEV-protection)</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Shamir Secret Sharing — shards via separate drops</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Validator config zonder publiek P2P spoor</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">GitHub Actions plugin beschikbaar</span></div>
+          </div>
+          <a href="/docs.html#uc-multisig" style="display:inline-block;margin-top:24px;padding:10px 24px;background:#1a1d22;border:1px solid #2a2d35;color:#00ff9d;font-family:monospace;font-size:12px;text-decoration:none;letter-spacing:.04em">Code voorbeelden →</a>
+        </div>
+        <div style="background:#0c0e10;border:1px solid #1e2026;padding:24px;font-family:monospace;font-size:12px">
+          <div style="color:#5a6070;font-size:10px;letter-spacing:.08em;margin-bottom:12px">// MEV PROTECTION VOORBEELD</div>
+          <pre style="background:transparent;border:none;padding:0;font-size:11px;line-height:1.8;overflow-x:auto"><code><span style="color:#5a6070">// Partial sig via Ghost Pipe — mempool ziet niets</span>
+<span style="color:#7c6bf0">const</span> sig = <span style="color:#f0a500">await</span> wallet_A.signPartial(txHash);
+<span style="color:#7c6bf0">const</span> result = <span style="color:#f0a500">await</span> ghostPipe.send({
+  data: Buffer.from(JSON.stringify({sig, txHash})),
+  to: SIGNER_B_PUBKEY
+});
+<span style="color:#5a6070">// Deel result.hash met Signer B via elk kanaal</span>
+<span style="color:#5a6070">// Relay verbrandt na ophalen — geen forensisch spoor</span></code></pre>
+        </div>
+      </div>
+
+      <!-- IOT -->
+      <div id="panel-iot" style="padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;display:none">
+        <div>
+          <div style="font-family:monospace;font-size:10px;color:#00ff9d;letter-spacing:.1em;margin-bottom:12px">// CRITICAL INFRASTRUCTURE</div>
+          <h3 style="font-size:22px;font-weight:900;color:#e2e4e8;margin-bottom:16px;line-height:1.2">Configuratie pushen. <br>Spionage onmogelijk.</h3>
+          <p style="font-size:14px;color:#8a8e98;line-height:1.8;margin-bottom:20px">Vaste 5MB blokken maskeren of er een routine-update of een nood-commando verstuurd wordt. Een afluisteraar kan het verschil niet zien. Perfect voor energiecentrales, waterzuiveringen en industriële netwerken.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;font-family:monospace;font-size:12px">
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Software updates naar luchtgat-systemen</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">API keys injecteren zonder environment variables</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Patroonblinde overdracht: routine ≡ nood</span></div>
+            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">CLI: <code>paramant-cli send config.tar.gz --to server</code></span></div>
+          </div>
+          <a href="/docs.html#github-actions" style="display:inline-block;margin-top:24px;padding:10px 24px;background:#1a1d22;border:1px solid #2a2d35;color:#00ff9d;font-family:monospace;font-size:12px;text-decoration:none;letter-spacing:.04em">GitHub Actions plugin →</a>
+        </div>
+        <div style="background:#0c0e10;border:1px solid #1e2026;padding:24px;font-family:monospace;font-size:12px">
+          <div style="color:#5a6070;font-size:10px;letter-spacing:.08em;margin-bottom:12px">// CI/CD SECRET INJECTION</div>
+          <pre style="background:transparent;border:none;padding:0;font-size:11px;line-height:1.8;overflow-x:auto"><code><span style="color:#5a6070"># .github/workflows/deploy.yml</span>
+- <span style="color:#00d97e">name</span>: Inject secrets via Ghost Pipe
+  <span style="color:#00d97e">uses</span>: apolloccrypt/paramant-action@v2
+  <span style="color:#7c6bf0">with</span>:
+    <span style="color:#00d97e">data</span>: <span style="color:#f0a500">${{ secrets.DB_PASSWORD }}</span>
+    <span style="color:#00d97e">to</span>:   <span style="color:#f0a500">${{ secrets.SERVER_GP_PUBKEY }}</span>
+
+<span style="color:#5a6070"># Server ontvangt — nooit in logs of env vars</span>
+paramant-cli receive   --hash $HASH   --out /run/secrets/db_password</code></pre>
+        </div>
+      </div>
+
+      <!-- CHAT -->
+      <div id="panel-chat" style="padding:40px;display:none">
+        <div style="text-align:center;max-width:600px;margin:0 auto">
+          <div style="font-family:monospace;font-size:10px;color:#5a6070;letter-spacing:.1em;margin-bottom:12px">// CHAT — EXTRA FUNCTIE</div>
+          <h3 style="font-size:22px;font-weight:900;color:#e2e4e8;margin-bottom:16px">Post-quantum versleutelde chat. <br>Als bonus.</h3>
+          <p style="font-size:14px;color:#8a8e98;line-height:1.8;margin-bottom:32px">Naast Ghost Pipe heeft PARAMANT een real-time chat met dezelfde ML-KEM-768 + ECDH P-256 encryptie. Geen account, geen telefoonnummer, geen opslag. Safety numbers voor verificatie.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:32px;font-family:monospace;font-size:11px">
+            <div style="background:#0c0e10;border:1px solid #1e2026;padding:16px;text-align:center">
+              <div style="color:#00ff9d;font-size:20px;margin-bottom:6px">0</div>
+              <div style="color:#5a6070">accounts</div>
+            </div>
+            <div style="background:#0c0e10;border:1px solid #1e2026;padding:16px;text-align:center">
+              <div style="color:#00ff9d;font-size:20px;margin-bottom:6px">0</div>
+              <div style="color:#5a6070">opgeslagen berichten</div>
+            </div>
+            <div style="background:#0c0e10;border:1px solid #1e2026;padding:16px;text-align:center">
+              <div style="color:#00ff9d;font-size:20px;margin-bottom:6px">0</div>
+              <div style="color:#5a6070">meelezers</div>
+            </div>
+          </div>
+          <button onclick="openApp()" style="padding:14px 40px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:14px;font-weight:900;letter-spacing:.04em">
+            CHAT OPENEN →
+          </button>
+        </div>
+      </div>
+
+    </div><!-- end tab content wrapper -->
   </div>
+</section>
+
+<!-- HOE WERKT HET PROTOCOL -->
+<section style="padding:80px 24px;background:#0c0e10;border-top:1px solid #1e2026">
+  <div style="max-width:800px;margin:0 auto;text-align:center">
+    <div style="font-family:monospace;font-size:10px;color:#5a6070;letter-spacing:.12em;margin-bottom:12px">// PROTOCOL FLOW</div>
+    <h2 style="font-size:clamp(24px,4vw,36px);font-weight:900;color:#e2e4e8;margin-bottom:48px;letter-spacing:-.02em">Wat de relay ziet. Wat niemand ziet.</h2>
+    <div style="background:#111214;border:1px solid #1e2026;padding:32px;font-family:monospace;font-size:12px;text-align:left;line-height:2">
+      <div style="color:#5a6070;margin-bottom:16px;font-size:10px;letter-spacing:.08em">// RELAY MEMPOOL — LIVE</div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:24px;margin-bottom:24px">
+        <div>
+          <div style="color:#4a7c59">WAT DE RELAY ZIET:</div>
+          <div style="color:#8a8e98">hash: <span style="color:#a78bfa">a3f8c2d1e7b4...</span></div>
+          <div style="color:#8a8e98">grootte: <span style="color:#00ff9d">5.0MB</span> (altijd — metadata onzichtbaar)</div>
+          <div style="color:#8a8e98">ttl: <span style="color:#f0a500">247s</span> resterend</div>
+          <div style="color:#8a8e98">inhoud: <span style="color:#ef4444">&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588; ONLEESBAAR</span></div>
+        </div>
+        <div>
+          <div style="color:#4a7c59">WAT NIEMAND ZIET:</div>
+          <div style="color:#3d4149">— bestandsnaam</div>
+          <div style="color:#3d4149">— wie verstuurde</div>
+          <div style="color:#3d4149">— wie ontvangt</div>
+          <div style="color:#3d4149">— inhoud</div>
+        </div>
+      </div>
+      <div style="padding:12px;background:#0c0e10;border:1px solid #00ff9d30;color:#00ff9d;font-size:11px">
+        Na ophalen: <strong>blob.fill(0)</strong> — byte-voor-byte overschreven in RAM. Geen spoor.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EERLIJK OVER BEPERKINGEN -->
+<section style="padding:60px 24px;background:#0f1419;border-top:1px solid #1e2026">
+  <div style="max-width:800px;margin:0 auto">
+    <div style="font-family:monospace;font-size:10px;color:#5a6070;letter-spacing:.12em;margin-bottom:20px;text-align:center">// EERLIJKHEID</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1e2026">
+      <div style="background:#111214;padding:20px">
+        <div style="font-family:monospace;font-size:10px;color:#f0a500;letter-spacing:.06em;margin-bottom:8px">WARRANT CANARY</div>
+        <div style="font-size:13px;color:#8a8e98;line-height:1.7">PARAMANT heeft tot en met <strong style="color:#e2e4e8">maart 2026</strong> geen juridische bevelen ontvangen. Maandelijks bijgewerkt.</div>
+      </div>
+      <div style="background:#111214;padding:20px">
+        <div style="font-family:monospace;font-size:10px;color:#f0a500;letter-spacing:.06em;margin-bottom:8px">CLOUDFLARE METADATA</div>
+        <div style="font-size:13px;color:#8a8e98;line-height:1.7">Cloudflare logt verbindingsmetadata op infrastructuurniveau. Gebruik het <strong style="color:#e2e4e8">.onion adres</strong> via Tor voor volledige IP-anonimiteit.</div>
+      </div>
+      <div style="background:#111214;padding:20px">
+        <div style="font-family:monospace;font-size:10px;color:#f0a500;letter-spacing:.06em;margin-bottom:8px">BROWSER GEHEUGEN</div>
+        <div style="font-size:13px;color:#8a8e98;line-height:1.7">JS-engines kunnen sleutels tijdelijk kopiëren in RAM. Absolute garantie vereist de <strong style="color:#e2e4e8">native Rust app</strong> met Zeroize.</div>
+      </div>
+      <div style="background:#111214;padding:20px">
+        <div style="font-family:monospace;font-size:10px;color:#f0a500;letter-spacing:.06em;margin-bottom:8px">GEEN FORMELE AUDIT</div>
+        <div style="font-size:13px;color:#8a8e98;line-height:1.7">Implementatiechecks zijn aanwezig. Geen vervanging voor een formele cryptografische audit door een derde partij.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="padding:32px 24px;border-top:1px solid #1e2026;max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+  <div style="font-family:monospace;font-size:11px;color:#3d4149">
+    PARAMANT · Open source · Made in NL · <a href="https://github.com/Apolloccrypt/paramant" style="color:#5a6070">GitHub</a>
+  </div>
+  <div style="font-family:monospace;font-size:10px;color:#3d4149">
+    ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203
+  </div>
+  <div style="font-family:monospace;font-size:11px;color:#3d4149">
+    <a href="/legal.html" style="color:#5a6070">Advocaten</a> ·
+    <a href="/docs.html" style="color:#5a6070">Docs</a> ·
+    <a href="/privacy.html" style="color:#5a6070">Privacy</a>
   </div>
 </footer>
 
+<script>
+function showTab(name) {
+  ['advocaten','klokkenluiders','banken','blockchain','iot','chat'].forEach(t => {
+    const panel = document.getElementById('panel-'+t);
+    const tab   = document.getElementById('tab-'+t);
+    if (panel) panel.style.display  = t===name ? (t==='chat'?'block':'grid') : 'none';
+    if (tab) {
+      tab.style.background    = t===name ? '#1a1d22' : '#111214';
+      tab.style.color         = t===name ? '#00ff9d' : '#5a6070';
+      tab.style.borderBottom  = t===name ? '2px solid #00ff9d' : '2px solid transparent';
+      tab.style.fontWeight    = t===name ? '700' : '400';
+    }
+  });
+}
+</script>
+
 </div><!-- /landing -->
 
-<!-- ════════════════════════════ APP ════════════════════════════ -->
 <div id="app">
 
   <!-- Top bar -->
