@@ -1689,8 +1689,7 @@ async function initIdentity(){
           $('my-key-prev').textContent=myBundle;$('my-key-prev').dataset.full=myBundle;
           $('pq-badge').classList.remove('hidden');
           // Persist updated bundle
-          const saved=await IDB.loadIdentity();
-          if(saved)/* wegwerp-modus: niet opslaan */
+          // wegwerp-modus: niet opslaan
         }catch(e){}
       },2500);
     }
