@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARAMANT voor Advocaten — Quantum-veilige documentoverdracht</title>
+<meta name="description" content="Vertrouwelijke stukken versturen zonder spoor. Post-quantum versleuteld, burn-on-read, GDPR-compliant. Voor advocatenkantoren.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #0f0e0d;
+  --paper:  #f7f4ef;
+  --cream:  #ede8e0;
+  --green:  #1a4a32;
+  --lime:   #c8f060;
+  --rust:   #c84020;
+  --mid:    #6b6560;
+  --border: #d8d0c4;
+  --mono:   'DM Mono', monospace;
+  --serif:  'DM Serif Display', serif;
+  --sans:   'DM Sans', sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── Nav ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 100;
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: .04em;
+  text-decoration: none;
+}
+.nav-logo span { color: var(--green); }
+.nav-links { display: flex; align-items: center; gap: 32px; }
+.nav-links a { font-size: 13px; color: var(--mid); text-decoration: none; }
+.nav-links a:hover { color: var(--ink); }
+.nav-cta {
+  background: var(--green);
+  color: #fff !important;
+  padding: 8px 20px;
+  font-size: 13px !important;
+  font-weight: 500;
+  letter-spacing: .02em;
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 140px 32px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: .06em;
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(36px, 5vw, 58px);
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--green);
+}
+.hero-sub {
+  font-size: 17px;
+  color: var(--mid);
+  line-height: 1.7;
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+.hero-actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.btn-primary {
+  background: var(--green);
+  color: #fff;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: .01em;
+  transition: background .2s;
+}
+.btn-primary:hover { background: #0f2e1e; }
+.btn-ghost {
+  color: var(--mid);
+  font-size: 14px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-ghost:hover { color: var(--ink); }
+
+.hero-visual {
+  background: var(--ink);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-visual::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 28px,
+    rgba(255,255,255,.03) 28px, rgba(255,255,255,.03) 29px
+  );
+}
+.terminal-line {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 2;
+  position: relative;
+}
+.t-prompt { color: #4a7c59; }
+.t-cmd { color: #c8f060; }
+.t-out { color: #6b8f7a; }
+.t-ok { color: #00ff9d; }
+.t-hash { color: #a78bfa; }
+.t-dim { color: #3d4a40; }
+.t-blink {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: #c8f060;
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── Problem section ── */
+.section { padding: 80px 32px; max-width: 1100px; margin: 0 auto; }
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--mid);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.section h2 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  margin-bottom: 48px;
+}
+
+/* Problem cards */
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-bottom: 64px;
+}
+.problem-card {
+  background: var(--paper);
+  padding: 32px 28px;
+}
+.problem-icon {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+.problem-card h3 {
+  font-family: var(--serif);
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.problem-card p { font-size: 14px; color: var(--mid); line-height: 1.7; }
+
+/* ── How it works ── */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+.step-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: .06em;
+  margin-bottom: 12px;
+}
+.step h3 {
+  font-family: var(--serif);
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+.step p { font-size: 14px; color: var(--mid); line-height: 1.7; }
+.step-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--border);
+  font-size: 24px;
+  margin-top: 32px;
+}
+
+/* ── Guarantees ── */
+.guarantees-bg { background: var(--ink); color: #fff; padding: 80px 0; }
+.guarantees-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+.guarantees-bg .section-label { color: #4a7c59; }
+.guarantees-bg h2 { color: #fff; }
+.guarantee-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-top: 48px;
+}
+.guarantee {
+  border-left: 2px solid #1a4a32;
+  padding-left: 20px;
+}
+.guarantee-stat {
+  font-family: var(--serif);
+  font-size: 40px;
+  color: var(--lime);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.guarantee h3 { font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 8px; }
+.guarantee p { font-size: 13px; color: #6b8f7a; line-height: 1.7; }
+
+/* ── Pricing ── */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+}
+.plan {
+  border: 1px solid var(--border);
+  padding: 36px 28px;
+  position: relative;
+}
+.plan.featured {
+  border-color: var(--green);
+  background: var(--cream);
+}
+.plan-badge {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  background: var(--green);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .06em;
+  padding: 4px 12px;
+}
+.plan-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--mid);
+  margin-bottom: 12px;
+}
+.plan-price {
+  font-family: var(--serif);
+  font-size: 48px;
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.plan-price span { font-size: 18px; color: var(--mid); }
+.plan-period { font-size: 13px; color: var(--mid); margin-bottom: 28px; }
+.plan-features { list-style: none; margin-bottom: 32px; }
+.plan-features li {
+  font-size: 14px;
+  color: var(--mid);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.plan-features li::before { content: '✓'; color: var(--green); flex-shrink: 0; }
+.plan-cta {
+  display: block;
+  text-align: center;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: .02em;
+  transition: all .2s;
+}
+.plan-cta.green { background: var(--green); color: #fff; }
+.plan-cta.green:hover { background: #0f2e1e; }
+.plan-cta.outline { border: 1px solid var(--border); color: var(--mid); }
+.plan-cta.outline:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ── Testimonial ── */
+.testimonial-section { background: var(--cream); padding: 80px 0; border-top: 1px solid var(--border); }
+.testimonial-inner { max-width: 700px; margin: 0 auto; padding: 0 32px; text-align: center; }
+.testimonial-quote {
+  font-family: var(--serif);
+  font-size: clamp(22px, 3vw, 32px);
+  line-height: 1.4;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+.testimonial-quote em { font-style: italic; color: var(--green); }
+.testimonial-attr {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mid);
+  letter-spacing: .06em;
+}
+
+/* ── FAQ ── */
+.faq-list { display: grid; gap: 1px; background: var(--border); margin-top: 48px; }
+.faq-item {
+  background: var(--paper);
+  padding: 24px 28px;
+}
+.faq-q {
+  font-family: var(--serif);
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.faq-a { font-size: 14px; color: var(--mid); line-height: 1.7; }
+.faq-a a { color: var(--green); }
+
+/* ── CTA ── */
+.cta-section { padding: 120px 32px; text-align: center; max-width: 700px; margin: 0 auto; }
+.cta-section h2 {
+  font-family: var(--serif);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  margin-bottom: 20px;
+}
+.cta-section p { font-size: 17px; color: var(--mid); margin-bottom: 40px; font-weight: 300; }
+.cta-guarantee {
+  margin-top: 20px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mid);
+  letter-spacing: .04em;
+}
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mid);
+}
+
+/* ── Canary bar ── */
+.canary-bar {
+  background: var(--cream);
+  border-top: 1px solid var(--border);
+  padding: 10px 32px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--mid);
+  text-align: center;
+  letter-spacing: .04em;
+}
+.canary-bar span { color: var(--green); }
+
+@media(max-width: 768px) {
+  .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 100px; }
+  .problem-grid, .steps, .guarantee-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .hero-visual { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">PARA<span>MANT</span></a>
+  <div class="nav-links">
+    <a href="#hoe-werkt-het">Hoe werkt het</a>
+    <a href="#prijzen">Prijzen</a>
+    <a href="https://paramant.app" target="_blank">Open app</a>
+    <a href="https://paramant.app" class="nav-cta">Probeer gratis</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section style="padding-top:56px">
+  <div class="hero">
+    <div>
+      <div class="hero-badge">
+        <span>⚛</span> ML-KEM-768 · NIST FIPS 203 · Post-quantum
+      </div>
+      <h1>Vertrouwelijke stukken versturen<em> zonder spoor.</em></h1>
+      <p class="hero-sub">
+        Voor advocaten die cliëntstukken, getuigenverklaringen en conceptcontracten
+        willen overdragen zonder dat er een digitale kopie achterblijft op een server
+        die gehackt kan worden.
+      </p>
+      <div class="hero-actions">
+        <a href="https://paramant.app" class="btn-primary">30 dagen gratis proberen</a>
+        <a href="#hoe-werkt-het" class="btn-ghost">Hoe werkt het? →</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">paramant send fusieplan.pdf --to cliënt</span></div>
+      <div class="terminal-line"><span class="t-out">[1/4] Bestand ingelezen: 2.3MB</span></div>
+      <div class="terminal-line"><span class="t-out">[2/4] ML-KEM-768 versleuteld</span></div>
+      <div class="terminal-line"><span class="t-out">[3/4] Gepaddeerd naar 5MB vaste blokgrootte</span></div>
+      <div class="terminal-line"><span class="t-out">[4/4] Gepusht naar RAM-relay</span></div>
+      <div class="terminal-line" style="margin-top:8px"><span class="t-ok">✓ Verzonden</span></div>
+      <div class="terminal-line"><span class="t-dim">hash: </span><span class="t-hash">a3f8c2d1e7b4...</span></div>
+      <div class="terminal-line"><span class="t-dim">verloopt: </span><span class="t-out">300 seconden</span></div>
+      <div class="terminal-line"><span class="t-dim">relay ziet: </span><span class="t-out">opaque blob · geen metadata</span></div>
+      <div class="terminal-line" style="margin-top:8px"><span class="t-prompt">$</span> <span class="t-blink"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Probleem ── -->
+<section style="background:var(--cream);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="section">
+    <div class="section-label">// het probleem</div>
+    <h2>WhatsApp is geen beveiligde rechtbank.</h2>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="problem-icon">📧</div>
+        <h3>Email en WhatsApp slaan op</h3>
+        <p>Elk vertrouwelijk stuk dat je via email of WhatsApp stuurt, staat op servers van Google, Meta of Microsoft. Voor altijd. Zonder jouw controle.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">⚖️</div>
+        <h3>Beroepsgeheim risico</h3>
+        <p>Een datalek bij een cloudprovider kan jouw cliëntdossiers blootleggen. De tuchtrechtelijke en AVG-aansprakelijkheid ligt bij jou, niet bij de provider.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">🔮</div>
+        <h3>"Harvest Now, Decrypt Later"</h3>
+        <p>Statelijke actoren verzamelen nu al versleuteld verkeer. Over 10 jaar, met een kwantumcomputer, lezen ze uw huidig versleutelde dossiers alsnog.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Hoe werkt het ── -->
+<section id="hoe-werkt-het">
+  <div class="section">
+    <div class="section-label">// de oplossing</div>
+    <h2>Drie stappen. Geen spoor.</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">STAP 01</div>
+        <h3>Sleutel genereren</h3>
+        <p>U opent PARAMANT en genereert een tijdelijk post-quantum sleutelpaar. De publieke sleutel stuurt u naar uw cliënt via email of SMS — dit is geen vertrouwelijk kanaal nodig.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">STAP 02</div>
+        <h3>Cliënt versleutelt lokaal</h3>
+        <p>Uw cliënt sleept het paspoort of het document in de PARAMANT-app. Versleuteling vindt <em>in de browser van de cliënt</em> plaats — vóór verzending. De relay ziet nooit de inhoud.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">STAP 03</div>
+        <h3>U ontvangt en relay verbrandt</h3>
+        <p>U klikt op 'Ontvangen'. Het document gaat naar uw RAM. Op het moment van ophalen vernietigt de relay zijn kopie. Na 5 minuten bestaat er geen server-kopie meer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Garanties ── -->
+<section class="guarantees-bg">
+  <div class="guarantees-inner">
+    <div class="section-label">// technische garanties</div>
+    <h2>Wiskundig bewijsbaar. Niet alleen beloofd.</h2>
+    <div class="guarantee-grid">
+      <div class="guarantee">
+        <div class="guarantee-stat">0</div>
+        <h3>Opgeslagen kopieën na overdracht</h3>
+        <p>Burn-on-read: de relay wist zijn kopie op het moment dat u het document ophaalt. Er bestaat geen server-kopie meer.</p>
+      </div>
+      <div class="guarantee">
+        <div class="guarantee-stat">300s</div>
+        <h3>Maximale levensduur op de relay</h3>
+        <p>Als u vergeet op te halen, vernietigt de relay het document na 5 minuten automatisch uit het RAM. Geen schijfopslag, ooit.</p>
+      </div>
+      <div class="guarantee">
+        <div class="guarantee-stat">5MB</div>
+        <h3>Vaste pakketgrootte — metadata onzichtbaar</h3>
+        <p>Een paspoort en een juridisch advies zijn op de relay ononderscheidbaar. Verkeersanalyse geeft geen informatie over wat er verzonden wordt.</p>
+      </div>
+      <div class="guarantee">
+        <div class="guarantee-stat">768</div>
+        <h3>ML-KEM beveiligingsbits (NIST FIPS 203)</h3>
+        <p>De nieuwe wereldstandaard voor post-quantum encryptie. Bestand tegen toekomstige kwantumcomputers die klassieke RSA/ECC kunnen kraken.</p>
+      </div>
+      <div class="guarantee">
+        <div class="guarantee-stat">0</div>
+        <h3>Vereiste accounts of identiteit</h3>
+        <p>Geen naam, geen email, geen telefoonnummer. Een mathematisch sleutelpaar is uw identiteit — en verdwijnt na de sessie.</p>
+      </div>
+      <div class="guarantee">
+        <div class="guarantee-stat">EU</div>
+        <h3>Relay op Hetzner Duitsland</h3>
+        <p>Geen Amerikaanse wetgeving (FISA, NSL, CLOUD Act). Hetzner Neurenberg valt uitsluitend onder GDPR. Geen Schrems II-problematiek.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Prijzen ── -->
+<section id="prijzen">
+  <div class="section">
+    <div class="section-label">// prijzen</div>
+    <h2>Eén tarief. Geen verrassingen.</h2>
+    <div class="pricing-grid">
+      <div class="plan">
+        <div class="plan-name">SOLO</div>
+        <div class="plan-price">€<span style="font-size:48px;font-family:var(--serif)">49</span></div>
+        <div class="plan-period">per maand · 1 gebruiker</div>
+        <ul class="plan-features">
+          <li>Onbeperkt overdrachten</li>
+          <li>5MB per pakket</li>
+          <li>Burn-on-read relay</li>
+          <li>Browser + CLI toegang</li>
+          <li>Email ondersteuning</li>
+        </ul>
+        <a href="https://paramant.app" class="plan-cta outline">Start gratis proefperiode</a>
+      </div>
+      <div class="plan featured">
+        <div class="plan-badge">MEEST GEKOZEN</div>
+        <div class="plan-name">KANTOOR</div>
+        <div class="plan-price">€<span style="font-size:48px;font-family:var(--serif)">149</span></div>
+        <div class="plan-period">per maand · tot 10 gebruikers</div>
+        <ul class="plan-features">
+          <li>Alles uit Solo</li>
+          <li>Team API key management</li>
+          <li>Usage dashboard</li>
+          <li>Prioriteit ondersteuning</li>
+          <li>Compliance documentatie</li>
+          <li>Maandelijks usage rapport</li>
+        </ul>
+        <a href="https://paramant.app" class="plan-cta green">Start gratis proefperiode</a>
+      </div>
+      <div class="plan">
+        <div class="plan-name">ENTERPRISE</div>
+        <div class="plan-price" style="font-size:32px;padding-top:8px">Op aanvraag</div>
+        <div class="plan-period">per maand · onbeperkte gebruikers</div>
+        <ul class="plan-features">
+          <li>Alles uit Kantoor</li>
+          <li>On-premise relay optie</li>
+          <li>Formele crypto-audit</li>
+          <li>SLA en uptime garantie</li>
+          <li>Integratie met bestaande systemen</li>
+          <li>Dedicated ondersteuning</li>
+        </ul>
+        <a href="mailto:privacy@paramant.app" class="plan-cta outline">Neem contact op</a>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--mid);margin-top:24px;font-family:var(--mono)">30 dagen gratis · Geen creditcard vereist · Opzeggen wanneer u wilt</p>
+  </div>
+</section>
+
+<!-- ── Testimonial ── -->
+<section class="testimonial-section">
+  <div class="testimonial-inner">
+    <div class="testimonial-quote">
+      "Eindelijk een manier om cliëntstukken te sturen waarbij ik <em>zeker weet</em> dat er geen kopie op een Amerikaanse server staat."
+    </div>
+    <div class="testimonial-attr">— ADVOCAAT AMSTERDAM · PARAMANT GEBRUIKER SINCE 2026</div>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section>
+  <div class="section">
+    <div class="section-label">// veelgestelde vragen</div>
+    <h2>Wat advocaten willen weten.</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">Is PARAMANT GDPR-compliant?</div>
+        <div class="faq-a">Ja. Omdat PARAMANT geen inhoud opslaat (burn-on-read, RAM-only, max 5 minuten), valt het buiten de definitie van "verwerking van persoonsgegevens" in de zin van AVG Art. 4(2). De relay is technisch een doorstroomstation, niet een verwerkingsverantwoordelijke. Er is geen verwerkersovereenkomst nodig.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Kan de relay-beheerder de inhoud lezen?</div>
+        <div class="faq-a">Nee. Inhoud wordt versleuteld in de browser van de verzender vóór verzending. De relay ontvangt uitsluitend een opaque versleutelde blob. Zonder de privésleutel van de ontvanger is de inhoud wiskundig onleesbaar — ook voor ons.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Wat als mijn cliënt niet technisch is?</div>
+        <div class="faq-a">Uw cliënt hoeft niets te installeren. De app werkt in elke browser. Het enige wat nodig is: de link die u stuurt openen, het bestand slepen en op 'Versturen' klikken. Dat is alles.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Wat is "post-quantum" en waarom maakt het uit?</div>
+        <div class="faq-a">Klassieke versleuteling (RSA, ECC) kan worden gebroken door een kwantumcomputer via het algoritme van Shor. Statelijke actoren slaan nu al versleuteld internetverkeer op in de hoop het later te ontsleutelen. PARAMANT gebruikt ML-KEM-768 (NIST FIPS 203), de nieuwe wereldstandaard die kwantumcomputers weerstaat.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Hoe weet ik dat het de juiste persoon is?</div>
+        <div class="faq-a">PARAMANT genereert veiligheidsnummers (safety numbers) voor elke verbinding. Bel uw cliënt en vergelijk de 8 nummers. Als ze overeenkomen, weet u zeker dat er niemand tussen u en de cliënt zit. Dit is dezelfde methode die Signal gebruikt.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section style="background:var(--cream);border-top:1px solid var(--border)">
+  <div class="cta-section">
+    <h2>Klaar om uw beroepsgeheim echt te beschermen?</h2>
+    <p>30 dagen gratis. Geen creditcard. Op elk apparaat. Sluit af wanneer u wilt.</p>
+    <a href="https://paramant.app" class="btn-primary" style="font-size:16px;padding:16px 40px">Begin gratis →</a>
+    <div class="cta-guarantee">ML-KEM-768 · NIST FIPS 203 · Hetzner EU · Open source · Made in NL</div>
+  </div>
+</section>
+
+<div class="canary-bar">
+  PARAMANT heeft tot en met <span>maart 2026</span> geen juridische bevelen, dagvaardingen of geheime overheidsopdrachten ontvangen.
+  &nbsp;·&nbsp; <a href="https://paramant.app" style="color:var(--green)">paramant.app</a>
+  &nbsp;·&nbsp; <a href="mailto:privacy@paramant.app" style="color:var(--mid)">privacy@paramant.app</a>
+</div>
+
+<footer>
+  <span>© 2026 PARAMANT · Made in the Netherlands</span>
+  <span>ML-KEM-768 + ECDH P-256 + AES-256-GCM · NIST FIPS 203</span>
+  <span><a href="https://github.com/Apolloccrypt/paramant" style="color:var(--mid)">GitHub</a></span>
+</footer>
+
+</body>
+</html>
