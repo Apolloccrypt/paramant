@@ -1894,7 +1894,7 @@ function connectRelay(){
       if(IS_ONION)showToast('[TOR] Verbonden via Tor — maximale anonimiteit',null,'#581c87');
     };
     relayWS.onclose=()=>{
-      relayOn=false;presenceMap.clear();renderPresence();
+      relayOn=false;joinedRooms.clear();presenceMap.clear();renderPresence();
       if(relayWant){setRelayUI('con');setTimeout(connectRelay,IS_ONION?4000:1000);}
       else setRelayUI('off');
     };
@@ -2004,10 +2004,6 @@ async function replayBuffered(conv){
   });
 }
 
-// ── Versleuteld verbindingsverzoek via ephemeral ECDH ───────────────
-// Jouw identiteit is onleesbaar voor de relay en alle observers.
-// Alleen de beoogde ontvanger (met zijn privésleutel) kan decrypten.
-// Relay ziet enkel: ephPub (wegwerp) + ciphertext + targetHash + timestamp
 async function broadcastConnRequest(theirBundle){
   if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;
   try{
@@ -2015,39 +2011,28 @@ async function broadcastConnRequest(theirBundle){
     if(!b.ecdh)return;
     const eb=h2b(b.ecdh.replace(/\s+/g,''));
     if(!eb||eb.length!==65)return;
-
-    // targetHash: hash van ontvanger pubkey — alleen voor routing, geen geheim
     const hh=await sha256(eb);
     const targetHash=b2h(hh.slice(0,8));
-
     const sendEncReq=async()=>{
       try{
-        // 1. Genereer wegwerp-ECDH keypair
         const ephKP=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
         const ephPubRaw=new Uint8Array(await crypto.subtle.exportKey('raw',ephKP.publicKey));
-
-        // 2. Derive encryptie sleutel: ECDH(ephPriv, recipientPub)
         const recipKey=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
         const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'ECDH',public:recipKey},ephKP.privateKey,256));
         const encKey=await hkdf(bits,'paramant-conn-request-v1',32);
         bits.fill(0);
-
-        // 3. Versleutel jouw bundle (nick + pubkeys)
         const plain=pad32(new TextEncoder().encode(myBundle));
         const aad=new TextEncoder().encode('paramant-conn-request');
         const{iv,ct}=await aesEnc(encKey,plain,aad);
-
         if(relayWS&&relayWS.readyState===1){
           relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{
             pType:'conn_request_enc',
-            ephPub:b2h(ephPubRaw),   // wegwerp pubkey — ontkoppeld van jouw identiteit
-            iv:b2h(iv),ct:b2h(ct),  // versleutelde bundle
+            ephPub:b2h(ephPubRaw),iv:b2h(iv),ct:b2h(ct),
             targetHash,ts:Date.now()
           }}));
         }
       }catch(e){}
     };
-    // 3x sturen voor betrouwbaarheid (elk met nieuw ephemeral keypair)
     await sendEncReq();
     setTimeout(sendEncReq,2000);
     setTimeout(sendEncReq,5000);
@@ -2076,9 +2061,6 @@ function onRelayMsg(msg){
       renderPresenceDebounced();return;
     }
 
-    // ── Versleuteld verbindingsverzoek (conn_request_enc) ─────────────
-    // Jouw identiteit is verborgen voor relay + observers via ephemeral ECDH.
-    // Alleen de ontvanger (met zijn privésleutel) kan decrypten.
     if(pay?.pType==='conn_request_enc'&&pay.ephPub&&pay.iv&&pay.ct&&pay.targetHash){
       if(!myIdentityHash||!myKP)return;
       const myHashHex=b2h(myIdentityHash.slice(0,8));
@@ -2103,7 +2085,6 @@ function onRelayMsg(msg){
           if(convs.find(c=>c.peerECDH===peerECDH))return;
           seenConnRequests.add(peerECDH);
           setTimeout(()=>seenConnRequests.delete(peerECDH),30000);
-          // Pre-join chatroom zodat berichten direct aankomen
           try{
             const eb2=h2b(peerECDH);
             const tk2=await crypto.subtle.importKey('raw',eb2,{name:'ECDH',namedCurve:'P-256'},false,[]);
@@ -2117,11 +2098,10 @@ function onRelayMsg(msg){
           presenceMap.set(nick,{nick,bundle,avatarHint:'',ts:Date.now()});
           renderPresenceDebounced();
           showIncomingRequest(nick,bundle,'');
-        }catch(e){/* decryptie mislukt = niet voor ons, stil negeren */}
+        }catch(e){}
       })();
       return;
     }
-    // Oud plaintext conn_request negeren (privacy — gebruik conn_request_enc)
     if(pay?.pType==='conn_request')return;
 
     // ── Normaal versleuteld pakket — zoek de juiste conv op chatHash ──
@@ -2533,6 +2513,11 @@ async function doConnect(){
       if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
       // Stabiele chatId voor relay room — dezelfde voor beide kanten
       conv.chatId=await chatIdFrom(chatCK);
+      // Dedup: voorkom twee convs met dezelfde chatId (bijv. bij simultane verbinding)
+      if(convs.find(c=>c.chatId===conv.chatId)){
+        showToast('[!] Al verbonden met deze peer — gesprek bestaat al.');
+        return;
+      }
       convs.push(conv);
       sysMsg(conv,` Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
       sysMsg(conv,' Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
@@ -2944,30 +2929,15 @@ function hidePaste(){$('paste-ov').style.display='none';}
 
 // ─── LAUNCH ───────────────────────────────────────────────────────────
 function openApp(){
-  // Detecteer tweede tab/window met dezelfde identiteit
-  // (IndexedDB is per-origin gedeeld — alle tabs op paramant.app delen dezelfde sleutels)
   try{
     const tabKey='pm-tab-'+Date.now()+'-'+Math.random().toString(36).slice(2);
     sessionStorage.setItem('pm-this-tab',tabKey);
-    const openTabs=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]');
     const now=Date.now();
-    // Verwijder oude tabs (>30s inactief)
-    const active=openTabs.filter(t=>now-t.ts<30000);
-    active.push({id:tabKey,ts:now});
-    localStorage.setItem('pm-open-tabs',JSON.stringify(active));
-    if(active.length>1){
-      setTimeout(()=>showToast(
-        '[!] Tweede venster gedetecteerd — beide vensters gebruiken dezelfde identiteit (zelfde sleutelpaar). Gebruik een privévenster of ander browserprofiel voor een aparte identiteit.',
-        null,'#7c3aed'),1500);
-    }
-    // Houd tab-timestamp bij zodat andere vensters ons zien
-    setInterval(()=>{
-      try{
-        const t=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]');
-        const idx=t.findIndex(x=>x.id===tabKey);
-        if(idx>-1){t[idx].ts=Date.now();localStorage.setItem('pm-open-tabs',JSON.stringify(t));}
-      }catch(e){}
-    },10000);
+    const openTabs=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]').filter(t=>now-t.ts<30000);
+    openTabs.push({id:tabKey,ts:now});
+    localStorage.setItem('pm-open-tabs',JSON.stringify(openTabs));
+    if(openTabs.length>1)setTimeout(()=>showToast('[!] Tweede venster — zelfde identiteit. Gebruik privévenster voor aparte identiteit.',null,'#7c3aed'),1500);
+    setInterval(()=>{try{const t=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]');const i=t.findIndex(x=>x.id===tabKey);if(i>-1){t[i].ts=Date.now();localStorage.setItem('pm-open-tabs',JSON.stringify(t));}}catch(e){}},10000);
   }catch(e){}
   $('app').style.display='flex';
   document.body.style.overflow='hidden';
@@ -3032,7 +3002,7 @@ if('serviceWorker' in navigator){const sw=`const C='pm-v3';self.addEventListener
 </script>
 
 <script>
-// SW: alleen de inline Blob SW wordt gebruikt — /sw.js registratie verwijderd
+// SW: alleen inline Blob SW — /sw.js verwijderd
 
 // PWA install prompt
 let _deferredPrompt = null;
