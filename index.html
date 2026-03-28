@@ -2369,7 +2369,9 @@ function buildPresenceRow(p, compact=false){
   const nm=document.createElement('div');
   nm.className=compact?'font-semibold text-[#e2e4e8] text-sm truncate':'text-xs font-medium text-[#e2e4e8] truncate';
   nm.textContent=p.nick;
-  const st=document.createElement('div');st.className='text-xs text-green-400 mono';st.textContent='* online';
+  const st=document.createElement('div');st.className='text-xs text-green-400 mono';
+  const _age=p.ts?Math.floor((Date.now()-p.ts)/60000):0;
+  st.textContent=_age>1?`* online ${_age}m`:'* online';
   inf.appendChild(nm);inf.appendChild(st);
   const btn=document.createElement('button');
   btn.className=compact
@@ -3595,13 +3597,21 @@ function cycleSessionTimer() {
 
 // Flush-reset: na relay flush ook berichten wissen (privacy garantie)
 function onRelayFlush() {
-  showToast('🧹 Relay geflushed — alle bewijssporen gewist', null, '#0f4c3a');
+  showToast('🧹 Relay geflushed — alle sporen gewist. Presence herstart.', null, '#0f4c3a');
   // Wis ledger entries in UI
   ledgerAll = []; ledgerPage = 0;
   const el = document.getElementById('ledger-entries');
   if (el) el.innerHTML = '';
-  // Update stats
-  setTimeout(() => { fetchStats(); fetchLedger(); }, 500);
+  // Wis presenceMap — fresh start na flush
+  // Drax+Ghost en anderen verdwijnen totdat ze zichzelf opnieuw aankondigen
+  presenceMap.clear();
+  renderPresence();  // lijst direct leeg tonen
+  // Re-broadcast onze eigen presence zodat anderen ons nog steeds zien
+  setTimeout(() => {
+    if (!stealthMode) broadcastPresence();
+    fetchStats();
+    fetchLedger();
+  }, 1000);
 }
 
 // ── TRIPLE SECURE INVITE ──────────────────────────────────────────
