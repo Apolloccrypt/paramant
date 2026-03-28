@@ -3323,6 +3323,11 @@ const _origDecrypt = window.decryptPacket;
 function toggleMobNav(){const n=document.getElementById('mob-nav');n.style.display=n.style.display==='flex'?'none':'flex';}
 function closeMobNav(){document.getElementById('mob-nav').style.display='none';}
 
+function verifyIntegrityManual(){
+  sessionStorage.setItem('pm-verify-requested','1');
+  showToast('Integriteit verifiëren met GitHub… pagina herlaadt.');
+  setTimeout(()=>location.reload(),1000);
+}
 function testVerbinding(){
   const c=activeConv();
   if(!c?.sendChainKey){alert('[!] Geen verbinding actief. Verbind eerst met je amice.');return;}
@@ -3470,6 +3475,137 @@ window.addEventListener('focus', () => {
     }, 60000);
   }, 4000);
 })();
+
+
+// ══════════════════════════════════════════════════════════════
+//  APP-INTEGRITEIT VERIFICATIE
+//  Beschermt tegen gecompromitteerde CDN (Cloudflare-aanval)
+//
+//  Werking:
+//  1. Bereken SHA-256 van geladen HTML
+//  2. Vergelijk met GitHub (de openbare broncode)
+//  3. Als mismatch → waarschuwing + app sluiten
+//  4. Sla hash op in localStorage voor change-detectie
+// ══════════════════════════════════════════════════════════════
+
+const GITHUB_RAW = 'https://raw.githubusercontent.com/Apolloccrypt/paramant/main/index.html';
+
+async function sha256hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function showIntegrityAlert(type, currentHash, expectedHash) {
+  // Verwijder alle app-inhoud — toon alleen waarschuwing
+  const overlay = document.createElement('div');
+  overlay.style.cssText = [
+    'position:fixed;inset:0;z-index:999999',
+    'background:#0c0e10;display:flex;align-items:center;justify-content:center',
+    'font-family:monospace;padding:24px'
+  ].join(';');
+
+  const isTampered = type === 'mismatch';
+  const isChanged  = type === 'changed';
+
+  overlay.innerHTML = `
+    <div style="max-width:520px;width:100%;background:#111214;border:2px solid ${isTampered?'#ef4444':'#f59e0b'};padding:32px;border-radius:4px">
+      <div style="font-size:22px;font-weight:900;color:${isTampered?'#ef4444':'#f59e0b'};margin-bottom:16px">
+        ${isTampered ? '⚠️ MOGELIJKE AANVAL GEDETECTEERD' : '⚠️ APP IS GEWIJZIGD'}
+      </div>
+      <div style="color:#c8ccd4;font-size:13px;line-height:1.8;margin-bottom:20px">
+        ${isTampered
+          ? `De geladen HTML <strong style="color:#ef4444">komt niet overeen</strong> met de openbare broncode op GitHub.<br>
+             Dit kan betekenen dat Cloudflare of een tussenpersoon de app heeft aangepast.<br><br>
+             <strong style="color:#e2e4e8">Gebruik PARAMANT niet via de browser totdat dit is opgehelderd.</strong><br>
+             Download de HTML direct van GitHub en open hem lokaal.`
+          : `De app-hash is veranderd ten opzichte van je vorige bezoek.<br>
+             Dit kan een legitieme update zijn — of een aanpassing door een tussenpersoon.<br><br>
+             <strong style="color:#e2e4e8">Verifieer de hash op GitHub voordat je verder gaat.</strong>`
+        }
+      </div>
+      <div style="background:#0c0e10;padding:12px;margin-bottom:16px;font-size:11px;word-break:break-all">
+        <div style="color:#5a6070;margin-bottom:4px">Geladen hash:</div>
+        <div style="color:#f87171">${currentHash}</div>
+        ${expectedHash ? `<div style="color:#5a6070;margin-top:8px;margin-bottom:4px">${isTampered?'GitHub hash:':'Vorige hash:'}</div>
+        <div style="color:#4ade80">${expectedHash}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="${GITHUB_RAW}" target="_blank" rel="noopener"
+           style="flex:1;padding:10px;background:#2a2d35;color:#c8ccd4;text-decoration:none;text-align:center;font-size:12px;border:1px solid #3d4149">
+          📂 Bekijk broncode op GitHub
+        </a>
+        ${isChanged ? `<button onclick="
+          localStorage.setItem('pm-integrity-hash', '${currentHash}');
+          localStorage.setItem('pm-integrity-ts', Date.now());
+          this.closest('div[style*=fixed]').remove();
+        " style="flex:1;padding:10px;background:#1a2a1a;color:#4ade80;border:1px solid #166534;cursor:pointer;font-size:12px;font-family:monospace">
+          ✓ Vertrouw nieuwe versie
+        </button>` : ''}
+        <button onclick="window.location.href='about:blank'"
+           style="flex:1;padding:10px;background:#1a0a0a;color:#ef4444;border:1px solid #7f1d1d;cursor:pointer;font-size:12px;font-family:monospace">
+          ✕ Sluit app
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function verifyIntegrity() {
+  try {
+    const currentHTML = document.documentElement.outerHTML;
+    const currentHash = await sha256hex(currentHTML);
+
+    // Sla hash op in UI voor handmatige verificatie
+    const hashEl = document.getElementById('integrity-hash');
+    if (hashEl) hashEl.textContent = currentHash.slice(0,16)+'…';
+
+    // 1. Change-detectie: vergelijk met vorige opgeslagen hash
+    const storedHash = localStorage.getItem('pm-integrity-hash');
+    if (storedHash && storedHash !== currentHash) {
+      // Hash veranderd — waarschuw maar laat gebruiker kiezen
+      showIntegrityAlert('changed', currentHash, storedHash);
+      return;
+    }
+
+    // 2. GitHub-vergelijking (optioneel — lekt naar GitHub dat je Paramant gebruikt)
+    // Alleen uitvoeren als expliciet gevraagd via ?verify of knop
+    if (location.search.includes('verify') || sessionStorage.getItem('pm-verify-requested')) {
+      sessionStorage.removeItem('pm-verify-requested');
+      try {
+        const resp = await fetch(GITHUB_RAW + '?nocache=' + Date.now(), {cache:'no-store'});
+        if (resp.ok) {
+          const githubHTML = await resp.text();
+          const githubHash = await sha256hex(githubHTML);
+          if (currentHash !== githubHash) {
+            showIntegrityAlert('mismatch', currentHash, githubHash);
+            return;
+          } else {
+            showToast('✓ Integriteit bevestigd — hash overeenkomst met GitHub', null, '#0f4c3a');
+          }
+        }
+      } catch(e) {
+        showToast('[!] GitHub niet bereikbaar — handmatige verificatie vereist');
+      }
+    }
+
+    // Sla huidige hash op voor volgende sessie
+    localStorage.setItem('pm-integrity-hash', currentHash);
+    localStorage.setItem('pm-integrity-ts', Date.now());
+
+  } catch(e) {
+    // Integriteitscheck mislukt — niet fataal, log alleen
+    console.warn('[PARAMANT] Integriteitscheck mislukt:', e.message);
+  }
+}
+
+// Voer uit na volledig laden (DOM + scripts klaar)
+window.addEventListener('load', () => setTimeout(verifyIntegrity, 500));
+
+// Knop om GitHub-verificatie handmatig te triggeren
+window.verifyWithGitHub = function() {
+  sessionStorage.setItem('pm-verify-requested', '1');
+  location.reload();
+};
 
 </script>
 </body>
