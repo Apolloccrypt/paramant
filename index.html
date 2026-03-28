@@ -1505,14 +1505,11 @@ const IDB=(()=>{
     // Identity ops
     async saveIdentity(data){const d=await get();return new Promise(r=>{const t=d.transaction('id','readwrite');t.objectStore('id').put({k:'main',...data});t.oncomplete=r;});},
     async loadIdentity(){const d=await get();return new Promise(r=>{d.transaction('id','readonly').objectStore('id').get('main').onsuccess=e=>r(e.target.result||null);});},
-    async clearIdentity(){const d=await get();return new Promise(r=>{const t=d.transaction('id','readwrite');t.objectStore('id').delete('main');t.oncomplete=r;});},
-    async pruneNonces(maxAgeMs=7*86400000){const d=await get();if(!d)return;return new Promise(r=>{const cutoff=Date.now()-maxAgeMs;const t=d.transaction('n','readwrite');const store=t.objectStore('n');const req=store.openCursor();req.onsuccess=e=>{const cur=e.target.result;if(!cur){r();return;}if((cur.value.ts||0)<cutoff)cur.delete();cur.continue();};t.onerror=r;});}
+    async clearIdentity(){const d=await get();return new Promise(r=>{const t=d.transaction('id','readwrite');t.objectStore('id').delete('main');t.oncomplete=r;});}
   };
 })();
 // Keep NDB alias for backward compat
 const NDB={has:id=>IDB.hasNonce(id),add:id=>IDB.addNonce(id)};
-// Ruim oude nonces op bij laden (ouder dan 7 dagen)
-setTimeout(()=>IDB.pruneNonces().catch(()=>{}), 3000);
 
 // ─── FRACTAL AVATAR — 100% hash-derived ─────────────────────────────
 const MB_REGIONS=[[-0.7269,0.1889,0.022],[-0.5252,0.5252,0.016],[0.2850,0.0100,0.038],[-0.7453,0.1127,0.007],[-0.1256,0.6440,0.012],[-1.7548,0.0001,0.009],[-0.8000,0.1560,0.028],[-0.4244,0.3578,0.011],[0.0000,0.6180,0.045],[-0.5890,-0.4250,0.014],[-1.3150,0.0740,0.007],[-0.5980,0.6630,0.006],[0.4295,0.1658,0.019],[-0.7780,0.1340,0.009],[-0.2340,-0.8270,0.013],[-1.4012,0.0000,0.011],[-0.1011,0.9532,0.008],[0.3690,0.6700,0.015],[-0.8650,0.2320,0.010],[-0.6890,-0.2780,0.017]];
@@ -1773,6 +1770,7 @@ const RELAY_API = (!IS_ONION && RELAY_WS)
   : ''; // .onion heeft geen HTTP API via gewone browser
 
 let relayWS=null,relayOn=false,relayWant=false;
+const seenConnRequests=new Set(); // dedup: zelfde peer stuurt 3x broadcastConnRequest
 const presenceMap=new Map();
 
 // ── Relay connection countdown ──────────────────────────────────
@@ -1958,7 +1956,7 @@ function relayJoinOnce(room){
   relayJoin(room);
 }
 function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyState!==1)return false;try{relayWS.send(JSON.stringify({type:'packet',chatHash:conv.chatId,seq:pkt.seq,payload:{iv:pkt.iv,ct:pkt.ct,type:pkt.type,kemCt:pkt.kemCt,kemPub:pkt.kemPub}}));return true;}catch(e){return false;}}
-function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));// Multi-room relay: zorg dat actieve chatrooms verbonden blijven na presence join
+function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoin('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));// Multi-room relay v5.2: zorg dat actieve chatrooms verbonden blijven na presence join
 setTimeout(()=>{convs.forEach(c=>{if(c.connected&&c.chatId)relayJoin(c.chatId);});},50);}
 
 // Broadcast verbindingsverzoek — de andere partij ziet een inkomend verzoek
@@ -2062,25 +2060,18 @@ function onRelayMsg(msg){
       if(!myIdentityHash)return;
       const myHashHex=b2h(myIdentityHash.slice(0,8));
       if(pay.targetHash!==myHashHex)return;
-      // Heb ik al een verbinding met deze peer?
+      // Parse bundle
       let bparsed;try{bparsed=JSON.parse(pay.bundle);}catch{return;}
       if(!bparsed?.ecdh||!isHex(bparsed.ecdh,130))return;
-      // Check of ik al verbonden ben met DEZE specifieke peer (op basis van chatId)
-      // Niet blokkeren als ik al verbonden ben met iemand anders
-      (async()=>{
-        try{
-          const _eb=h2b(bparsed.ecdh.replace(/\s+/g,''));
-          if(!_eb||_eb.length!==65)return;
-          const _tk=await crypto.subtle.importKey('raw',_eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
-          const _bits=await crypto.subtle.deriveBits({name:'ECDH',public:_tk},myKP.privateKey,256);
-          const _sh=new Uint8Array(_bits);
-          const _m=await hkdf(_sh,'paramant-master-v1',32);
-          const _ck=await hkdf(_m,'paramant-chat-id-v2',32);
-          const _cid=await chatIdFrom(_ck);
-          _sh.fill(0);_m.fill(0);_ck.fill(0);
-          if(convs.find(c=>c.chatId===_cid))return; // al verbonden met DEZE peer
-        }catch(e){return;}
-      })();
+      const peerECDH=bparsed.ecdh.replace(/\s+/g,'');
+      // Sync dedup: zelfde peer stuurt broadcastConnRequest 3× (t=0, t+2s, t+5s)
+      // Negeer als popup al zichtbaar is voor deze peer, of al verbonden
+      if(seenConnRequests.has(peerECDH))return;
+      // Al verbonden met DEZE specifieke peer (sync check op opgeslagen peerECDH)
+      if(convs.find(c=>c.peerECDH===peerECDH))return;
+      seenConnRequests.add(peerECDH);
+      // Ruim dedup Set na 30s op zodat een nieuwe uitnodiging mogelijk blijft
+      setTimeout(()=>seenConnRequests.delete(peerECDH),30000);
 
       // ── Pre-join de relay room zodat berichten van de afzender
       //    direct aankomen, ook vóórdat doConnect voltooid is ──
@@ -2121,7 +2112,7 @@ function onRelayMsg(msg){
       ));
     }
     if(!conv){
-      // Conv bestaat nog niet of hash matcht niet — buffer voor replay na verbinding
+      // Conv bestaat nog niet — buffer voor replay na verbinding
       if(incomingHash) bufferEarlyPacket(incomingHash, msg);
       return;
     }
@@ -2515,6 +2506,7 @@ async function doConnect(){
       conv.sendSeq=0; conv.recvSeq=0;
       conv.safetyNums=sn; conv.connected=true;
       conv.kxType=myMLK&&bundle.mlkem?'ECDH P-256 + ML-KEM-768':'ECDH P-256';
+      conv.peerECDH=(bundle.ecdh||raw).replace(/\s+/g,''); // opslaan voor dedup conn_request
       if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
       // Stabiele chatId voor relay room — dezelfde voor beide kanten
       conv.chatId=await chatIdFrom(chatCK);
@@ -2992,8 +2984,7 @@ if('serviceWorker' in navigator){const sw=`const C='pm-v3';self.addEventListener
 </script>
 
 <script>
-// SW registratie: alleen de inline Blob SW (zie hierboven) wordt gebruikt
-// /sw.js registratie verwijderd — dubbele SW veroorzaakte cache-conflicten
+// SW: alleen de inline Blob SW hierboven wordt gebruikt — /sw.js registratie verwijderd
 
 // PWA install prompt
 let _deferredPrompt = null;
