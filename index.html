@@ -2020,10 +2020,19 @@ function connectRelay(){
       if(!IS_ONION)fetchStats();
       if(IS_ONION)showToast('[TOR] Verbonden via Tor — maximale anonimiteit',null,'#581c87');
     };
-    relayWS.onclose=()=>{
+    relayWS.onclose=(e)=>{
       relayOn=false;joinedRooms.clear();presenceMap.clear();renderPresence();
+      // Code 1001 = relay flush disconnect → RELOAD (nieuw identiteit), NIET reconnect
+      if(e.code===1001||!relayWant){
+        relayWant=false;
+        setRelayUI('off');
+        // Als er al een flush overlay is toon die, anders meteen reloaden
+        if(!document.getElementById('flush-close-overlay')){
+          showFlushClosingOverlay();
+        }
+        return;
+      }
       if(relayWant){setRelayUI('con');setTimeout(connectRelay,IS_ONION?4000:1000);}
-      else setRelayUI('off');
     };
     relayWS.onerror=()=>{
       relayOn=false;setRelayUI('err');
