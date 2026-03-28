@@ -290,12 +290,14 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <span>⚛</span> GHOST PIPE PROTOCOL · POST-QUANTUM · BURN-ON-READ
   </div>
   <h1 style="font-size:clamp(36px,7vw,72px);font-weight:900;color:#e2e4e8;line-height:1.05;letter-spacing:-.03em;margin-bottom:20px">
-    Gevoelige data versturen.<br>
-    <span style="color:#00ff9d">Zonder spoor. Wiskundig.</span>
+    Wat niet bestaat,<br>
+    <span style="color:#00ff9d">kan niet worden gestolen.</span>
   </h1>
-  <p style="font-size:18px;color:#8a8e98;max-width:640px;margin:0 auto 40px;line-height:1.7;font-weight:300">
-    ML-KEM-768 versleuteld transport. De relay vernietigt elke kopie direct na ophalen.
-    Geen opslag. Geen logs. Geen account. Klaar in 30 seconden.
+  <p style="font-size:18px;color:#8a8e98;max-width:640px;margin:0 auto 12px;line-height:1.7;font-weight:300">
+    Post-quantum data transport. Wiskundig onleesbaar. Fysiek spoorloos.
+  </p>
+  <p style="font-size:14px;color:#5a6070;max-width:560px;margin:0 auto 40px;line-height:1.8;font-family:monospace">
+    De relay vernietigt elke kopie direct na ophalen. Geen opslag. Geen account. Geen spoor.
   </p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
     <button onclick="openGhostPipe()" style="padding:14px 32px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:14px;font-weight:900;letter-spacing:.04em">
@@ -452,7 +454,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">GDPR: geen persistent opgeslagen KYC-documenten</span></div>
             <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">DORA-compliant: gecertificeerde crypto, minimale retentie</span></div>
           </div>
-          <a href="mailto:privacy@paramant.app" style="display:inline-block;margin-top:24px;padding:10px 24px;background:#00ff9d;color:#0c0e10;font-family:monospace;font-size:12px;text-decoration:none;font-weight:700;letter-spacing:.04em">Enterprise gesprek →</a>
+          <a href="/cdn-cgi/l/email-protection#b7c7c5dec1d6d4cef7c7d6c5d6dad6d9c399d6c7c7" style="display:inline-block;margin-top:24px;padding:10px 24px;background:#00ff9d;color:#0c0e10;font-family:monospace;font-size:12px;text-decoration:none;font-weight:700;letter-spacing:.04em">Enterprise gesprek →</a>
         </div>
         <div style="background:#0c0e10;border:1px solid #1e2026;padding:24px;font-family:monospace;font-size:12px">
           <div style="color:#5a6070;font-size:10px;letter-spacing:.08em;margin-bottom:16px">// VERGELIJKING</div>
@@ -622,7 +624,7 @@ paramant-cli receive   --hash $HASH   --out /run/secrets/db_password</code></pre
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function showTab(name) {
   ['advocaten','klokkenluiders','banken','blockchain','iot','chat'].forEach(t => {
     const panel = document.getElementById('panel-'+t);
@@ -3852,11 +3854,4 @@ async function gpReceive() {
         <div style="color:#00ff9d;font-weight:700;margin-bottom:6px">Ontvangen &amp; relay verbrand!</div>
         <div style="color:#5a6070">${plaintext.length} bytes ontsleuteld</div>
         <div style="color:#5a6070">Relay-kopie: vernietigd (burn-on-read)</div>
-        <div style="color:#5a6070">Download gestart automatisch</div>
-      </div>
-    `;
-    gpLog('Download gestart. Relay-kopie vernietigd.');
-  } catch(e) { gpLog('FOUT: '+e.message); }
-}
-</script>
-</body>
+        <div style="color:#5a6070">Download gestart automa
