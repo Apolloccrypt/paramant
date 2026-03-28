@@ -495,34 +495,123 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       </div>
 
       <!-- IOT -->
-      <div id="panel-iot" style="padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;display:none">
-        <div>
-          <div style="font-family:monospace;font-size:10px;color:#00ff9d;letter-spacing:.1em;margin-bottom:12px">// CRITICAL INFRASTRUCTURE</div>
-          <h3 style="font-size:22px;font-weight:900;color:#e2e4e8;margin-bottom:16px;line-height:1.2">Configuratie pushen. <br>Spionage onmogelijk.</h3>
-          <p style="font-size:14px;color:#8a8e98;line-height:1.8;margin-bottom:20px">Vaste 5MB blokken maskeren of er een routine-update of een nood-commando verstuurd wordt. Een afluisteraar kan het verschil niet zien. Perfect voor energiecentrales, waterzuiveringen en industriële netwerken.</p>
-          <div style="display:flex;flex-direction:column;gap:8px;font-family:monospace;font-size:12px">
-            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Software updates naar luchtgat-systemen</span></div>
-            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">API keys injecteren zonder environment variables</span></div>
-            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Patroonblinde overdracht: routine ≡ nood</span></div>
-            <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">CLI: <code>paramant-cli send config.tar.gz --to server</code></span></div>
+      <div id="panel-iot" style="padding:40px;display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;margin-bottom:32px">
+          <div>
+            <div style="font-family:monospace;font-size:10px;color:#00ff9d;letter-spacing:.1em;margin-bottom:12px">// KRITIEKE INFRASTRUCTUUR · OT SECURITY</div>
+            <h3 style="font-size:22px;font-weight:900;color:#e2e4e8;margin-bottom:16px;line-height:1.2">Onzichtbare commando's.<br>Sabotage-vrij.</h3>
+            <p style="font-size:14px;color:#8a8e98;line-height:1.8;margin-bottom:20px">In kritieke infrastructuur is metadata een wapen. Als een aanvaller ziet dat een pakket plotseling groter is, weet hij dat er een update plaatsvindt. Ghost Pipe dwingt symmetrie af — routine-updates, PLC-configuraties en noodstops zijn voor de buitenwereld wiskundig identiek.</p>
+            <div style="display:flex;flex-direction:column;gap:8px;font-family:monospace;font-size:12px">
+              <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">DPI-proof: 5MB vaste blokken — inhoud ≡ grootte ≡ intentie</span></div>
+              <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">On-premise relay — data verlaat uw netwerk nooit</span></div>
+              <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Zero-footprint: secrets naar /run/secrets (RAM-disk)</span></div>
+              <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">ARM64 native: Raspberry Pi · Industriële gateways</span></div>
+              <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Headless CLI voor scripts — geen GUI vereist</span></div>
+              <div style="display:flex;gap:10px"><span style="color:#00ff9d">✓</span><span style="color:#8a8e98">Proxy-support voor streng beveiligde bedrijfsnetwerken</span></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+              <a href="#" onclick="openEnterprise();return false" style="padding:10px 20px;background:#00ff9d;color:#0c0e10;font-family:monospace;font-size:12px;font-weight:900;text-decoration:none;letter-spacing:.04em">On-premise Relay Aanvragen</a>
+              <a href="/docs.html#github-actions" style="padding:10px 20px;background:transparent;border:1px solid #2a2d35;color:#8a8e98;font-family:monospace;font-size:12px;text-decoration:none;letter-spacing:.04em">GitHub Actions →</a>
+            </div>
           </div>
-          <a href="/docs.html#github-actions" style="display:inline-block;margin-top:24px;padding:10px 24px;background:#1a1d22;border:1px solid #2a2d35;color:#00ff9d;font-family:monospace;font-size:12px;text-decoration:none;letter-spacing:.04em">GitHub Actions plugin →</a>
-        </div>
-        <div style="background:#0c0e10;border:1px solid #1e2026;padding:24px;font-family:monospace;font-size:12px">
-          <div style="color:#5a6070;font-size:10px;letter-spacing:.08em;margin-bottom:12px">// CI/CD SECRET INJECTION</div>
-          <pre style="background:transparent;border:none;padding:0;font-size:11px;line-height:1.8;overflow-x:auto"><code><span style="color:#5a6070"># .github/workflows/deploy.yml</span>
-- <span style="color:#00d97e">name</span>: Inject secrets via Ghost Pipe
-  <span style="color:#00d97e">uses</span>: apolloccrypt/paramant-action@v2
-  <span style="color:#7c6bf0">with</span>:
-    <span style="color:#00d97e">data</span>: <span style="color:#f0a500">${{ secrets.DB_PASSWORD }}</span>
-    <span style="color:#00d97e">to</span>:   <span style="color:#f0a500">${{ secrets.SERVER_GP_PUBKEY }}</span>
 
-<span style="color:#5a6070"># Server ontvangt — nooit in logs of env vars</span>
-paramant-cli receive   --hash $HASH   --out /run/secrets/db_password</code></pre>
+          <!-- Scenario kaarten rechts -->
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <!-- Scenario 1: CI/CD -->
+            <div style="background:#0c0e10;border:1px solid #1e2026;padding:20px;font-family:monospace;font-size:11px">
+              <div style="color:#00ff9d;font-size:10px;letter-spacing:.08em;margin-bottom:10px">SCENARIO: CI/CD SECRET INJECTION</div>
+              <pre style="background:transparent;border:none;padding:0;font-size:11px;line-height:1.9;overflow-x:auto;color:#8a8e98"><code><span style="color:#5a6070"># Geen ENV vars, geen secrets in logs</span>
+paramant-cli send ./api_key.txt   --to $SERVER_GP_PUBKEY   --api-key $PARAMANT_KEY
+
+<span style="color:#5a6070"># Server ontvangt naar RAM-disk</span>
+paramant-cli receive   --hash $HASH   --out /run/secrets/api_key
+<span style="color:#5a6070"># → Nooit op schijf. Nooit in logs.</span></code></pre>
+            </div>
+            <!-- Scenario 2: PLC update -->
+            <div style="background:#0c0e10;border:1px solid #1e2026;padding:20px;font-family:monospace;font-size:11px">
+              <div style="color:#f59e0b;font-size:10px;letter-spacing:.08em;margin-bottom:10px">SCENARIO: PLC FIRMWARE UPDATE</div>
+              <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-size:11px">
+                <div style="background:#1a1d22;padding:8px;text-align:center;color:#8a8e98">Engineering<br>workstation</div>
+                <div style="color:#00ff9d;font-size:16px">→</div>
+                <div style="background:#1a1d22;padding:8px;text-align:center;color:#8a8e98">PLC gateway<br>(air-gapped)</div>
+              </div>
+              <div style="margin-top:10px;color:#5a6070;line-height:1.7;font-size:10px">
+                Aanvaller ziet: 5MB · 5MB · 5MB · 5MB<br>
+                Aanvaller weet: <span style="color:#ef4444">niets</span> — routine-check of firmware-push?
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Traffic analysis visualisatie -->
+        <div style="background:#0c0e10;border:1px solid #1e2026;padding:24px;font-family:monospace;font-size:11px;margin-bottom:24px">
+          <div style="color:#5a6070;font-size:10px;letter-spacing:.08em;margin-bottom:16px">// DEEP PACKET INSPECTION — WAT EEN AANVALLER ZIET</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <div>
+              <div style="color:#ef4444;font-size:10px;margin-bottom:10px">ZONDER GHOST PIPE</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="height:10px;width:20px;background:#3d4149"></div>
+                  <span style="color:#5a6070">12B — keep-alive ping</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="height:10px;width:20px;background:#3d4149"></div>
+                  <span style="color:#5a6070">8B — sensor reading</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="height:10px;background:#ef4444;flex:1;max-width:160px"></div>
+                  <span style="color:#ef4444;font-weight:700">2.3MB — FIRMWARE UPDATE !</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="height:10px;background:#ef4444;flex:1;max-width:100px"></div>
+                  <span style="color:#ef4444;font-weight:700">980KB — CONFIG CHANGE !</span>
+                </div>
+              </div>
+              <div style="margin-top:10px;color:#ef4444;font-size:10px">→ Aanvaller weet exact wanneer kritieke updates plaatsvinden</div>
+            </div>
+            <div>
+              <div style="color:#00ff9d;font-size:10px;margin-bottom:10px">MET GHOST PIPE (5MB BLOKKEN)</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="height:10px;background:#00ff9d20;border:1px solid #00ff9d40;flex:1;max-width:160px"></div>
+                  <span style="color:#5a6070">5MB</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="height:10px;background:#00ff9d20;border:1px solid #00ff9d40;flex:1;max-width:160px"></div>
+                  <span style="color:#5a6070">5MB</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="height:10px;background:#00ff9d20;border:1px solid #00ff9d40;flex:1;max-width:160px"></div>
+                  <span style="color:#5a6070">5MB</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="height:10px;background:#00ff9d20;border:1px solid #00ff9d40;flex:1;max-width:160px"></div>
+                  <span style="color:#5a6070">5MB</span>
+                </div>
+              </div>
+              <div style="margin-top:10px;color:#00ff9d;font-size:10px">→ Aanvaller ziet alleen: uniforme stroom · geen patroon · geen intentie</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OT checklist -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#1e2026;font-family:monospace;font-size:11px">
+          <div style="background:#111214;padding:16px">
+            <div style="color:#00ff9d;font-size:10px;letter-spacing:.06em;margin-bottom:8px">ARM64 SUPPORT</div>
+            <div style="color:#8a8e98;line-height:1.8">Rust cross-compilatie naar ARM64, ARMv7 en RISC-V. Werkt op Raspberry Pi 4, Siemens SIMATIC en Advantech gateways.</div>
+          </div>
+          <div style="background:#111214;padding:16px;border-left:1px solid #1e2026">
+            <div style="color:#00ff9d;font-size:10px;letter-spacing:.06em;margin-bottom:8px">HEADLESS CLI</div>
+            <div style="color:#8a8e98;line-height:1.8">Geen GUI. Puur scriptbaar. Exit codes voor CI/CD integratie. Stdin/stdout support voor pipeline chaining.</div>
+          </div>
+          <div style="background:#111214;padding:16px;border-left:1px solid #1e2026">
+            <div style="color:#00ff9d;font-size:10px;letter-spacing:.06em;margin-bottom:8px">PROXY SUPPORT</div>
+            <div style="color:#8a8e98;line-height:1.8">HTTP/SOCKS5 proxy via <code style="color:#00ff9d;background:#0f1a12;padding:1px 4px">HTTPS_PROXY</code> env. Werkt achter enterprise firewalls en DMZ netwerken.</div>
+          </div>
         </div>
       </div>
 
-      <!-- CHAT -->
+<!-- CHAT -->
       <div id="panel-chat" style="padding:40px;display:none">
         <div style="text-align:center;max-width:600px;margin:0 auto">
           <div style="font-family:monospace;font-size:10px;color:#5a6070;letter-spacing:.1em;margin-bottom:12px">// CHAT — EXTRA FUNCTIE</div>
@@ -3521,23 +3610,6 @@ window.verifyWithGitHub = function() {
 //  GHOST PIPE — Post-quantum stateless file transfer
 // ══════════════════════════════════════════════════════════════
 
-// Chunked base64 — btoa(...5MB array) crasht de JS call stack bij grote bestanden
-function u8ToB64(u8) {
-  let s = '', i = 0;
-  const chunk = 8192;
-  while (i < u8.length) {
-    s += String.fromCharCode(...u8.subarray(i, Math.min(i + chunk, u8.length)));
-    i += chunk;
-  }
-  return btoa(s);
-}
-function b64ToU8(b64) {
-  const bin = atob(b64);
-  const u8  = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-  return u8;
-}
-
 let _gpFile = null;
 let _gpKeys = null; // { pub: CryptoKey, priv: CryptoKey, pubHex: string, privHex: string }
 
@@ -3608,10 +3680,7 @@ async function gpKeygen() {
     document.getElementById('gp-pubkey-out').value  = pubHex;
     document.getElementById('gp-privkey-out').value = privHex;
     document.getElementById('gp-keygen-result').style.display = 'block';
-  } catch(e) {
-    gpLog('FOUT: ' + e.message);
-    console.error('gpSend fout:', e);
-  }
+  } catch(e) { gpLog('FOUT: '+e.message); }
 }
 
 // ── Hash berekening ───────────────────────────────────────────
@@ -3774,15 +3843,9 @@ async function gpSend() {
   try {
     gpLog('Bestand inlezen...');
     const data = new Uint8Array(await _gpFile.arrayBuffer());
-    gpLog('Versleutelen met ML-KEM-768 + AES-256-GCM...');
-    let encrypted;
-    try {
-      encrypted = await gpEncrypt(data, pubHex);
-    } catch(encErr) {
-      gpLog('CRYPTO FOUT: ' + encErr.message);
-      console.error('gpEncrypt fout:', encErr);
-      return;
-    }
+
+    gpLog('Versleutelen met ECDH + AES-256-GCM...');
+    const encrypted = await gpEncrypt(data, pubHex);
 
     gpLog(`Padding naar 5MB vaste blokgrootte...`);
     const padded = gpPad(encrypted);
@@ -3792,7 +3855,7 @@ async function gpSend() {
 
     gpLog(`Versturen naar relay (hash: ${hash.slice(0,16)}...)...`);
     const relay = (window._PARAMANT_RELAY || 'https://relay.paramant.app').replace('wss://','https://').replace('ws://','http://');
-        const b64   = u8ToB64(padded);
+    const b64   = btoa(String.fromCharCode(...padded));
     const resp  = await fetch(`${relay}/v2/inbound`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3813,10 +3876,7 @@ async function gpSend() {
       <div style="color:#5a6070;font-size:10px">Verloopt over ${expiresIn}s · ${_gpFile.name} · ${(padded.length/1024).toFixed(0)}KB (gepaddeerd)</div>
       <div style="color:#5a6070;font-size:10px;margin-top:4px">Relay ziet: opaque blob · geen bestandsnaam · geen metadata</div>
     `;
-  } catch(e) {
-    gpLog('FOUT: ' + e.message);
-    console.error('gpSend fout:', e);
-  }
+  } catch(e) { gpLog('FOUT: '+e.message); }
 }
 
 // ── Status check (zonder burn) ────────────────────────────────
@@ -3838,10 +3898,7 @@ async function gpCheckStatus() {
       el.textContent = 'Niet gevonden (al opgehaald of verlopen)';
       gpLog('Status: niet gevonden');
     }
-  } catch(e) {
-    gpLog('FOUT: ' + e.message);
-    console.error('gpSend fout:', e);
-  }
+  } catch(e) { gpLog('FOUT: '+e.message); }
 }
 
 // ── Ontvangen ─────────────────────────────────────────────────
