@@ -331,6 +331,60 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 </section>
 
 <!-- USE CASE TABS -->
+
+<!-- VERGELIJKINGSTABEL -->
+<section style="padding:60px 24px;background:#0c0e10;border-top:1px solid #1e2026">
+  <div style="max-width:860px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="font-family:monospace;font-size:10px;color:#5a6070;letter-spacing:.12em;margin-bottom:10px">// CHAT VS GHOST PIPE</div>
+      <h2 style="font-size:clamp(20px,3vw,32px);font-weight:900;color:#e2e4e8;letter-spacing:-.02em">Kies het juiste kanaal.</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#1e2026;font-family:monospace;font-size:12px">
+      <!-- Header -->
+      <div style="background:#111214;padding:16px 20px;font-size:10px;color:#5a6070;letter-spacing:.08em">KENMERK</div>
+      <div style="background:#111214;padding:16px 20px;font-size:10px;color:#5a6070;letter-spacing:.08em;text-align:center">💬 CHAT</div>
+      <div style="background:#1a1020;padding:16px 20px;font-size:10px;color:#a78bfa;letter-spacing:.08em;text-align:center;border-bottom:2px solid #a78bfa">👻 GHOST PIPE</div>
+      <!-- Rijen -->
+      <div style="background:#0f1419;padding:13px 20px;color:#5a6070;border-top:1px solid #1e2026">Bestandsgrootte</div>
+      <div style="background:#0f1419;padding:13px 20px;color:#8a8e98;text-align:center;border-top:1px solid #1e2026">Max 500KB</div>
+      <div style="background:#150f1e;padding:13px 20px;color:#a78bfa;text-align:center;font-weight:700;border-top:1px solid #2a1a3e">Max 5MB</div>
+
+      <div style="background:#111214;padding:13px 20px;color:#5a6070;border-top:1px solid #1e2026">Burn-on-read</div>
+      <div style="background:#111214;padding:13px 20px;color:#3d4149;text-align:center;border-top:1px solid #1e2026">✗</div>
+      <div style="background:#1a1020;padding:13px 20px;color:#00ff9d;text-align:center;font-weight:700;border-top:1px solid #2a1a3e">✓ Directe vernietiging</div>
+
+      <div style="background:#0f1419;padding:13px 20px;color:#5a6070;border-top:1px solid #1e2026">Vaste blokgrootte</div>
+      <div style="background:#0f1419;padding:13px 20px;color:#3d4149;text-align:center;border-top:1px solid #1e2026">✗ variabel</div>
+      <div style="background:#150f1e;padding:13px 20px;color:#00ff9d;text-align:center;font-weight:700;border-top:1px solid #2a1a3e">✓ Altijd 5MB</div>
+
+      <div style="background:#111214;padding:13px 20px;color:#5a6070;border-top:1px solid #1e2026">Metadata masking</div>
+      <div style="background:#111214;padding:13px 20px;color:#3d4149;text-align:center;border-top:1px solid #1e2026">✗</div>
+      <div style="background:#1a1020;padding:13px 20px;color:#00ff9d;text-align:center;font-weight:700;border-top:1px solid #2a1a3e">✓ Inhoud ≡ grootte ≡ type</div>
+
+      <div style="background:#0f1419;padding:13px 20px;color:#5a6070;border-top:1px solid #1e2026">Automatisering</div>
+      <div style="background:#0f1419;padding:13px 20px;color:#3d4149;text-align:center;border-top:1px solid #1e2026">✗</div>
+      <div style="background:#150f1e;padding:13px 20px;color:#a78bfa;text-align:center;font-weight:700;border-top:1px solid #2a1a3e">✓ API key + CLI</div>
+
+      <div style="background:#111214;padding:13px 20px;color:#5a6070;border-top:1px solid #1e2026">TTL</div>
+      <div style="background:#111214;padding:13px 20px;color:#8a8e98;text-align:center;border-top:1px solid #1e2026">Hourly flush</div>
+      <div style="background:#1a1020;padding:13px 20px;color:#00ff9d;text-align:center;font-weight:700;border-top:1px solid #2a1a3e">300s gegarandeerd</div>
+
+      <div style="background:#0f1419;padding:13px 20px;color:#5a6070;border-top:1px solid #1e2026">Gebruik</div>
+      <div style="background:#0f1419;padding:13px 20px;color:#8a8e98;text-align:center;border-top:1px solid #1e2026">Gratis</div>
+      <div style="background:#150f1e;padding:13px 20px;color:#a78bfa;text-align:center;font-weight:700;border-top:1px solid #2a1a3e">Free + API key plannen</div>
+
+      <!-- CTA rij -->
+      <div style="background:#0c0e10;padding:16px 20px;border-top:1px solid #1e2026"></div>
+      <div style="background:#0c0e10;padding:16px 20px;text-align:center;border-top:1px solid #1e2026">
+        <button onclick="openApp()" style="padding:8px 20px;background:transparent;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-family:monospace;font-size:11px;letter-spacing:.04em">Open Chat</button>
+      </div>
+      <div style="background:#100c18;padding:16px 20px;text-align:center;border-top:1px solid #2a1a3e">
+        <button onclick="openGhostPipe()" style="padding:8px 20px;background:#a78bfa;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:11px;font-weight:700;letter-spacing:.04em">👻 Open Ghost Pipe</button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="usecases" style="padding:80px 24px;background:#0f1419;border-top:1px solid #1e2026">
   <div style="max-width:1000px;margin:0 auto">
     <div style="text-align:center;margin-bottom:48px">
@@ -2448,8 +2502,14 @@ async function processFile(conv,file){
     // Toon Ghost Pipe suggestie
     setTimeout(()=>{
       const hint = document.createElement('div');
-      hint.style.cssText='background:#1a1020;border:1px solid #a78bfa40;padding:10px 14px;margin:6px 12px;font-size:11px;font-family:monospace;cursor:pointer;color:#a78bfa';
-      hint.innerHTML='👻 Bestanden >500KB versturen? Gebruik Ghost Pipe — burn-on-read + post-quantum. <span style="text-decoration:underline">Openen →</span>';
+      hint.style.cssText='background:#150f1e;border:1px solid #a78bfa50;padding:12px 16px;margin:6px 12px;font-size:11px;font-family:monospace;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px';
+      hint.innerHTML=`
+        <div>
+          <div style="color:#a78bfa;font-weight:700;margin-bottom:3px">Bestand te groot voor chat</div>
+          <div style="color:#5a6070;font-size:10px;line-height:1.6">Ghost Pipe: burn-on-read · 5MB · vaste blokgrootte · metadata onzichtbaar</div>
+        </div>
+        <div style="background:#a78bfa;color:#0c0e10;padding:6px 14px;font-weight:700;white-space:nowrap;font-size:11px;flex-shrink:0">👻 Openen →</div>
+      `;
       hint.onclick=()=>openGhostPipe();
       const feed = document.getElementById('feed-'+conv);
       if(feed) feed.appendChild(hint);
