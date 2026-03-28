@@ -2015,6 +2015,11 @@ function connectRelay(){
     relayWS.onopen=()=>{
       relayOn=true;setRelayUI('on');
       const _jnd=new Set();convs.forEach(c=>{if(c.connected&&c.chatId&&!_jnd.has(c.chatId)){relayJoin(c.chatId);_jnd.add(c.chatId);}});
+      // Join eigen request room — conn_requests komen gericht aan, niet via __presence__
+      if(myIdentityHash){
+        const _myReqRoom='__req__'+b2h(myIdentityHash.slice(0,16));
+        relayJoinOnce(_myReqRoom);
+      }
       broadcastPresence();
       if(!IS_ONION)fetchStats();
       if(IS_ONION)showToast('[TOR] Verbonden via Tor — maximale anonimiteit',null,'#581c87');
@@ -2155,12 +2160,22 @@ async function replayBuffered(conv){
 }
 
 async function broadcastConnRequest(theirBundle){
+  try{
+    const b=typeof theirBundle==='string'?JSON.parse(theirBundle||'{}'):theirBundle;
+    if(!b.ecdh)return;
+    var _rk=b.ecdh.slice(0,16);
+    var _now=Date.now();
+    var _r=_connReqRates.get(_rk)||{cnt:0,win:_now};
+    if(_now-_r.win>60000){_r.cnt=0;_r.win=_now;}
+    if(++_r.cnt>3){showToast('[!] Te veel verbindingsverzoeken — wacht even');return;}
+    _connReqRates.set(_rk,_r);
+  }catch(e){}
   if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;
   try{
     const b=typeof theirBundle==='string'?JSON.parse(theirBundle||'{}'):theirBundle;
     if(!b.ecdh)return;const eb=h2b(b.ecdh.replace(/\s+/g,''));
     if(!eb||eb.length!==65)return;
-    const hh=await sha256(eb);const targetHash=b2h(hh.slice(0,8));
+    const hh=await sha256(eb);const targetHash=b2h(hh.slice(0,16)); // 128 bit — collision praktisch onmogelijk
     const sendEncReq=async()=>{try{
       const ephKP=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
       const ephPubRaw=new Uint8Array(await crypto.subtle.exportKey('raw',ephKP.publicKey));
@@ -2170,11 +2185,17 @@ async function broadcastConnRequest(theirBundle){
       const plain=pad32(new TextEncoder().encode(myBundle));
       const aad=new TextEncoder().encode('paramant-conn-request');
       const{iv,ct}=await aesEnc(encKey,plain,aad);
-      if(relayWS&&relayWS.readyState===1)relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'conn_request_enc',ephPub:b2h(ephPubRaw),iv:b2h(iv),ct:b2h(ct),targetHash,ts:Date.now()}}));
+      if(relayWS&&relayWS.readyState===1)// Stuur naar targetHash-specifieke room — niet naar __presence__ zodat anderen het niet zien
+      var _reqRoom='__req__'+targetHash;
+      relayWS.send(JSON.stringify({type:'join',room:_reqRoom}));
+      relayWS.send(JSON.stringify({type:'packet',chatHash:_reqRoom,seq:Date.now(),payload:{pType:'conn_request_enc',ephPub:b2h(ephPubRaw),iv:b2h(iv),ct:b2h(ct),targetHash,ts:Date.now()}}));
     }catch(e){}};
     await sendEncReq();setTimeout(sendEncReq,2000);setTimeout(sendEncReq,5000);
   }catch(e){}
 }
+// Rate limiting conn_request: max 3 per 60s per target
+const _connReqRates=new Map();
+
 // Broadcast presence elke 10s (was 25s — te traag voor peer discovery)
 setInterval(()=>{if(relayOn)broadcastPresence();},10000);
 // Presence TTL cleanup — verwijder entries ouder dan 25s (2.5× broadcast interval)
@@ -2213,8 +2234,10 @@ function onRelayMsg(msg){
     }
 
     if(pay?.pType==='conn_request_enc'&&pay.ephPub&&pay.iv&&pay.ct&&pay.targetHash){
+      // Replay bescherming: max 30s oud
+      if(pay.ts&&Math.abs(Date.now()-pay.ts)>30000)return;
       if(!myIdentityHash||!myKP)return;
-      if(b2h(myIdentityHash.slice(0,8))!==pay.targetHash)return;
+      if(b2h(myIdentityHash.slice(0,16))!==pay.targetHash)return;
       (async()=>{try{
         const ephPubBytes=h2b(pay.ephPub);if(!ephPubBytes||ephPubBytes.length!==65)return;
         const ephKey=await crypto.subtle.importKey('raw',ephPubBytes,{name:'ECDH',namedCurve:'P-256'},false,[]);
