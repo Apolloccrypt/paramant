@@ -324,55 +324,46 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 </div>
 
 <!-- HERO -->
-<section class="relative min-h-screen flex flex-col items-center justify-center text-center px-5 pt-24 pb-16 overflow-hidden">
-  <!-- Grid -->
-  <div class="absolute inset-0 bg-[linear-gradient(to_right,#111214_1px,transparent_1px),linear-gradient(to_bottom,#111214_1px,transparent_1px)] bg-[size:44px_44px] opacity-[0.22]"></div>
-  <!-- Glow -->
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#00ff9d]/5 rounded-full blur-3xl pointer-events-none"></div>
+<section style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:96px 24px 64px;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(#111214 1px,transparent 1px),linear-gradient(90deg,#111214 1px,transparent 1px);background-size:44px 44px;opacity:.18;pointer-events:none"></div>
+  <div style="position:relative;z-index:1;max-width:680px;margin:0 auto;font-family:var(--mono)">
 
-  <div class="relative z-10 max-w-3xl mx-auto">
-    <!-- Logo canvas -->
-    <div class="w-20 h-20 rounded border-2 border-[#00ff9d]/40 overflow-hidden mx-auto mb-8 cursor-pointer hover:border-[#00ff9d]/70 transition-all shadow-xl shadow-[#00ff9d]/8" onclick="openApp()">
-      <canvas id="hero-main-cv" width="80" height="80"></canvas>
+    <div style="width:72px;height:72px;border:1px solid rgba(0,255,157,.3);overflow:hidden;margin:0 auto 28px;cursor:pointer" onclick="openApp()">
+      <canvas id="hero-main-cv" width="72" height="72"></canvas>
     </div>
 
-    <!-- Badge -->
-    <div class="inline-flex items-center gap-2 px-4 py-2 mb-3 bg-[#1a1d22]/60 border border-[#2a2d35] rounded-full text-xs text-[#c8ccd4] font-medium">
-      ️ Onafhankelijke open-source privacytool &nbsp;·&nbsp; gemaakt door één persoon &nbsp;·&nbsp; <span style="color:#5a6070;font-family:var(--mono)">gemaakt in NL</span>
+    <div style="font-size:9px;color:#5a6070;letter-spacing:.12em;margin-bottom:24px">
+      <span id="hero-relay-dot" style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#2a2d35;margin-right:6px;vertical-align:middle;transition:background .3s"></span>
+      <span id="hero-relay-txt">RELAY VERBINDEN...</span>
     </div>
 
-    <div class="inline-flex items-center gap-2 px-4 py-2 mb-7 bg-[#00ff9d]/10 border border-[#00ff9d]/25 rounded-full text-sm text-[#00ff9d] font-medium">
-      <span class="w-2 h-2 rounded-full bg-[#00ff9d] pulse-badge flex-shrink-0"></span>
-      ML-KEM-768 (NIST FIPS 203) · Post-quantum
-    </div>
-
-    <h1 class="text-4xl md:text-6xl font-extrabold text-[#e2e4e8] leading-[1.1] tracking-tight mb-5">
+    <h1 style="font-size:clamp(26px,4.5vw,50px);font-weight:800;color:#e2e4e8;line-height:1.1;letter-spacing:-.02em;margin-bottom:14px">
       Niemand kan meelezen.<br>
-      <span class="text-[#00ff9d]" style="animation:glow 3s ease-in-out infinite">Letterlijk niemand.</span>
+      <span style="color:#00ff9d">Letterlijk niemand.</span>
     </h1>
 
-    <p class="text-lg md:text-xl text-[#c8ccd4] font-light max-w-xl mx-auto mb-10 leading-relaxed">
-      Berichten die letterlijk niemand kan lezen — ook geen enkele server.
-      Net als bitcoin openbaar aantoonbaar, maar volledig onleesbaar.
+    <p style="font-size:13px;color:#8a8e98;line-height:2;max-width:460px;margin:0 auto 32px">
+      Post-quantum versleuteld appen zonder account of telefoonnummer.<br>
+      Niet wij. Niet de server. Wiskundig onmogelijk.
     </p>
 
-    <!-- Trust pills -->
-    <div class="flex flex-wrap justify-center gap-2.5 mb-10">
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#c8ccd4]">[LOCK] Eind-tot-eind versleuteld</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#c8ccd4]"> Nul account, nul telefoon</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#00ff9d]/10 border border-[#00ff9d]/30 rounded-full text-sm text-[#00ff9d]">⚛ Post-quantum (NIST FIPS 203)</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#c8ccd4]"> Geen installatie — werkt overal</div>
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d22]/80 border border-[#2a2d35] rounded-full text-sm text-[#c8ccd4]" style="font-family:var(--mono);font-size:11px;letter-spacing:.04em">// gemaakt in Nederland</div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-bottom:12px">
+      <span style="font-size:9px;padding:3px 10px;border:1px solid #2a2d35;color:#5a6070;letter-spacing:.06em">ML-KEM-768 · NIST FIPS 203</span>
+      <span style="font-size:9px;padding:3px 10px;border:1px solid #2a2d35;color:#5a6070;letter-spacing:.06em">ECDH P-256</span>
+      <span style="font-size:9px;padding:3px 10px;border:1px solid #2a2d35;color:#5a6070;letter-spacing:.06em">AES-256-GCM</span>
+      <span style="font-size:9px;padding:3px 10px;border:1px solid rgba(0,255,157,.2);color:#4a7c59;letter-spacing:.06em">GEMAAKT IN NL</span>
+    </div>
+    <div style="font-size:9px;color:#3d4149;letter-spacing:.06em;margin-bottom:36px">
+      Geen account &middot; Geen installatie &middot; Open-source
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-      <button onclick="openApp()" class="px-8 py-4 bg-[#00ff9d] hover:bg-[#00ff9d] text-[#0c0e10] font-bold text-lg rounded transition-all hover:shadow-xl hover:shadow-[#00ff9d]/10 active:scale-95">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      <button onclick="openApp()" style="padding:14px 40px;background:#00ff9d;color:#0c0e10;font-family:var(--mono);font-size:12px;font-weight:800;letter-spacing:.08em;border:none;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#00cc7a'" onmouseout="this.style.background='#00ff9d'">
         >> OPEN APP // GRATIS
       </button>
-      <a href="#hoe" class="px-8 py-4 bg-[#1a1d22] hover:bg-[#2a2d35] border border-[#2a2d35] text-[#e2e4e8] font-semibold text-lg rounded transition-all text-center">
-        Hoe werkt het? v
-      </a>
+      <a href="#hoe" style="font-size:11px;color:#5a6070;text-decoration:none;letter-spacing:.06em">HOE WERKT HET? &darr;</a>
     </div>
+
   </div>
 </section>
 
@@ -383,6 +374,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <div style="font-size:10px;color:#3d4149;font-family:var(--mono);letter-spacing:.1em">// RELAY_MEMPOOL · LIVE · PUBLIEK AANTOONBAAR · ONLEESBAAR</div>
       <div style="display:flex;gap:16px;font-size:10px;font-family:var(--mono)">
         <span style="color:#3d4149">MSGS: <span id="mp-msgs" style="color:#5a6070">—</span></span>
+        <span style="color:#3d4149">GESPREKKEN: <span id="mp-chats" style="color:#5a6070">—</span></span>
         <span style="color:#3d4149">ONLINE: <span id="mp-online" style="color:#00ff9d">—</span></span>
         <span style="color:#3d4149">UPTIME: <span id="mp-uptime" style="color:#5a6070">—</span></span>
       </div>
@@ -424,7 +416,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     const el = document.getElementById('mp-msgs');
     const eo = document.getElementById('mp-online');
     const eu = document.getElementById('mp-uptime');
-    if(el) el.textContent = stats.messages||0;
+    if(el) el.textContent = Number(stats.messages||0).toLocaleString('nl-NL');
+    const ec = document.getElementById('mp-chats');
+    if(ec) ec.textContent = stats.conversations || stats.chats || 0;
     if(eo) eo.textContent = stats.online||0;
     if(eu) eu.textContent = fmtUp(stats.uptime_s||0);
 
@@ -448,7 +442,17 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         fetch(RH+'/api/ledger').then(r=>r.json()).catch(()=>({}))
       ]);
       render(stats, ledger.entries||[]);
-    }catch(e){}
+      // Update hero relay dot
+      const dot = document.getElementById('hero-relay-dot');
+      const txt = document.getElementById('hero-relay-txt');
+      if(dot) dot.style.background = stats.ok ? '#00ff9d' : '#ef4444';
+      if(txt) txt.textContent = stats.ok
+        ? 'RELAY_ONLINE · ' + (stats.online||0) + ' verbonden'
+        : 'RELAY_OFFLINE';
+    }catch(e){
+      const dot = document.getElementById('hero-relay-dot');
+      if(dot) dot.style.background = '#ef4444';
+    }
   }
 
   tick();
