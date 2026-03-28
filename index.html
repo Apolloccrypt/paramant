@@ -1275,6 +1275,10 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             title="Klik om berichten automatisch te laten verdwijnen na 5, 10 of 30 minuten">
             [TTL] Auto-wis
           </button>
+        <button id="session-timer-btn" onclick="cycleSessionTimer()"
+          class="px-3 py-1.5 text-xs bg-[#1a1d22] border border-[#2a2d35] hover:border-[#f59e0b]/40 text-[#f59e0b] rounded-sm transition-all font-mono"
+          title="Sessie-timer — app sluit automatisch">⏱ Uit</button>
+        <span class="session-countdown text-xs font-mono font-bold" style="display:none"></span>
           <button id="voice-btn" onclick="startVoiceCall()"
             class="px-3 py-1.5 bg-[#1a1d22] border border-[#2a2d35] hover:border-green-500/30 rounded-lg text-xs text-[#c8ccd4] mono transition-all"
             title="Start een versleutelde voicecall via WebRTC — signaling gaat via je versleuteld kanaal">
@@ -2155,10 +2159,8 @@ function onRelayMsg(msg){
     if(typeof msg.peers==='number') updateOnlineFromWS(msg.peers);
   }
   else if(msg.type==='flush'){
-    // Relay heeft geflushed — update countdown en stats
     if(msg.next) startFlushCountdown(msg.next);
-    setTimeout(()=>{ fetchStats(); fetchLedger(); }, 500);
-    showToast('🧹 Relay geflushed — alle bewijssporen gewist', null, '#0f4c3a');
+    onRelayFlush();
   }
 }
 
@@ -3380,6 +3382,105 @@ function howTab(id, btn) {
   btn.style.borderBottomColor = '#00ff9d';
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  SESSIE-TIMER — Dead man's switch
+//  Sluit de app automatisch na X minuten
+// ══════════════════════════════════════════════════════════════
+
+let _sessionTimerInterval = null;
+let _sessionTimerEnd = null;
+const SESSION_OPTIONS = [0, 5, 10, 30, 60]; // 0 = geen timer
+
+function setSessionTimer(minutes) {
+  if (_sessionTimerInterval) clearInterval(_sessionTimerInterval);
+  _sessionTimerEnd = null;
+
+  if (!minutes) {
+    document.querySelectorAll('.session-countdown').forEach(el => { el.textContent = ''; el.style.display='none'; });
+    return;
+  }
+
+  _sessionTimerEnd = Date.now() + minutes * 60000;
+
+  _sessionTimerInterval = setInterval(() => {
+    const secs = Math.max(0, Math.floor((_sessionTimerEnd - Date.now()) / 1000));
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    const fmt = m + ':' + String(s).padStart(2,'0');
+    const urgent = secs < 60;
+
+    document.querySelectorAll('.session-countdown').forEach(el => {
+      el.textContent = fmt;
+      el.style.display = '';
+      el.style.color = urgent ? '#ef4444' : '#f59e0b';
+    });
+
+    if (secs === 0) {
+      clearInterval(_sessionTimerInterval);
+      _sessionTimerInterval = null;
+      sessionExpired();
+    }
+  }, 1000);
+
+  showToast(`⏱ Sessie-timer: ${minutes} min — app sluit automatisch`, null, '#1a1a00');
+}
+
+function sessionExpired() {
+  // Wis alles en sluit
+  convs.forEach(c => {
+    if(c.sendChainKey) c.sendChainKey.fill(0);
+    if(c.recvChainKey) c.recvChainKey.fill(0);
+  });
+  convs = [];
+  disconnectRelay();
+
+  // Toon afsluitscherm
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#0c0e10;display:flex;align-items:center;justify-content:center;font-family:monospace';
+  overlay.innerHTML = `
+    <div style="text-align:center;max-width:360px;padding:32px">
+      <div style="font-size:32px;margin-bottom:16px">⏱</div>
+      <div style="font-size:18px;font-weight:900;color:#e2e4e8;margin-bottom:12px">SESSIE VERLOPEN</div>
+      <div style="color:#5a6070;font-size:13px;margin-bottom:24px;line-height:1.7">
+        Alle berichten en sleutels zijn gewist.<br>
+        De tab sluit nu automatisch.
+      </div>
+      <button onclick="window.close()||location.href='about:blank'"
+        style="padding:12px 32px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-weight:900;font-size:13px">
+        SLUIT TAB
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => { try { window.close(); } catch(e) {} location.href='about:blank'; }, 3000);
+}
+
+function cycleSessionTimer() {
+  // Knop in UI om door timer-opties te lopen
+  const currentMins = _sessionTimerEnd ? Math.round((_sessionTimerEnd - Date.now()) / 60000) : 0;
+  // Vind huidige optie
+  let idx = 0;
+  for (let i = 0; i < SESSION_OPTIONS.length; i++) {
+    if (SESSION_OPTIONS[i] > 0 && currentMins > 0) { idx = i; break; }
+  }
+  const next = SESSION_OPTIONS[(SESSION_OPTIONS.indexOf(SESSION_OPTIONS[idx]) + 1) % SESSION_OPTIONS.length];
+  setSessionTimer(next);
+
+  const btn = document.getElementById('session-timer-btn');
+  if (btn) btn.textContent = next ? `⏱ ${next}m` : '⏱ Uit';
+}
+
+// Flush-reset: na relay flush ook berichten wissen (privacy garantie)
+function onRelayFlush() {
+  showToast('🧹 Relay geflushed — alle bewijssporen gewist', null, '#0f4c3a');
+  // Wis ledger entries in UI
+  ledgerAll = []; ledgerPage = 0;
+  const el = document.getElementById('ledger-entries');
+  if (el) el.innerHTML = '';
+  // Update stats
+  setTimeout(() => { fetchStats(); fetchLedger(); }, 500);
+}
+
 // ── TRIPLE SECURE INVITE ──────────────────────────────────────────
 
 
@@ -3592,12 +3693,11 @@ async function verifyIntegrity() {
     const hashEl = document.getElementById('integrity-hash');
     if (hashEl) hashEl.textContent = currentHash.slice(0,16)+'…';
 
-    // 1. Change-detectie: vergelijk met vorige opgeslagen hash
+    // 1. Change-detectie: alleen informerende toast, niet blokkerend
+    // (hash verandert bij elke legitieme deploy — alleen GitHub-mismatch blokkeert)
     const storedHash = localStorage.getItem('pm-integrity-hash');
     if (storedHash && storedHash !== currentHash) {
-      // Hash veranderd — waarschuw maar laat gebruiker kiezen
-      showIntegrityAlert('changed', currentHash, storedHash);
-      return;
+      showToast('ℹ️ App-versie gewijzigd. Klik [HASH] om te verifiëren met GitHub.', null, '#1a1a2e');
     }
 
     // 2. GitHub-vergelijking (optioneel — lekt naar GitHub dat je Paramant gebruikt)
