@@ -388,6 +388,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
         <span style="color:#3d4149">MSGS: <span id="mp-msgs" style="color:#5a6070">—</span></span>
         <span style="color:#3d4149">ONLINE: <span id="mp-online" style="color:#00ff9d">—</span></span>
         <span style="color:#3d4149">UPTIME: <span id="mp-uptime" style="color:#5a6070">—</span></span>
+        <span style="color:#3d4149">FLUSH IN: <span class="flush-countdown" style="color:#00ff9d;font-weight:700">—</span></span>
       </div>
     </div>
     <div id="mp-chain" style="display:flex;gap:0;align-items:stretch;overflow-x:auto;padding-bottom:4px;min-height:72px">
@@ -430,6 +431,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     if(el) el.textContent = stats.messages||0;
     if(eo) eo.textContent = stats.online||0;
     if(eu) eu.textContent = fmtUp(stats.uptime_s||0);
+    if(stats.next_flush_ts) startFlushCountdown(stats.next_flush_ts);
 
     const chain = document.getElementById('mp-chain');
     if(!chain) return;
@@ -2152,6 +2154,12 @@ function onRelayMsg(msg){
   else if(msg.type==='peer_joined'){
     if(typeof msg.peers==='number') updateOnlineFromWS(msg.peers);
   }
+  else if(msg.type==='flush'){
+    // Relay heeft geflushed — update countdown en stats
+    if(msg.next) startFlushCountdown(msg.next);
+    setTimeout(()=>{ fetchStats(); fetchLedger(); }, 500);
+    showToast('🧹 Relay geflushed — alle bewijssporen gewist', null, '#0f4c3a');
+  }
 }
 
 // ── Inkomend verbindingsverzoek UI ────────────────────────────────
@@ -2319,12 +2327,37 @@ function renderPresence(){
   });
 }
 function quickConnect(p){showConnect();setTimeout(()=>{$('peer-key').value=p.bundle||'';try{const b=JSON.parse(p.bundle);if(b.nick)$('peer-name').value=b.nick;}catch(e){}},60);}
+// Flush countdown timer
+let _flushCountdownInterval = null;
+function startFlushCountdown(nextFlushTs) {
+  if (_flushCountdownInterval) clearInterval(_flushCountdownInterval);
+  function update() {
+    const secs = Math.max(0, Math.floor((nextFlushTs - Date.now()) / 1000));
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    const fmt = (h > 0 ? h + 'u ' : '') + String(m).padStart(2,'0') + 'm ' + String(s).padStart(2,'0') + 's';
+    // Update alle flush-countdown elementen
+    document.querySelectorAll('.flush-countdown').forEach(el => {
+      el.textContent = secs === 0 ? 'Nu bezig...' : fmt;
+    });
+    if (secs === 0) {
+      clearInterval(_flushCountdownInterval);
+      // Relay heeft geflushed — reset lokale tellers na 2s
+      setTimeout(() => { fetchStats(); fetchLedger(); }, 2000);
+    }
+  }
+  update();
+  _flushCountdownInterval = setInterval(update, 1000);
+}
+
 async function fetchStats(){
   if(!RELAY_API)return;
   try{
     const r=await fetch(`${RELAY_API}/api/stats`);
     const d=await r.json();
     if(d.ok){
+      if(d.next_flush_ts) startFlushCountdown(d.next_flush_ts);
       const fmt=n=>Number(n).toLocaleString('nl-NL');
       const online=d.online||0;
       $('counter').textContent=online+' actief';
