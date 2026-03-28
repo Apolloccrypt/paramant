@@ -1779,9 +1779,12 @@ async function restoreIdentity(){
 
 async function initIdentity(){
   try{
-    // Try restore first — keeps same identity across reloads
-    const restored=await restoreIdentity();
-    if(!restored)await buildIdentity();
+    // Wegwerp-modus: wis altijd eventuele opgeslagen identiteit uit IndexedDB
+    // Gebruikers van voor wegwerp-modus krijgen anders steeds dezelfde naam terug
+    try{ await IDB.clear(); }catch(e){}
+    try{ indexedDB.deleteDatabase('paramant'); }catch(e){}
+    // Bouw altijd een verse identiteit
+    await buildIdentity();
     // Update UI
     $('my-nick').textContent=myNick;
     $('my-key-prev').textContent=myBundle;
