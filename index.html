@@ -923,6 +923,17 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       </div>
     </div>
   </div>
+      <!-- Warrant Canary -->
+      <div class="mt-6 p-4 bg-[#111214] border border-[#2a2d35] rounded-sm">
+        <div class="mono text-xs text-[#5a6070] tracking-widest mb-2">// WARRANT CANARY</div>
+        <p class="text-xs text-[#8a8e98] leading-relaxed">
+          PARAMANT heeft tot en met <strong class="text-[#c8ccd4]">maart 2026</strong> geen juridische bevelen,
+          dagvaardingen, NSL-brieven of geheime overheidsopdrachten ontvangen om gebruikersdata te verstrekken,
+          softwarewijzigingen door te voeren of encryptie te verzwakken.<br>
+          <span class="text-[#5a6070]">Deze verklaring wordt maandelijks bijgewerkt. Als zij ontbreekt of niet bijgewerkt is — neem aan dat er iets mis is.</span>
+        </p>
+        <div class="mono text-xs text-[#3d4149] mt-2">Laatste update: 28 maart 2026 · Mick Beer</div>
+      </div>
 </section>
 <section class="py-24 px-5 text-center relative overflow-hidden">
   <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a1a0f]/8 to-transparent pointer-events-none"></div>
@@ -1362,7 +1373,9 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <div class="flex items-center justify-between">
           <div class="mono text-xs text-[#00ff9d] tracking-widest font-bold">ACTIEVE GEBRUIKERS</div>
           <div class="flex items-center gap-2">
-            <button id="session-timer-btn-side" onclick="cycleSessionTimer()" title="Sessie-timer — app sluit automatisch na X minuten"
+            <button id="stealth-btn" onclick="toggleStealth()" title="Stealth mode — onzichtbaar in Wie is Online"
+              class="mono text-xs text-[#5a6070] hover:text-[#a78bfa] transition-colors">👁 Zichtbaar</button>
+            <button id="session-timer-btn-side" onclick="cycleSessionTimer()" title="Sessie-timer"
               class="mono text-xs text-[#f59e0b] hover:text-[#fbbf24] transition-colors">⏱ Uit</button>
             <span class="session-countdown mono text-xs font-bold text-[#ef4444]" style="display:none"></span>
           </div>
@@ -1384,10 +1397,14 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
             <div id="ls-online" class="mono font-bold text-green-400 text-xs">—</div>
             <div class="text-[#5a6070] text-xs" style="font-size:9px">online</div>
           </div>
-          <!-- Flush countdown -->
-          <div class="bg-[#1a1d22]/80 border border-[#2a2d35] rounded-lg p-1.5 text-center col-span-3">
-            <div class="text-[#5a6070] text-xs" style="font-size:9px;margin-bottom:2px">🧹 FLUSH IN</div>
-            <div class="flush-countdown mono font-bold text-[#f59e0b] text-xs">—</div>
+          <!-- Flush countdown — prominent -->
+          <div class="bg-[#1a1d22] border border-[#f59e0b]/30 rounded-lg p-2 text-center col-span-3 mt-1">
+            <div class="flex items-center justify-center gap-1.5 mb-1">
+              <span style="font-size:12px">🧹</span>
+              <span class="text-[#5a6070] mono" style="font-size:9px;letter-spacing:.08em">ALLES GEWIST OVER</span>
+            </div>
+            <div class="flush-countdown mono font-bold text-[#f59e0b]" style="font-size:20px;line-height:1;letter-spacing:.04em">—</div>
+            <div class="text-[#3d4149] mono" style="font-size:8px;margin-top:3px">ledger · buffer · hashes · counters</div>
           </div>
         </div>
         <!-- Search -->
@@ -1846,6 +1863,16 @@ const RELAY_API = (!IS_ONION && RELAY_WS)
   : ''; // .onion heeft geen HTTP API via gewone browser
 
 let relayWS=null,relayOn=false,relayWant=false;
+let stealthMode=false;
+function toggleStealth(){
+  stealthMode=!stealthMode;
+  ['stealth-btn','stealth-btn-chat'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){b.textContent=stealthMode?'👻 Stealth':'👁 Zichtbaar';b.style.color=stealthMode?'#a78bfa':'';}
+  });
+  if(!stealthMode){broadcastPresence();}
+  showToast(stealthMode?'👻 Stealth — onzichtbaar in "Wie is online"':'👁 Zichtbaar — aanwezig in "Wie is online"',null,stealthMode?'#1a1a2e':'#0f4c3a');
+}
 const seenConnRequests=new Set();
 const presenceMap=new Map();
 
@@ -2031,8 +2058,21 @@ function relayJoinOnce(room){
   if(joinedRooms.has(room))return; // al joined — relay zou opnieuw buffered sturen
   relayJoin(room);
 }
-function relaySend(conv,pkt){if(!relayOn||!conv.chatId||!relayWS||relayWS.readyState!==1)return false;try{relayWS.send(JSON.stringify({type:'packet',chatHash:conv.chatId,seq:pkt.seq,payload:{iv:pkt.iv,ct:pkt.ct,type:pkt.type,kemCt:pkt.kemCt,kemPub:pkt.kemPub}}));return true;}catch(e){return false;}}
-function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;relayJoinOnce('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
+function relaySend(conv,pkt){
+  if(!relayOn||!conv.chatId||!relayWS||relayWS.readyState!==1)return false;
+  try{
+    const payload={iv:pkt.iv,ct:pkt.ct,type:pkt.type,kemCt:pkt.kemCt,kemPub:pkt.kemPub};
+    // Pad payload naar veelvoud van 512B — verhindert berichtlengte-analyse door relay/observers
+    const base=JSON.stringify(payload).length;
+    const target=Math.max(512,Math.ceil((base+10)/512)*512);
+    const pad=target-base-7; // 7 = overhead van ,"_p":""
+    if(pad>0)payload._p='a'.repeat(pad);
+    relayWS.send(JSON.stringify({type:'packet',chatHash:conv.chatId,seq:pkt.seq,payload}));
+    return true;
+  }catch(e){return false;}
+}
+function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;if(stealthMode)return; // stealth mode: geen presence
+relayJoinOnce('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
 
 // Broadcast verbindingsverzoek — de andere partij ziet een inkomend verzoek
 // ── Sequentiële decrypt queue ─────────────────────────────────────────────
@@ -2354,6 +2394,8 @@ function startFlushCountdown(nextFlushTs) {
     // Update alle flush-countdown elementen
     document.querySelectorAll('.flush-countdown').forEach(el => {
       el.textContent = secs === 0 ? 'Nu bezig...' : fmt;
+      el.style.color = secs < 300 ? '#ef4444' : secs < 600 ? '#f59e0b' : '#f59e0b';
+      el.style.fontSize = secs < 60 ? '22px' : '';
     });
     if (secs === 0) {
       clearInterval(_flushCountdownInterval);
@@ -2576,7 +2618,10 @@ async function doConnect(){
       // Wijs send/recv toe op basis van rol
       conv.sendChainKey = isInitiator ? ckA : ckB;
       conv.recvChainKey = isInitiator ? ckB : ckA;
-      conv.sendSeq=0; conv.recvSeq=0;
+      // Seq-offset afgeleid van gedeeld master secret — relay ziet geen seq startend bij 0
+      const _seqRaw=await hkdf(master,'paramant-seq-init-v1',2);
+      const _seqInit=(_seqRaw[0]<<8|_seqRaw[1])&0x7FFF; // 0-32767, deterministisch voor beide kanten
+      conv.sendSeq=_seqInit; conv.recvSeq=_seqInit;
       conv.safetyNums=sn; conv.connected=true;
       conv.kxType=myMLK&&bundle.mlkem?'ECDH P-256 + ML-KEM-768':'ECDH P-256';
       conv.peerECDH=(bundle.ecdh||raw).replace(/\s+/g,'');
@@ -2587,6 +2632,9 @@ async function doConnect(){
       convs.push(conv);
       sysMsg(conv,` Verbonden met ${conv.name}! Versleuteld via ${conv.kxType}.`);
       sysMsg(conv,' Tip: Bel even en vergelijk de veiligheidsnummers (knop rechtsboven) voor 100% zekerheid.');
+      // Safety numbers banner — blokkeer input tot geverifieerd
+      conv._safetyVerified=false;
+      showSafetyBanner(conv);
       if(relayOn){
         // Vers joinen — relay stuurt buffer opnieuw
         joinedRooms.delete(conv.chatId);
@@ -2969,6 +3017,31 @@ function updateAudit(c){
 }
 
 // ─── MODALS ───────────────────────────────────────────────────────────
+
+function showSafetyBanner(conv){
+  const inp=$('msg-inp');
+  if(!inp||conv._safetyVerified)return;
+  inp.disabled=true;inp.placeholder='Verifieer eerst de veiligheidsnummers…';inp.style.opacity='0.4';
+  let banner=$('safety-banner');
+  if(!banner){
+    banner=document.createElement('div');banner.id='safety-banner';
+    banner.style.cssText='background:#1a1400;border:1px solid #f59e0b40;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:12px;color:#fbbf24;font-family:monospace;flex-shrink:0';
+    banner.innerHTML='⚠️ Verifieer veiligheidsnummers vóór je berichten stuurt &nbsp;'+
+      '<button onclick="showSN()" style="padding:3px 10px;background:#2a1a00;border:1px solid #f59e0b;color:#fbbf24;cursor:pointer;font-family:monospace;font-size:11px">Toon nummers</button>'+
+      '<button onclick="confirmSafety()" style="padding:3px 10px;background:#0f4c3a;border:1px solid #00ff9d;color:#00ff9d;cursor:pointer;font-family:monospace;font-size:11px">✓ Geverifieerd</button>';
+    const chatWrap=$('chat-wrap');if(chatWrap)chatWrap.insertBefore(banner,chatWrap.firstChild);
+  }
+  banner.style.display='flex';
+}
+function confirmSafety(){
+  const c=activeConv();if(!c)return;
+  c._safetyVerified=true;
+  const banner=$('safety-banner');if(banner)banner.style.display='none';
+  const inp=$('msg-inp');
+  if(inp){inp.disabled=false;inp.placeholder='Typ een bericht…';inp.style.opacity='1';}
+  sysMsg(c,'[✓] Veiligheidsnummers geverifieerd — gesprek beveiligd.');
+}
+
 function showSN(){
   const c=activeConv();if(!c||!c.safetyNums.length)return;
   const grid=$('sn-grid');
