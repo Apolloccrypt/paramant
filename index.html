@@ -2096,7 +2096,9 @@ function relaySend(conv,pkt){
   }catch(e){return false;}
 }
 function broadcastPresence(){if(!relayOn||!relayWS||relayWS.readyState!==1||!myBundle)return;if(stealthMode)return; // stealth mode: geen presence
-relayJoinOnce('__presence__');relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:myBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
+relayJoinOnce('__presence__');// Presence: alleen ECDH pubkey (niet ML-KEM) — ML-KEM is 1400 chars extra exposure zonder meerwaarde voor discovery
+  const _presBundle=(()=>{try{const b=JSON.parse(myBundle);return JSON.stringify({ecdh:b.ecdh,nick:b.nick});}catch(e){return myBundle;}})();
+  relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'presence',nick:myNick,bundle:_presBundle,avatarHint:myIdentityHash?b2h(myIdentityHash.slice(0,8)):'',ts:Date.now()}}));}
 
 // Broadcast verbindingsverzoek — de andere partij ziet een inkomend verzoek
 // ── Sequentiële decrypt queue ─────────────────────────────────────────────
@@ -3188,8 +3190,18 @@ function closeSidebar(){$('sidebar-panel').style.transform='';$('mob-ov').classL
 function now(){return new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,128)+'px';}
 
-// ─── SERVICE WORKER (PWA) ─────────────────────────────────────────────
-if('serviceWorker' in navigator){const sw=`const C='pm-v3';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(self.location.href)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k))))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;try{navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});}catch(e){}}
+// Service Worker UITGESCHAKELD — security app mag geen oude code cachen
+// Elke paginaload moet de laatste versie serveren
+// Verwijder eventuele bestaande SW registraties
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+  // Wis ook alle caches
+  if('caches' in window){
+    caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
+  }
+}
 </script>
 
 <script>
@@ -3275,29 +3287,15 @@ Beschikbare deelnemers: ${names}`, 'Groep 1');
 async function sendGroupMessage(groupId, text) {
   const group = groups.find(g => g.id === groupId);
   if (!group) return;
-  if (!group.sharedKey) group.sharedKey = await deriveGroupKey(group.members);
-
-  const aad = new TextEncoder().encode(`paramant-group:${group.sendSeq}:${groupId}`);
-  const encoded = new TextEncoder().encode(text);
-  const padded = pad32(encoded);
-  const {iv, ct} = await aesEnc(group.sharedKey, padded, aad);
-
-  const pkt = {
-    v: 'paramant-group-v1',
-    groupId,
-    seq: group.sendSeq++,
-    iv: b2h(iv),
-    ct: b2h(ct),
-    sender: myId
-  };
-
-  // Stuur naar alle leden via relay
-  group.members.forEach(member => {
+  // Gebruik individuele ratchets per member — geeft automatisch forward secrecy
+  // Elke member ontvangt via zijn eigen versleuteld kanaal (niet via gedeelde sleutel)
+  const payload = { type:'group_msg', groupId, text, sender:myNick, seq:group.sendSeq++ };
+  const promises = group.members.map(member => {
     const conv = convs.find(c => c.peerECDH === member.pubkey);
-    if (conv) encPayload(conv, pkt, 'group_msg');
-  });
-
-  group.msgs.push({ dir: 'sent', text, t: Date.now() });
+    if (conv && conv.sendChainKey) return encPayload(conv, payload, 'group_msg');
+  }).filter(Boolean);
+  await Promise.allSettled(promises);
+  group.msgs.push({ dir:'sent', text, t:Date.now() });
 }
 
 // ═══════════════════════════════════════════════════════════════
