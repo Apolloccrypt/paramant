@@ -1888,7 +1888,9 @@ function connectRelay(){
     relayWS=new WebSocket(RELAY_WS);
     relayWS.onopen=()=>{
       relayOn=true;setRelayUI('on');
-      convs.forEach(c=>{if(c.connected&&c.chatId)relayJoin(c.chatId);});
+      // Dedup: join elke chatId maar 1x — voorkomt dubbele buffer replay bij duplicate convs
+      const _joined=new Set();
+      convs.forEach(c=>{if(c.connected&&c.chatId&&!_joined.has(c.chatId)){relayJoin(c.chatId);_joined.add(c.chatId);}});
       broadcastPresence();
       if(!IS_ONION)fetchStats();
       if(IS_ONION)showToast('[TOR] Verbonden via Tor — maximale anonimiteit',null,'#581c87');
@@ -2024,18 +2026,10 @@ async function broadcastConnRequest(theirBundle){
         const plain=pad32(new TextEncoder().encode(myBundle));
         const aad=new TextEncoder().encode('paramant-conn-request');
         const{iv,ct}=await aesEnc(encKey,plain,aad);
-        if(relayWS&&relayWS.readyState===1){
-          relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{
-            pType:'conn_request_enc',
-            ephPub:b2h(ephPubRaw),iv:b2h(iv),ct:b2h(ct),
-            targetHash,ts:Date.now()
-          }}));
-        }
+        if(relayWS&&relayWS.readyState===1)relayWS.send(JSON.stringify({type:'packet',chatHash:'__presence__',seq:Date.now(),payload:{pType:'conn_request_enc',ephPub:b2h(ephPubRaw),iv:b2h(iv),ct:b2h(ct),targetHash,ts:Date.now()}}));
       }catch(e){}
     };
-    await sendEncReq();
-    setTimeout(sendEncReq,2000);
-    setTimeout(sendEncReq,5000);
+    await sendEncReq();setTimeout(sendEncReq,2000);setTimeout(sendEncReq,5000);
   }catch(e){}
 }
 // Broadcast presence elke 10s (was 25s — te traag voor peer discovery)
@@ -2063,44 +2057,26 @@ function onRelayMsg(msg){
 
     if(pay?.pType==='conn_request_enc'&&pay.ephPub&&pay.iv&&pay.ct&&pay.targetHash){
       if(!myIdentityHash||!myKP)return;
-      const myHashHex=b2h(myIdentityHash.slice(0,8));
-      if(pay.targetHash!==myHashHex)return;
-      (async()=>{
-        try{
-          const ephPubBytes=h2b(pay.ephPub);
-          if(!ephPubBytes||ephPubBytes.length!==65)return;
-          const ephKey=await crypto.subtle.importKey('raw',ephPubBytes,{name:'ECDH',namedCurve:'P-256'},false,[]);
-          const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'ECDH',public:ephKey},myKP.privateKey,256));
-          const decKey=await hkdf(bits,'paramant-conn-request-v1',32);
-          bits.fill(0);
-          const aad=new TextEncoder().encode('paramant-conn-request');
-          const padded=await aesDec(decKey,h2b(pay.iv),h2b(pay.ct),aad);
-          const bundle=new TextDecoder().decode(unpad32(padded));
-          const bparsed=JSON.parse(bundle);
-          if(!bparsed?.ecdh||!isHex(bparsed.ecdh,130))return;
-          const nick=String(bparsed.nick||'Onbekend').slice(0,20);
-          if(!validNick(nick))return;
-          const peerECDH=bparsed.ecdh.replace(/\s+/g,'');
-          if(seenConnRequests.has(peerECDH))return;
-          if(convs.find(c=>c.peerECDH===peerECDH))return;
-          seenConnRequests.add(peerECDH);
-          setTimeout(()=>seenConnRequests.delete(peerECDH),30000);
-          try{
-            const eb2=h2b(peerECDH);
-            const tk2=await crypto.subtle.importKey('raw',eb2,{name:'ECDH',namedCurve:'P-256'},false,[]);
-            const bits2=new Uint8Array(await crypto.subtle.deriveBits({name:'ECDH',public:tk2},myKP.privateKey,256));
-            const m2=await hkdf(bits2,'paramant-master-v1',32);
-            const ck2=await hkdf(m2,'paramant-chat-id-v2',32);
-            const cid2=await chatIdFrom(ck2);
-            bits2.fill(0);m2.fill(0);ck2.fill(0);
-            if(relayWS&&relayWS.readyState===1)relayWS.send(JSON.stringify({type:'join',chatHash:cid2,nick:myNick}));
-          }catch(e2){}
-          presenceMap.set(nick,{nick,bundle,avatarHint:'',ts:Date.now()});
-          renderPresenceDebounced();
-          showIncomingRequest(nick,bundle,'');
-        }catch(e){}
-      })();
-      return;
+      if(b2h(myIdentityHash.slice(0,8))!==pay.targetHash)return;
+      (async()=>{try{
+        const ephPubBytes=h2b(pay.ephPub);
+        if(!ephPubBytes||ephPubBytes.length!==65)return;
+        const ephKey=await crypto.subtle.importKey('raw',ephPubBytes,{name:'ECDH',namedCurve:'P-256'},false,[]);
+        const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'ECDH',public:ephKey},myKP.privateKey,256));
+        const decKey=await hkdf(bits,'paramant-conn-request-v1',32);bits.fill(0);
+        const aad=new TextEncoder().encode('paramant-conn-request');
+        const bundle=new TextDecoder().decode(unpad32(await aesDec(decKey,h2b(pay.iv),h2b(pay.ct),aad)));
+        const bparsed=JSON.parse(bundle);
+        if(!bparsed?.ecdh||!isHex(bparsed.ecdh,130))return;
+        const nick=String(bparsed.nick||'Onbekend').slice(0,20);
+        if(!validNick(nick))return;
+        const peerECDH=bparsed.ecdh.replace(/\s+/g,'');
+        if(seenConnRequests.has(peerECDH))return;
+        if(convs.find(c=>c.peerECDH===peerECDH))return;
+        seenConnRequests.add(peerECDH);setTimeout(()=>seenConnRequests.delete(peerECDH),30000);
+        try{const eb2=h2b(peerECDH);const tk2=await crypto.subtle.importKey('raw',eb2,{name:'ECDH',namedCurve:'P-256'},false,[]);const bits2=new Uint8Array(await crypto.subtle.deriveBits({name:'ECDH',public:tk2},myKP.privateKey,256));const m2=await hkdf(bits2,'paramant-master-v1',32);const ck2=await hkdf(m2,'paramant-chat-id-v2',32);const cid2=await chatIdFrom(ck2);bits2.fill(0);m2.fill(0);ck2.fill(0);if(relayWS&&relayWS.readyState===1)relayWS.send(JSON.stringify({type:'join',chatHash:cid2,nick:myNick}));}catch(e2){}
+        presenceMap.set(nick,{nick,bundle,avatarHint:'',ts:Date.now()});renderPresenceDebounced();showIncomingRequest(nick,bundle,'');
+      }catch(e){}})();return;
     }
     if(pay?.pType==='conn_request')return;
 
@@ -2516,6 +2492,7 @@ async function doConnect(){
       // Dedup: voorkom twee convs met dezelfde chatId (bijv. bij simultane verbinding)
       if(convs.find(c=>c.chatId===conv.chatId)){
         showToast('[!] Al verbonden met deze peer — gesprek bestaat al.');
+        $('conn-btn').disabled=false;$('conn-btn').textContent='>> Verbinden';
         return;
       }
       convs.push(conv);
@@ -2929,16 +2906,7 @@ function hidePaste(){$('paste-ov').style.display='none';}
 
 // ─── LAUNCH ───────────────────────────────────────────────────────────
 function openApp(){
-  try{
-    const tabKey='pm-tab-'+Date.now()+'-'+Math.random().toString(36).slice(2);
-    sessionStorage.setItem('pm-this-tab',tabKey);
-    const now=Date.now();
-    const openTabs=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]').filter(t=>now-t.ts<30000);
-    openTabs.push({id:tabKey,ts:now});
-    localStorage.setItem('pm-open-tabs',JSON.stringify(openTabs));
-    if(openTabs.length>1)setTimeout(()=>showToast('[!] Tweede venster — zelfde identiteit. Gebruik privévenster voor aparte identiteit.',null,'#7c3aed'),1500);
-    setInterval(()=>{try{const t=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]');const i=t.findIndex(x=>x.id===tabKey);if(i>-1){t[i].ts=Date.now();localStorage.setItem('pm-open-tabs',JSON.stringify(t));}}catch(e){}},10000);
-  }catch(e){}
+  try{const tabKey='pm-tab-'+Date.now()+'-'+Math.random().toString(36).slice(2);sessionStorage.setItem('pm-this-tab',tabKey);const now=Date.now();const openTabs=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]').filter(t=>now-t.ts<30000);openTabs.push({id:tabKey,ts:now});localStorage.setItem('pm-open-tabs',JSON.stringify(openTabs));if(openTabs.length>1)setTimeout(()=>showToast('[!] Tweede venster — zelfde identiteit. Gebruik privévenster voor aparte identiteit.',null,'#7c3aed'),1500);setInterval(()=>{try{const t=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]');const i=t.findIndex(x=>x.id===tabKey);if(i>-1){t[i].ts=Date.now();localStorage.setItem('pm-open-tabs',JSON.stringify(t));}}catch(e){}},10000);}catch(e){}
   $('app').style.display='flex';
   document.body.style.overflow='hidden';
   // Relay automatisch starten — gebruiker hoeft niets te doen
