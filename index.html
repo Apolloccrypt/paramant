@@ -290,14 +290,12 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
     <span>⚛</span> GHOST PIPE PROTOCOL · POST-QUANTUM · BURN-ON-READ
   </div>
   <h1 style="font-size:clamp(36px,7vw,72px);font-weight:900;color:#e2e4e8;line-height:1.05;letter-spacing:-.03em;margin-bottom:20px">
-    Wat niet bestaat,<br>
-    <span style="color:#00ff9d">kan niet worden gestolen.</span>
+    Gevoelige data versturen.<br>
+    <span style="color:#00ff9d">Zonder spoor. Wiskundig.</span>
   </h1>
-  <p style="font-size:18px;color:#8a8e98;max-width:640px;margin:0 auto 12px;line-height:1.7;font-weight:300">
-    Post-quantum data transport. Wiskundig onleesbaar. Fysiek spoorloos.
-  </p>
-  <p style="font-size:14px;color:#5a6070;max-width:560px;margin:0 auto 40px;line-height:1.8;font-family:monospace">
-    De relay vernietigt elke kopie direct na ophalen. Geen opslag. Geen account. Geen spoor.
+  <p style="font-size:18px;color:#8a8e98;max-width:640px;margin:0 auto 40px;line-height:1.7;font-weight:300">
+    ML-KEM-768 versleuteld transport. De relay vernietigt elke kopie direct na ophalen.
+    Geen opslag. Geen logs. Geen account. Klaar in 30 seconden.
   </p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
     <button onclick="openGhostPipe()" style="padding:14px 32px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:14px;font-weight:900;letter-spacing:.04em">
@@ -967,10 +965,10 @@ function showTab(name) {
 
       <!-- Input row -->
       <div id="input-row" style="display:none" class="items-end gap-2 px-3 py-3 bg-[#111214] border-t border-[#1e2026] flex-shrink-0">
-        <input type="file" id="file-inp" multiple style="display:none" onchange="handleFiles(this)">
+        <input type="file" id="file-inp" multiple style="display:none" onchange="handleFiles(this)" title="Max 500KB per bestand">
         <button onclick="document.getElementById('file-inp').click()"
           class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xl text-[#e2e4e8] transition-all"
-          title="📎 Bestand versturen — end-to-end versleuteld met AES-256-GCM. Max 10 MB per bestand.">📎</button>
+          title="📎 Bestand versturen (max 500KB). Voor grote bestanden: gebruik Ghost Pipe →">📎</button>
 
         <button onclick="togglePaste()"
           class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-[#1a1d22] border border-[#2a2d35] hover:border-[#00ff9d]/40 rounded-sm text-xl text-[#e2e4e8] transition-all"
@@ -979,6 +977,11 @@ function showTab(name) {
           class="flex-1 bg-[#1a1d22] border border-[#2a2d35] focus:border-[#00ff9d] text-[#e2e4e8] rounded-sm px-4 py-3 text-base outline-none resize-none max-h-32 leading-normal transition-colors placeholder-slate-600"
           oninput="autoResize(this)"></textarea>
         <button onclick="doEncrypt()" class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-[#00ff9d] hover:bg-[#00ff9d] rounded-sm text-[#0c0e10] text-xl font-bold transition-all active:scale-95">>></button>
+      </div>
+      <!-- Ghost Pipe hint -->
+      <div style="padding:4px 12px 6px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:10px;color:#3d4149;font-family:monospace;letter-spacing:.04em">📎 max 500KB · berichten verdwijnen na 1u flush</span>
+        <button onclick="openGhostPipe()" style="font-size:10px;font-family:monospace;color:#a78bfa;background:transparent;border:none;cursor:pointer;padding:2px 6px;letter-spacing:.04em">👻 grote bestanden? Ghost Pipe →</button>
       </div>
     </div>
 
@@ -2437,10 +2440,22 @@ let dragDepth=0;
 document.addEventListener('dragenter',e=>{if(!activeConv()?.chainKey)return;e.preventDefault();dragDepth++;});
 document.addEventListener('dragleave',()=>{dragDepth--;});
 document.addEventListener('dragover',e=>e.preventDefault());
-document.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;const conv=activeConv();if(!conv?.chainKey)return;Array.from(e.dataTransfer.files).slice(0,5).forEach(f=>processFile(conv,f));});
-async function handleFiles(inp){const conv=activeConv();if(!conv?.chainKey){inp.value='';return;}Array.from(inp.files).slice(0,5).forEach(f=>processFile(conv,f));inp.value='';}
+document.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;const conv=activeConv();if(!conv?.chainKey)return;Array.from(e.dataTransfer.files).slice(0,3).forEach(f=>processFile(conv,f));});
+async function handleFiles(inp){const conv=activeConv();if(!conv?.chainKey){inp.value='';return;}Array.from(inp.files).slice(0,3).forEach(f=>processFile(conv,f));inp.value='';}
 async function processFile(conv,file){
-  if(file.size>10485760){sysMsg(conv,`[X] ${file.name} is te groot (max 10 MB)`);return;}
+  if(file.size>524288){
+    sysMsg(conv,`[X] ${file.name} te groot voor chat (max 500KB). Gebruik Ghost Pipe voor grote bestanden.`);
+    // Toon Ghost Pipe suggestie
+    setTimeout(()=>{
+      const hint = document.createElement('div');
+      hint.style.cssText='background:#1a1020;border:1px solid #a78bfa40;padding:10px 14px;margin:6px 12px;font-size:11px;font-family:monospace;cursor:pointer;color:#a78bfa';
+      hint.innerHTML='👻 Bestanden >500KB versturen? Gebruik Ghost Pipe — burn-on-read + post-quantum. <span style="text-decoration:underline">Openen →</span>';
+      hint.onclick=()=>openGhostPipe();
+      const feed = document.getElementById('feed-'+conv);
+      if(feed) feed.appendChild(hint);
+    }, 100);
+    return;
+  }
   const pg=addProgMsg(conv,file.name,file.size);
   try{
     // Gebruik FileReader voor betrouwbare base64 encoding (geen stack overflow bij grote files)
