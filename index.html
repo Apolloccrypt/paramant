@@ -3630,7 +3630,7 @@ function closeGhostPipe() {
 }
 function gpTab(name) {
   ['send','receive','keygen'].forEach(t => {
-    document.getElementById('gp-panel-'+t).style.display = t===name?'':'none';
+    document.getElementById('gp-panel-'+t).style.display = t===name?'block':'none';
     const btn = document.getElementById('gp-tab-'+t);
     btn.style.background = t===name?'#1a1d22':'#111214';
     btn.style.color = t===name?'#a78bfa':'#5a6070';
@@ -3855,7 +3855,8 @@ async function gpSend() {
 
     gpLog(`Versturen naar relay (hash: ${hash.slice(0,16)}...)...`);
     const relay = (window._PARAMANT_RELAY || 'https://relay.paramant.app').replace('wss://','https://').replace('ws://','http://');
-    const b64   = btoa(String.fromCharCode(...padded));
+    // Chunked base64
+    const b64   = (()=>{let s="",i=0,u=padded;while(i<u.length){s+=String.fromCharCode(...u.subarray(i,Math.min(i+8192,u.length)));i+=8192;}return btoa(s);})();
     const resp  = await fetch(`${relay}/v2/inbound`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
