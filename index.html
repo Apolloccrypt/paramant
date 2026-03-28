@@ -281,7 +281,7 @@ function openApp(){
   if(l)l.style.display='none';
   if(a)a.style.cssText='display:flex!important;position:fixed!important;inset:0!important;flex-direction:column;background:#0c0e10;z-index:9998;overflow:hidden';
 }
-window.addEventListener('DOMContentLoaded',function(){
+window.addEventListener('DOMContentLoaded',function(){if(!location.hash||location.hash==='#usecases'){history.replaceState(null,'','/');window.scrollTo(0,0);}
 });
 </script>
 
@@ -289,17 +289,14 @@ window.addEventListener('DOMContentLoaded',function(){
 <div id="landing">
 
 <!-- NAV -->
-<nav style="position:fixed;top:0;left:0;right:0;z-index:50;height:52px;background:#0c0e10;border-bottom:1px solid #1e2026;display:flex;align-items:center;padding:0 24px;gap:20px;font-family:monospace">
-  <a href="/" style="font-size:14px;font-weight:800;color:#e2e4e8;text-decoration:none;flex-shrink:0;letter-spacing:-.01em">PARA<span style="color:#00ff9d">MANT</span></a>
-  <span style="color:#1e2026;margin:0 4px">|</span>
-  <a href="#usecases" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">USE CASES</a>
-  <a href="/legal.html" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">ADVOCATEN</a>
-  <a href="/docs.html" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">DEV DOCS</a>
-  <a href="/relay-feed.html" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">RELAY FEED</a>
-  <a href="/privacy.html" style="font-size:11px;letter-spacing:.06em;color:#8a8e98;text-decoration:none">PRIVACY</a>
-  <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
-    <span style="font-size:9px;color:#4a7c59;letter-spacing:.06em;font-family:monospace">ML-KEM-768 · NIST FIPS 203</span>
-    <button onclick="openApp()" style="padding:6px 18px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:11px;font-weight:700;letter-spacing:.04em">OPEN APP →</button>
+<nav style="position:fixed;top:0;left:0;right:0;height:52px;background:#0c0e10;border-bottom:1px solid #1e2026;z-index:50;display:flex;align-items:center;padding:0 24px;font-family:monospace">
+  <a href="/" style="font-size:14px;font-weight:900;color:#e2e4e8;text-decoration:none;margin-right:20px">PARA<span style="color:#00ff9d">MANT</span></a>
+  <a href="#usecases" onclick="event.preventDefault();document.getElementById('usecases').scrollIntoView({behavior:'smooth'})" style="font-size:11px;color:#8a8e98;text-decoration:none;padding:0 14px;height:52px;display:flex;align-items:center;border-left:1px solid #1e2026;letter-spacing:.04em">USE CASES</a>
+  <a href="/legal.html" style="font-size:11px;color:#8a8e98;text-decoration:none;padding:0 14px;height:52px;display:flex;align-items:center;border-left:1px solid #1e2026;letter-spacing:.04em">ADVOCATEN</a>
+  <a href="/docs.html" style="font-size:11px;color:#8a8e98;text-decoration:none;padding:0 14px;height:52px;display:flex;align-items:center;border-left:1px solid #1e2026;letter-spacing:.04em">DOCS</a>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <button onclick="openGhostPipe()" style="padding:7px 16px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-size:11px;font-weight:900;letter-spacing:.06em;font-family:monospace">GHOST PIPE</button>
+    <button onclick="openApp()" style="padding:7px 16px;background:transparent;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-size:11px;letter-spacing:.04em;font-family:monospace">CHAT</button>
   </div>
 </nav>
 
