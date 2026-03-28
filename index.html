@@ -2527,13 +2527,17 @@ async function encPayload(conv,payload,type){
     // Bericht direct in UI tonen — niet wachten op jitter
     addMsg(conv,'sent',{pkt:pktStr,type,payload,seq,t:now(),relayed:false,pq:!!kemCt});
     updateAudit(conv);
-    // Timing jitter: 0-2s vertraging vóór relay-verzending
-    // Relay timestamp ≠ werkelijk typtijdstip → timing-correlatie aanvallen tegengaan
-    const _jitter=Math.floor(Math.random()*2000);
-    setTimeout(()=>{
-      const relayed=relaySend(conv,pkt);
-      if(relayed){addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:seq,b:pktStr.length,t:Date.now()});fetchStats();}
-    },_jitter);
+    // Timing jitter: sequentiële queue per gesprek — berichten altijd IN VOLGORDE verzonden
+    // Individuele setTimeout brak volgorde (bericht 2 kon vóór bericht 1 aankomen → ratchet fail)
+    // Nu: elk bericht wacht op vorige send + eigen jitter → volgorde gegarandeerd, timing vervaagd
+    const _jitterMs=Math.floor(Math.random()*2000);
+    const _prevSend=conv._lastSend||Promise.resolve();
+    conv._lastSend=_prevSend
+      .then(()=>new Promise(r=>setTimeout(r,_jitterMs)))
+      .then(()=>{
+        const relayed=relaySend(conv,pkt);
+        if(relayed){addLedgerEntry({h:(conv.chatId||'').slice(0,12),s:seq,b:pktStr.length,t:Date.now()});fetchStats();}
+      });
   }catch(e){const c=activeConv();if(c)sysMsg(c,'[X] Fout: '+e.message);}
 }
 async function doDecrypt(){const conv=activeConv();if(!conv?.chainKey)return;const raw=$('paste-ta').value.trim();$('paste-err').textContent='';try{let pkt;try{pkt=JSON.parse(raw);}catch(e){throw new Error('Ongeldig pakket — plak de volledige inhoud.');}await decryptPacket(conv,pkt);hidePaste();}catch(e){$('paste-err').textContent=e.message;}}
