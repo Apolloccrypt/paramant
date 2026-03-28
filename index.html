@@ -299,7 +299,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
   </p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
     <button onclick="openGhostPipe()" style="padding:14px 32px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:14px;font-weight:900;letter-spacing:.04em">
-      👻 GHOST PIPE OPENEN
+      GHOST PIPE OPENEN
     </button>
     <button onclick="openApp()" style="padding:14px 32px;background:transparent;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-family:monospace;font-size:14px;letter-spacing:.04em">
       CHAT OPENEN
@@ -728,6 +728,80 @@ function showTab(name) {
 </script>
 
 </div><!-- /landing -->
+
+
+<!-- GHOST PIPE MODAL -->
+<div id="ghost-pipe-modal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(12,14,16,.97);overflow-y:auto">
+  <div style="max-width:640px;margin:0 auto;padding:32px 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
+      <div>
+        <div style="font-family:monospace;font-size:18px;font-weight:700;color:#a78bfa">&#128123; Ghost Pipe</div>
+        <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-top:2px">Post-quantum · Burn-on-read · RAM-only · 5 min TTL</div>
+      </div>
+      <button onclick="closeGhostPipe()" style="background:transparent;border:1px solid #2a2d35;color:#5a6070;padding:6px 12px;cursor:pointer;font-family:monospace;font-size:12px">x Sluiten</button>
+    </div>
+    <div style="display:flex;gap:1px;margin-bottom:24px;background:#1e2026">
+      <button id="gp-tab-send" onclick="gpTab('send')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#1a1d22;color:#a78bfa;font-weight:700">Versturen</button>
+      <button id="gp-tab-receive" onclick="gpTab('receive')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#111214;color:#5a6070">Ontvangen</button>
+      <button id="gp-tab-keygen" onclick="gpTab('keygen')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#111214;color:#5a6070">Sleutels</button>
+    </div>
+    <!-- Versturen -->
+    <div id="gp-panel-send">
+      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Bestand wordt lokaal versleuteld met ML-KEM-768 voor verzending. De relay ziet alleen een opaque blob.</div>
+      <div style="margin-bottom:16px">
+        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">PUBLIEKE SLEUTEL ONTVANGER (hex)</label>
+        <textarea id="gp-recv-pubkey" placeholder="04a3f8c2d1... (publieke sleutel van ontvanger)" style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:11px;height:80px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">BESTAND (max 4.9MB)</label>
+        <div id="gp-dropzone" onclick="document.getElementById('gp-file-input').click()" style="border:2px dashed #2a2d35;padding:32px;text-align:center;cursor:pointer;background:#111214" ondragover="event.preventDefault();this.style.borderColor='#a78bfa'" ondragleave="this.style.borderColor='#2a2d35'" ondrop="gpHandleDrop(event)">
+          <div style="font-family:monospace;font-size:13px;color:#5a6070">Sleep bestand hierheen of klik</div>
+        </div>
+        <input type="file" id="gp-file-input" style="display:none" onchange="gpFileSelected(this)">
+        <div id="gp-file-info" style="display:none;margin-top:8px;font-family:monospace;font-size:11px;color:#a78bfa;background:#1a1020;padding:8px;border:1px solid #a78bfa30"></div>
+      </div>
+      <button onclick="gpSend()" style="width:100%;padding:12px;background:#a78bfa;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">VERSLEUTELEN &amp; VERSTUREN</button>
+      <div id="gp-send-result" style="display:none;margin-top:16px;background:#111214;border:1px solid #a78bfa30;padding:16px;font-family:monospace;font-size:11px"></div>
+    </div>
+    <!-- Ontvangen -->
+    <div id="gp-panel-receive" style="display:none">
+      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Na ophalen wordt de relay-kopie onmiddellijk verbrand (burn-on-read).</div>
+      <div style="margin-bottom:16px">
+        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">HASH (van verzender)</label>
+        <input id="gp-recv-hash" type="text" placeholder="a3f8c2d1e7b4..." style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:12px;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">JOUW PRIVÉ SLEUTEL (hex)</label>
+        <textarea id="gp-priv-key" placeholder="Privésleutel voor ontsleuteling..." style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:11px;height:80px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+        <button onclick="gpCheckStatus()" style="padding:8px 16px;background:#1a1d22;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-family:monospace;font-size:11px">Check beschikbaarheid</button>
+        <span id="gp-status-result" style="font-family:monospace;font-size:11px;color:#5a6070"></span>
+      </div>
+      <button onclick="gpReceive()" style="width:100%;padding:12px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">OPHALEN + BURN-ON-READ</button>
+      <div id="gp-receive-result" style="display:none;margin-top:16px"></div>
+    </div>
+    <!-- Sleutels -->
+    <div id="gp-panel-keygen" style="display:none">
+      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Genereer een tijdelijk ECDH-sleutelpaar. Deel de publieke sleutel met de verzender.</div>
+      <button onclick="gpKeygen()" style="width:100%;padding:12px;background:#1a1d22;border:1px solid #a78bfa40;color:#a78bfa;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">GENEREER SLEUTELPAAR</button>
+      <div id="gp-keygen-result" style="display:none;margin-top:16px">
+        <div style="margin-bottom:12px">
+          <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:4px">PUBLIEKE SLEUTEL (deel met verzender)</label>
+          <div style="display:flex;gap:8px">
+            <textarea id="gp-pubkey-out" readonly style="flex:1;background:#0c0e10;border:1px solid #00ff9d40;color:#00ff9d;padding:8px;font-family:monospace;font-size:10px;height:80px;resize:none"></textarea>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('gp-pubkey-out').value)" style="padding:8px;background:#1a1d22;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-size:10px">Kopie</button>
+          </div>
+        </div>
+        <div>
+          <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:4px">PRIVE SLEUTEL (bewaar veilig, deel NOOIT)</label>
+          <textarea id="gp-privkey-out" readonly style="width:100%;background:#0c0e10;border:1px solid #ef444440;color:#ef4444;padding:8px;font-family:monospace;font-size:10px;height:80px;resize:none;box-sizing:border-box"></textarea>
+        </div>
+      </div>
+    </div>
+    <div id="gp-log" style="margin-top:24px;background:#0c0e10;border:1px solid #1e2026;padding:12px;font-family:monospace;font-size:10px;color:#5a6070;min-height:60px;max-height:160px;overflow-y:auto;line-height:1.8">Ghost Pipe gereed. Relay: relay.paramant.app</div>
+  </div>
+</div>
 
 <div id="app">
 
@@ -2869,42 +2943,18 @@ function togglePaste(){const p=$('paste-ov');if(p.style.display==='block')hidePa
 function hidePaste(){$('paste-ov').style.display='none';}
 
 // ─── LAUNCH ───────────────────────────────────────────────────────────
-function openApp(){
-  $('app').style.display='flex';
-  document.body.style.overflow='hidden';
-  // Relay automatisch starten — gebruiker hoeft niets te doen
-  if(!relayWant){relayWant=true;wakeupRelay();connectRelay();;}
-  // Incognito/extensie hint — eenmalig per sessie
-  if(!sessionStorage.getItem('pm-ext-checked')){
-    sessionStorage.setItem('pm-ext-checked','1');
-    setTimeout(()=>{
-      // Heuristiek: zijn er tekenen van extensies die de DOM hebben aangeraakt?
-      const extSigns = [
-        document.documentElement.hasAttribute('data-extension'),
-        document.documentElement.hasAttribute('data-grammarly'),
-        !!document.querySelector('[data-extension-id]'),
-        typeof window.__parcel_require__ !== 'undefined',
-        // Niet-incognito detectie is niet betrouwbaar, maar we kunnen wel hints geven
-      ].filter(Boolean).length > 0;
-
-      if(extSigns){
-        showToast('[!] Browser-extensie gedetecteerd — gebruik incognito voor maximale veiligheid.', null, '#7c2d12');
-      } else if(!navigator.webdriver){
-        // Subtiele herinnering — altijd goed om te weten
-        const hint = document.createElement('div');
-        hint.id = 'incognito-hint';
-        hint.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9999;max-width:260px;';
-        hint.innerHTML = `<div style="background:#0c0e10;border:1px solid #111214;border-radius:12px;padding:10px 14px;font-size:11px;color:#b0b4bc;font-family:Inter,sans-serif;line-height:1.5">
-          [LOCK] <strong style="color:#b0b4bc">Tip voor maximale veiligheid:</strong><br>
-          Gebruik incognito-modus en schakel extensies uit. Browser-extensies kunnen DOM-toegang hebben vóór encryptie.
-          <span onclick="this.closest('#incognito-hint').remove()" style="float:right;cursor:pointer;color:#3d4149;margin-left:8px">✕</span>
-        </div>`;
-        document.body.appendChild(hint);
-        setTimeout(()=>{
-          if(hint.parentNode){hint.style.transition='opacity .5s';hint.style.opacity='0';setTimeout(()=>hint.remove(),500);}
-        }, 8000);
-      }
-    }, 1200);
+function openApp() {
+  var land=document.getElementById('landing');
+  if(land) land.style.display='none';
+  var appEl=document.getElementById('app');
+  if(appEl){
+    appEl.style.setProperty('display','flex','important');
+    appEl.style.setProperty('position','fixed','important');
+    appEl.style.setProperty('inset','0','important');
+    appEl.style.setProperty('flex-direction','column','important');
+    appEl.style.setProperty('background','#0c0e10','important');
+    appEl.style.setProperty('z-index','9999','important');
+    appEl.style.setProperty('overflow','hidden','important');
   }
 }
 function closeApp(){$('app').style.display='none';document.body.style.overflow='';}
@@ -3532,78 +3582,6 @@ window.verifyWithGitHub = function() {
 
 </script>
 
-<!-- GHOST PIPE MODAL -->
-<div id="ghost-pipe-modal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(12,14,16,.97);overflow-y:auto">
-  <div style="max-width:640px;margin:0 auto;padding:32px 24px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
-      <div>
-        <div style="font-family:monospace;font-size:18px;font-weight:700;color:#a78bfa">&#128123; Ghost Pipe</div>
-        <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-top:2px">Post-quantum · Burn-on-read · RAM-only · 5 min TTL</div>
-      </div>
-      <button onclick="closeGhostPipe()" style="background:transparent;border:1px solid #2a2d35;color:#5a6070;padding:6px 12px;cursor:pointer;font-family:monospace;font-size:12px">x Sluiten</button>
-    </div>
-    <div style="display:flex;gap:1px;margin-bottom:24px;background:#1e2026">
-      <button id="gp-tab-send" onclick="gpTab('send')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#1a1d22;color:#a78bfa;font-weight:700">Versturen</button>
-      <button id="gp-tab-receive" onclick="gpTab('receive')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#111214;color:#5a6070">Ontvangen</button>
-      <button id="gp-tab-keygen" onclick="gpTab('keygen')" style="flex:1;padding:10px;font-family:monospace;font-size:12px;border:none;cursor:pointer;background:#111214;color:#5a6070">Sleutels</button>
-    </div>
-    <!-- Versturen -->
-    <div id="gp-panel-send">
-      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Bestand wordt lokaal versleuteld met ML-KEM-768 voor verzending. De relay ziet alleen een opaque blob.</div>
-      <div style="margin-bottom:16px">
-        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">PUBLIEKE SLEUTEL ONTVANGER (hex)</label>
-        <textarea id="gp-recv-pubkey" placeholder="04a3f8c2d1... (publieke sleutel van ontvanger)" style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:11px;height:80px;resize:vertical;box-sizing:border-box"></textarea>
-      </div>
-      <div style="margin-bottom:16px">
-        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">BESTAND (max 4.9MB)</label>
-        <div id="gp-dropzone" onclick="document.getElementById('gp-file-input').click()" style="border:2px dashed #2a2d35;padding:32px;text-align:center;cursor:pointer;background:#111214" ondragover="event.preventDefault();this.style.borderColor='#a78bfa'" ondragleave="this.style.borderColor='#2a2d35'" ondrop="gpHandleDrop(event)">
-          <div style="font-family:monospace;font-size:13px;color:#5a6070">Sleep bestand hierheen of klik</div>
-        </div>
-        <input type="file" id="gp-file-input" style="display:none" onchange="gpFileSelected(this)">
-        <div id="gp-file-info" style="display:none;margin-top:8px;font-family:monospace;font-size:11px;color:#a78bfa;background:#1a1020;padding:8px;border:1px solid #a78bfa30"></div>
-      </div>
-      <button onclick="gpSend()" style="width:100%;padding:12px;background:#a78bfa;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">VERSLEUTELEN &amp; VERSTUREN</button>
-      <div id="gp-send-result" style="display:none;margin-top:16px;background:#111214;border:1px solid #a78bfa30;padding:16px;font-family:monospace;font-size:11px"></div>
-    </div>
-    <!-- Ontvangen -->
-    <div id="gp-panel-receive" style="display:none">
-      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Na ophalen wordt de relay-kopie onmiddellijk verbrand (burn-on-read).</div>
-      <div style="margin-bottom:16px">
-        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">HASH (van verzender)</label>
-        <input id="gp-recv-hash" type="text" placeholder="a3f8c2d1e7b4..." style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:12px;box-sizing:border-box">
-      </div>
-      <div style="margin-bottom:16px">
-        <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:6px">JOUW PRIVÉ SLEUTEL (hex)</label>
-        <textarea id="gp-priv-key" placeholder="Privésleutel voor ontsleuteling..." style="width:100%;background:#111214;border:1px solid #2a2d35;color:#e2e4e8;padding:10px;font-family:monospace;font-size:11px;height:80px;resize:vertical;box-sizing:border-box"></textarea>
-      </div>
-      <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
-        <button onclick="gpCheckStatus()" style="padding:8px 16px;background:#1a1d22;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-family:monospace;font-size:11px">Check beschikbaarheid</button>
-        <span id="gp-status-result" style="font-family:monospace;font-size:11px;color:#5a6070"></span>
-      </div>
-      <button onclick="gpReceive()" style="width:100%;padding:12px;background:#00ff9d;color:#0c0e10;border:none;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">OPHALEN + BURN-ON-READ</button>
-      <div id="gp-receive-result" style="display:none;margin-top:16px"></div>
-    </div>
-    <!-- Sleutels -->
-    <div id="gp-panel-keygen" style="display:none">
-      <div style="font-family:monospace;font-size:11px;color:#5a6070;margin-bottom:16px;line-height:1.8">Genereer een tijdelijk ECDH-sleutelpaar. Deel de publieke sleutel met de verzender.</div>
-      <button onclick="gpKeygen()" style="width:100%;padding:12px;background:#1a1d22;border:1px solid #a78bfa40;color:#a78bfa;cursor:pointer;font-family:monospace;font-size:13px;font-weight:700">GENEREER SLEUTELPAAR</button>
-      <div id="gp-keygen-result" style="display:none;margin-top:16px">
-        <div style="margin-bottom:12px">
-          <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:4px">PUBLIEKE SLEUTEL (deel met verzender)</label>
-          <div style="display:flex;gap:8px">
-            <textarea id="gp-pubkey-out" readonly style="flex:1;background:#0c0e10;border:1px solid #00ff9d40;color:#00ff9d;padding:8px;font-family:monospace;font-size:10px;height:80px;resize:none"></textarea>
-            <button onclick="navigator.clipboard.writeText(document.getElementById('gp-pubkey-out').value)" style="padding:8px;background:#1a1d22;border:1px solid #2a2d35;color:#8a8e98;cursor:pointer;font-size:10px">Kopie</button>
-          </div>
-        </div>
-        <div>
-          <label style="font-family:monospace;font-size:10px;color:#8a8e98;letter-spacing:.06em;display:block;margin-bottom:4px">PRIVE SLEUTEL (bewaar veilig, deel NOOIT)</label>
-          <textarea id="gp-privkey-out" readonly style="width:100%;background:#0c0e10;border:1px solid #ef444440;color:#ef4444;padding:8px;font-family:monospace;font-size:10px;height:80px;resize:none;box-sizing:border-box"></textarea>
-        </div>
-      </div>
-    </div>
-    <div id="gp-log" style="margin-top:24px;background:#0c0e10;border:1px solid #1e2026;padding:12px;font-family:monospace;font-size:10px;color:#5a6070;min-height:60px;max-height:160px;overflow-y:auto;line-height:1.8">Ghost Pipe gereed. Relay: relay.paramant.app</div>
-  </div>
-</div>
 
 <script>
 // ══════════════════════════════════════════════════════════════
@@ -3614,9 +3592,20 @@ let _gpFile = null;
 let _gpKeys = null; // { pub: CryptoKey, priv: CryptoKey, pubHex: string, privHex: string }
 
 function openGhostPipe() {
-  document.getElementById('ghost-pipe-modal').style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  gpLog('Ghost Pipe geopend.');
+  var land=document.getElementById('landing');
+  if(land) land.style.display='none';
+  var appEl=document.getElementById('app');
+  if(appEl){
+    appEl.style.setProperty('display','flex','important');
+    appEl.style.setProperty('position','fixed','important');
+    appEl.style.setProperty('inset','0','important');
+    appEl.style.setProperty('flex-direction','column','important');
+    appEl.style.setProperty('background','#0c0e10','important');
+    appEl.style.setProperty('z-index','9999','important');
+    appEl.style.setProperty('overflow','hidden','important');
+  }
+  var modal=document.getElementById('ghost-pipe-modal');
+  if(modal){modal.style.display='block';document.body.style.overflow='hidden';}
 }
 function closeGhostPipe() {
   document.getElementById('ghost-pipe-modal').style.display = 'none';
