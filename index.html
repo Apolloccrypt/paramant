@@ -1508,9 +1508,13 @@ const IDB=(()=>{
     async clearIdentity(){const d=await get();return new Promise(r=>{const t=d.transaction('id','readwrite');t.objectStore('id').delete('main');t.oncomplete=r;});}
   };
 })();
-// Keep NDB alias for backward compat
-setTimeout(()=>IDB.pruneNonces().catch(()=>{}), 3000);
-const NDB={has:id=>IDB.hasNonce(id),add:id=>IDB.addNonce(id)};
+// NDB: in-memory nonce store — verdwijnt bij sluiten venster (wegwerp-modus)
+// Geen IndexedDB voor nonces — sessionStorage ook niet nodig
+const _nonceSet = new Set();
+const NDB = {
+  has: async (id) => _nonceSet.has(id),
+  add: async (id) => { _nonceSet.add(id); }
+};
 
 // ─── FRACTAL AVATAR — 100% hash-derived ─────────────────────────────
 const MB_REGIONS=[[-0.7269,0.1889,0.022],[-0.5252,0.5252,0.016],[0.2850,0.0100,0.038],[-0.7453,0.1127,0.007],[-0.1256,0.6440,0.012],[-1.7548,0.0001,0.009],[-0.8000,0.1560,0.028],[-0.4244,0.3578,0.011],[0.0000,0.6180,0.045],[-0.5890,-0.4250,0.014],[-1.3150,0.0740,0.007],[-0.5980,0.6630,0.006],[0.4295,0.1658,0.019],[-0.7780,0.1340,0.009],[-0.2340,-0.8270,0.013],[-1.4012,0.0000,0.011],[-0.1011,0.9532,0.008],[0.3690,0.6700,0.015],[-0.8650,0.2320,0.010],[-0.6890,-0.2780,0.017]];
@@ -1641,7 +1645,9 @@ async function buildIdentity(){
 }
 
 async function restoreIdentity(){
-  // Try to load persisted keypair
+  // Wegwerp-modus: nooit identiteit herstellen — elke sessie is nieuw
+  return false;
+  // eslint-disable-next-line no-unreachable
   const saved=await IDB.loadIdentity();
   if(!saved)return false;
   try{
@@ -1889,9 +1895,7 @@ function connectRelay(){
     relayWS=new WebSocket(RELAY_WS);
     relayWS.onopen=()=>{
       relayOn=true;setRelayUI('on');
-      // Dedup: join elke chatId maar 1x — voorkomt dubbele buffer replay bij duplicate convs
-      const _joined=new Set();
-      convs.forEach(c=>{if(c.connected&&c.chatId&&!_joined.has(c.chatId)){relayJoin(c.chatId);_joined.add(c.chatId);}});
+      const _joined=new Set();convs.forEach(c=>{if(c.connected&&c.chatId&&!_joined.has(c.chatId)){relayJoin(c.chatId);_joined.add(c.chatId);}});
       broadcastPresence();
       if(!IS_ONION)fetchStats();
       if(IS_ONION)showToast('[TOR] Verbonden via Tor — maximale anonimiteit',null,'#581c87');
@@ -2014,16 +2018,14 @@ async function broadcastConnRequest(theirBundle){
     if(!b.ecdh)return;
     const eb=h2b(b.ecdh.replace(/\s+/g,''));
     if(!eb||eb.length!==65)return;
-    const hh=await sha256(eb);
-    const targetHash=b2h(hh.slice(0,8));
+    const hh=await sha256(eb);const targetHash=b2h(hh.slice(0,8));
     const sendEncReq=async()=>{
       try{
         const ephKP=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
         const ephPubRaw=new Uint8Array(await crypto.subtle.exportKey('raw',ephKP.publicKey));
         const recipKey=await crypto.subtle.importKey('raw',eb,{name:'ECDH',namedCurve:'P-256'},false,[]);
         const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'ECDH',public:recipKey},ephKP.privateKey,256));
-        const encKey=await hkdf(bits,'paramant-conn-request-v1',32);
-        bits.fill(0);
+        const encKey=await hkdf(bits,'paramant-conn-request-v1',32);bits.fill(0);
         const plain=pad32(new TextEncoder().encode(myBundle));
         const aad=new TextEncoder().encode('paramant-conn-request');
         const{iv,ct}=await aesEnc(encKey,plain,aad);
@@ -2490,7 +2492,6 @@ async function doConnect(){
       if(bundle.mlkem)conv.peerMLKEM=bundle.mlkem;
       // Stabiele chatId voor relay room — dezelfde voor beide kanten
       conv.chatId=await chatIdFrom(chatCK);
-      // Dedup: voorkom twee convs met dezelfde chatId (bijv. bij simultane verbinding)
       if(convs.find(c=>c.chatId===conv.chatId)){
         showToast('[!] Al verbonden met deze peer — gesprek bestaat al.');
         $('conn-btn').disabled=false;$('conn-btn').textContent='>> Verbinden';
@@ -2907,7 +2908,8 @@ function hidePaste(){$('paste-ov').style.display='none';}
 
 // ─── LAUNCH ───────────────────────────────────────────────────────────
 function openApp(){
-  try{const tabKey='pm-tab-'+Date.now()+'-'+Math.random().toString(36).slice(2);sessionStorage.setItem('pm-this-tab',tabKey);const now=Date.now();const openTabs=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]').filter(t=>now-t.ts<30000);openTabs.push({id:tabKey,ts:now});localStorage.setItem('pm-open-tabs',JSON.stringify(openTabs));if(openTabs.length>1)setTimeout(()=>showToast('[!] Tweede venster — zelfde identiteit. Gebruik privévenster voor aparte identiteit.',null,'#7c3aed'),1500);setInterval(()=>{try{const t=JSON.parse(localStorage.getItem('pm-open-tabs')||'[]');const i=t.findIndex(x=>x.id===tabKey);if(i>-1){t[i].ts=Date.now();localStorage.setItem('pm-open-tabs',JSON.stringify(t));}}catch(e){}},10000);}catch(e){}
+  // Wegwerp-modus: wis localStorage tab-tracker bij elke sessie-start
+  try{ localStorage.removeItem('pm-open-tabs'); }catch(e){}
   $('app').style.display='flex';
   document.body.style.overflow='hidden';
   // Relay automatisch starten — gebruiker hoeft niets te doen
