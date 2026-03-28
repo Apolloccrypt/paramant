@@ -2524,6 +2524,9 @@ async function encPayload(conv,payload,type){
     if(kemCt)pkt.kemCt=kemCt;if(newKEMPub)pkt.kemPub=newKEMPub;
     conv.tagsCnt++;
     const pktStr=JSON.stringify(pkt);
+    // Timing jitter: 0-2s willekeurige vertraging
+    // Relay timestamp klopt niet met werkelijk verzendmoment → timing-correlatie aanvallen tegengaan
+    await new Promise(r=>setTimeout(r,Math.floor(Math.random()*2000)));
     const relayed=relaySend(conv,pkt);
     addMsg(conv,'sent',{pkt:pktStr,type,payload,seq,t:now(),relayed,pq:!!kemCt});
     updateAudit(conv);
@@ -2934,7 +2937,16 @@ $('msg-inp').addEventListener('paste',e=>{setTimeout(()=>{const v=$('msg-inp').v
 $('msg-inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doEncrypt();}});
 $('paste-ta').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doDecrypt();}});
 $('peer-key').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doConnect();}});
-document.addEventListener('keydown',e=>{if(e.key==='PrintScreen'||(e.metaKey&&e.shiftKey&&['3','4','5'].includes(e.key))){const c=activeConv();if(c)sysMsg(c,'[!] Let op: screenshots zijn niet versleuteld!');}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='PrintScreen'||(e.metaKey&&e.shiftKey&&['3','4','5'].includes(e.key))){
+    const c=activeConv();
+    if(c){
+      sysMsg(c,'[⚠️] Screenshot gedetecteerd — je amice wordt gewaarschuwd.');
+      // Stuur notificatie naar peer via versleuteld kanaal
+      encPayload(c,'⚠️ Screenshot gedetecteerd aan jouw kant','text').catch(()=>{});
+    }
+  }
+});
 
 // ─── SIDEBAR ──────────────────────────────────────────────────────────
 function openSidebar(){$('sidebar-panel').style.transform='translateX(0)';$('mob-ov').classList.remove('hidden');}
@@ -3265,5 +3277,130 @@ function howTab(id, btn) {
 
 
 // Check voor invite bij openen app
+
+
+// ══════════════════════════════════════════════════════════════
+//  SCHERM BESCHERMING
+//  - Blur berichten bij scherm-opname / focus-verlies / tab-hide
+//  - getDisplayMedia detectie
+//  - Tor onboarding banner
+// ══════════════════════════════════════════════════════════════
+
+// ── Blur helper ──────────────────────────────────────────────
+let _screenBlurActive = false;
+function blurMsgs(on) {
+  _screenBlurActive = on;
+  const host = document.getElementById('msgs-host');
+  if (!host) return;
+  host.style.filter = on ? 'blur(12px)' : '';
+  host.style.transition = 'filter 0.3s';
+  // Overlay met klik-om-te-tonen
+  let ov = document.getElementById('blur-overlay');
+  if (on) {
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'blur-overlay';
+      ov.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;background:rgba(12,14,16,.75);cursor:pointer;gap:8px';
+      ov.innerHTML = '<div style="color:#5a6070;font-family:monospace;font-size:13px;text-align:center">[LOCK] Berichten vervaagd</div><div style="color:#3d4149;font-size:11px;font-family:monospace">Klik om tijdelijk te tonen</div>';
+      ov.addEventListener('click', () => {
+        blurMsgs(false);
+        // Na 10s automatisch weer vervagen bij tab-hide modus
+        setTimeout(() => { if(document.hidden) blurMsgs(true); }, 10000);
+      });
+      const cw = document.getElementById('chat-wrap');
+      if (cw) { const s=cw.style.position; if(!s||s==='')cw.style.position='relative'; cw.appendChild(ov); }
+    } else { ov.style.display='flex'; }
+  } else {
+    if (ov) ov.style.display = 'none';
+  }
+}
+
+// ── getDisplayMedia detectie (scherm-opname/delen) ────────────
+(function(){
+  const md = navigator.mediaDevices;
+  if (!md || !md.getDisplayMedia) return;
+  const _orig = md.getDisplayMedia.bind(md);
+  md.getDisplayMedia = async function(...args) {
+    blurMsgs(true);
+    const c = activeConv ? activeConv() : null;
+    if (c) {
+      encPayload(c, '⚠️ Scherm-opname of scherm-delen gedetecteerd aan de andere kant', 'text').catch(()=>{});
+    }
+    showToast('[⚠️] Scherm-opname gedetecteerd — berichten zijn vervaagd', null, '#7c2d12');
+    try {
+      const stream = await _orig(...args);
+      // Scherm-opname gestopt → unblur
+      stream.getVideoTracks()[0]?.addEventListener('ended', () => blurMsgs(false));
+      return stream;
+    } catch(e) {
+      blurMsgs(false);
+      throw e;
+    }
+  };
+})();
+
+// ── Tab/venster focus-verlies → blur ─────────────────────────
+// Grace period van 5s zodat korte switch niet meteen blurt
+let _blurTimeout = null;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    _blurTimeout = setTimeout(() => blurMsgs(true), 5000);
+  } else {
+    clearTimeout(_blurTimeout);
+    blurMsgs(false);
+  }
+});
+window.addEventListener('blur', () => {
+  _blurTimeout = setTimeout(() => blurMsgs(true), 5000);
+});
+window.addEventListener('focus', () => {
+  clearTimeout(_blurTimeout);
+  blurMsgs(false);
+});
+
+// ── Tor onboarding banner ─────────────────────────────────────
+// Toon eenmalig per sessie als gebruiker niet via .onion verbindt
+(function() {
+  if (location.hostname.endsWith('.onion')) return; // al via Tor
+  if (sessionStorage.getItem('tor-dismissed')) return;
+  const TOR_ADDR = 'csnmdkpqikrf6abad7ej4mqsftiyh2z2fg3nzpf4x4zbnh2ulbmq5mid.onion';
+  // Toon na 4s zodat de app eerst geladen is
+  setTimeout(() => {
+    if (sessionStorage.getItem('tor-dismissed')) return;
+    const banner = document.createElement('div');
+    banner.id = 'tor-banner';
+    banner.style.cssText = 'position:fixed;bottom:70px;right:16px;max-width:290px;background:#1a1d22;border:1px solid rgba(168,85,247,.4);color:#c8ccd4;padding:16px;border-radius:12px;font-size:12px;z-index:9999;line-height:1.6;box-shadow:0 8px 32px rgba(0,0,0,.6);font-family:monospace';
+    banner.innerHTML =
+      '<div style="font-weight:700;color:#a78bfa;margin-bottom:6px">🧅 IP-adres zichtbaar voor Cloudflare</div>' +
+      '<div style="color:#8a8e98;font-size:11px;margin-bottom:10px">Voor volledige anonimiteit: open via Tor Browser op het .onion adres.</div>' +
+      '<div style="background:#0c0e10;padding:8px;border-radius:6px;font-size:10px;color:#a78bfa;word-break:break-all;margin-bottom:10px">' + TOR_ADDR + '</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button id="tor-copy-btn" style="flex:1;padding:6px;background:#2a2d35;border:1px solid #3d4149;color:#a78bfa;border-radius:6px;cursor:pointer;font-size:11px">📋 Kopieer .onion</button>' +
+        '<button id="tor-dismiss-btn" style="padding:6px 10px;background:transparent;border:1px solid #3d4149;color:#5a6070;border-radius:6px;cursor:pointer;font-size:11px">✕</button>' +
+      '</div>';
+    document.body.appendChild(banner);
+    banner.querySelector('#tor-copy-btn').addEventListener('click', function() {
+      navigator.clipboard.writeText(TOR_ADDR).catch(()=>{});
+      this.textContent = '✓ Gekopieerd!';
+      setTimeout(() => { this.textContent = '📋 Kopieer .onion'; }, 2000);
+    });
+    banner.querySelector('#tor-dismiss-btn').addEventListener('click', () => {
+      sessionStorage.setItem('tor-dismissed', '1');
+      banner.style.transition = 'opacity .4s';
+      banner.style.opacity = '0';
+      setTimeout(() => banner.remove(), 400);
+    });
+    // Auto-dismiss na 60s
+    setTimeout(() => {
+      if (banner.parentNode) {
+        sessionStorage.setItem('tor-dismissed', '1');
+        banner.style.transition = 'opacity .5s';
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 500);
+      }
+    }, 60000);
+  }, 4000);
+})();
+
 </script>
 </body>
