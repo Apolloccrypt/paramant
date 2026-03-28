@@ -1597,8 +1597,70 @@ const LP={
 })();
 
 // ─── IDENTITY — SHA-256(pubKey) -> avatar + nick ──────────────────
-const NADJ=['Nul','Hex','Bin','Enc','Void','Dark','Zero','Null','Anon','Crypt','Xor','Hash','Init','Core','Edge','Root','Base','Node','Port','Sync','Mask','Shard','Ghost','Epoch','Sector','Block','Proto','Meta','Proxy','Delta'];
-const NNOUN=['Nox','Vex','Krait','Oryx','Zond','Quor','Flux','Nexus','Plex','Axon','Krypt','Vorx','Zenith','Quartz','Velox','Drax','Prism','Onyx','Helix','Kron','Zephyr','Obsid','Pulsar','Vertex','Cipher','Nexon','Kodex','Phantom','Axor','Kryos'];
+const NADJ=['Nul','Hex','Bin','Enc','Void','Dark','Zero','Null','Anon','Crypt',
+'Xor','Hash','Init','Bit','Sig','Key','Arc','Flux','Node','Edge',
+'Peak','Root','Apex','Core','Salt','Mask','Priv','Seal','Burn','Skip',
+'Rift','Veil','Mute','Blur','Frag','Echo','Link','Mesh','Port','Wire',
+'Sync','Ping','Drop','Swap','Fork','Exec','Halt','Jump','Load','Push',
+'Pull','Scan','Seek','Snip','Sort','Trim','Wrap','Cast','Feed','Find',
+'Free','Grab','Hide','Hold','Idle','Kill','Lock','Open','Pack','Pass',
+'Poll','Post','Read','Send','Snap','Span','Stop','Test','Tick','Turn',
+'View','Wait','Walk','Wipe','Work','Zap','Zip','Arm','Cut','Dig',
+'Get','Hit','Mix','Pop','Put','Run','Set','Tag','Tap','Try',
+'Use','Win','Alt','Cap','Dim','Div','End','Far','Grp','Imp',
+'Int','Inv','Lex','Log','Low','Map','Max','Min','Mod','Mul',
+'Net','Neg','Off','Ord','Out','Par','Pkt','Ptr','Raw','Rec',
+'Ref','Reg','Rem','Rep','Req','Res','Ret','Rev','Row','Sec',
+'Seq','Srv','Str','Sub','Sum','Sys','Tab','Tmp','Top','Udp',
+'Uid','Uni','Upd','Val','Vec','Ver','Vol','Wrk','Cold','Fast',
+'Hard','Last','Late','Long','Near','Next','None','Odd','Old','Once',
+'Only','Own','Past','Pure','Quad','Rand','Real','Same','Safe','Side',
+'Slim','Slow','Soft','Sole','Some','Soon','Stark','True','Taut','Tiny',
+'Twin','Type','Unit','Used','Vast','Wide','Wild','Wise','Worn','Xtra',
+'Yell','Zeal','Bare','Bold','Busy','Cool','Dead','Deep','Dual','Dull',
+'Each','Even','Ever','Flat','Full','Gone','Good','Gray','High','Holy',
+'Huge','Just','Keen','Kind','Lazy','Less','Live','Loud','Many','More',
+'Most','Much','Must','Nice','Nigh','Nor','Note','Now','Okay','Over',
+'Part','Path','Peer','Plug','Plus','Prev','Quit','Rate','Rest','Roof',
+'Rule','Rush','Self','Shed','Show','Shut','Snag','Spin','Split','Spot',
+'Step','Such','Sure','Take','Tell','That','Then','Thin','This','Thus',
+'Till','Told','Too','Torn','Toss','Trot','Tune','Upward','Upon','Very',
+'Wary','Weak','What','When','Where','Who','Whom','Will','Wish','With',
+'Yet','Yield','Young','Zest'];
+
+
+const NNOUN=['Nox','Vex','Krait','Oryx','Zond','Quor','Flux','Nexus','Plex','Axon',
+'Krypt','Vorx','Zeph','Root','Helix','Quartz','Neon','Sigma','Delta','Theta',
+'Omega','Alpha','Beta','Gamma','Kappa','Lambda','Iota','Zeta','Tau','Rho',
+'Phi','Psi','Eta','Mu','Nu','Xi','Byte','Blob','Bool','Chan',
+'Char','Code','Conn','Data','Enum','Expr','File','Flag','Flow','Form',
+'Func','Gate','Grid','Hash','Hook','Host','Hull','Info','Input','Iter',
+'Join','Keys','Kind','Lane','List','Loop','Mode','Move','Name','Obj',
+'Pair','Path','Pipe','Plan','Pool','Prop','Push','Query','Queue','Range',
+'Rank','Rate','Read','Ring','Role','Route','Rule','Salt','Scan','Scope',
+'Send','Shard','Signal','Sink','Size','Slot','Sort','Stack','State','Step',
+'Store','Stream','String','Stub','Task','Term','Time','Token','Trace','Tree',
+'Tuple','Type','Uid','Unit','Util','Value','Vault','View','Wire','Word',
+'Work','Zone','Wrap','Block','Chain','Chunk','Claim','Class','Clear','Clone',
+'Close','Copy','Count','Crate','Cycle','Datum','Drain','Drive','Epoch','Error',
+'Event','Fiber','Field','Focus','Frame','Front','Graph','Guard','Inbox','Ident',
+'Index','Infer','Issue','Joint','Knob','Label','Layer','Lease','Level','Light',
+'Limit','Line','Liner','Logic','Macro','Mark','Match','Matrix','Memo','Merge',
+'Message','Method','Metric','Mirror','Model','Mount','Mutex','Nonce','Object','Offset',
+'Order','Output','Owner','Packet','Page','Panel','Parse','Patch','Phase','Piece',
+'Point','Policy','Port','Prefix','Prime','Probe','Process','Profile','Promise','Proof',
+'Proxy','Pulse','Record','Relay','Reply','Repo','Reset','Result','Retry','Rollup',
+'Round','Row','Sample','Schema','Script','Secret','Seed','Segment','Server','Session',
+'Setup','Shell','Slice','Spec','Stake','Status','Subnet','Switch','Symbol','System',
+'Table','Target','Thread','Tick','Timeout','Trait','Trans','Trigger','Trunk','Trust',
+'Tunnel','Update','Upload','Vector','Vertex','Viewer','Volume','Watch','Weight','Window',
+'Worker','Workspace','Wrapper','Yield','Zero','Arch','Bode','Cape','Cove','Crest',
+'Crypt','Dune','Fend','Gash','Gild','Glen','Grip','Gulf','Gust','Haze',
+'Horn','Jolt','Knell','Lash','Loft','Lore','Lure','Lumen','Mend','Mire',
+'Mote','Mox','Murk','Myth','Nave','Orb','Pike','Pith','Prong','Rune',
+'Rust','Rut','Ryve','Silt','Skew','Slag','Slab','Slat','Slay','Smog'];
+
+
 const NSYM=['_','-','.','!','@','~','#','+'];
 const NPFX=['0x','zk','xq','k3','v0','h4','j9','r7','n3',''];
 function nickFromHash(h){
@@ -1612,7 +1674,7 @@ function nickFromHash(h){
   const adj2=NADJ[((h[25]<<8)|h[26])%NADJ.length]; // extra entropy byte
   if(s===0)return(adj+sym+noun+num.slice(0,2)).slice(0,15);
   if(s===1)return(pfx+noun+adj.slice(0,3)+num.slice(0,2)).slice(0,15);
-  if(s===2)return(noun+sym+adj2).slice(0,15);
+  if(s===2)return(noun+sym+adj2+num.slice(0,2)).slice(0,15);
   if(s===3)return(pfx+noun+num.slice(0,2)).slice(0,15);
   return(adj.slice(0,4)+noun+num.slice(0,2)).slice(0,15);
 }
