@@ -1509,6 +1509,7 @@ const IDB=(()=>{
   };
 })();
 // Keep NDB alias for backward compat
+setTimeout(()=>IDB.pruneNonces().catch(()=>{}), 3000);
 const NDB={has:id=>IDB.hasNonce(id),add:id=>IDB.addNonce(id)};
 
 // ─── FRACTAL AVATAR — 100% hash-derived ─────────────────────────────
