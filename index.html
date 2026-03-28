@@ -1359,7 +1359,14 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
       <!-- Header -->
       <div class="p-3 border-b border-[#1e2026] flex-shrink-0">
         <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center justify-between">
           <div class="mono text-xs text-[#00ff9d] tracking-widest font-bold">ACTIEVE GEBRUIKERS</div>
+          <div class="flex items-center gap-2">
+            <button id="session-timer-btn-side" onclick="cycleSessionTimer()" title="Sessie-timer — app sluit automatisch na X minuten"
+              class="mono text-xs text-[#f59e0b] hover:text-[#fbbf24] transition-colors">⏱ Uit</button>
+            <span class="session-countdown mono text-xs font-bold text-[#ef4444]" style="display:none"></span>
+          </div>
+        </div>
           <button onclick="fetchLedger()" class="mono text-xs text-[#5a6070] hover:text-[#00ff9d] transition-colors" title="Ververs ledger">↺</button>
         </div>
         <div class="text-xs text-[#5a6070] mb-3 leading-relaxed">Wie is er nu online en eerder verstuurde berichten (anoniem — alleen hash zichtbaar).</div>
@@ -1376,6 +1383,11 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
           <div class="bg-[#1a1d22]/80 border border-[#2a2d35] rounded-lg p-1.5 text-center">
             <div id="ls-online" class="mono font-bold text-green-400 text-xs">—</div>
             <div class="text-[#5a6070] text-xs" style="font-size:9px">online</div>
+          </div>
+          <!-- Flush countdown -->
+          <div class="bg-[#1a1d22]/80 border border-[#2a2d35] rounded-lg p-1.5 text-center col-span-3">
+            <div class="text-[#5a6070] text-xs" style="font-size:9px;margin-bottom:2px">🧹 FLUSH IN</div>
+            <div class="flush-countdown mono font-bold text-[#f59e0b] text-xs">—</div>
           </div>
         </div>
         <!-- Search -->
@@ -3456,18 +3468,18 @@ function sessionExpired() {
 }
 
 function cycleSessionTimer() {
-  // Knop in UI om door timer-opties te lopen
   const currentMins = _sessionTimerEnd ? Math.round((_sessionTimerEnd - Date.now()) / 60000) : 0;
-  // Vind huidige optie
-  let idx = 0;
+  let curIdx = 0;
   for (let i = 0; i < SESSION_OPTIONS.length; i++) {
-    if (SESSION_OPTIONS[i] > 0 && currentMins > 0) { idx = i; break; }
+    if (SESSION_OPTIONS[i] > 0 && currentMins > 0) { curIdx = i; break; }
   }
-  const next = SESSION_OPTIONS[(SESSION_OPTIONS.indexOf(SESSION_OPTIONS[idx]) + 1) % SESSION_OPTIONS.length];
+  const next = SESSION_OPTIONS[(curIdx + 1) % SESSION_OPTIONS.length];
   setSessionTimer(next);
-
-  const btn = document.getElementById('session-timer-btn');
-  if (btn) btn.textContent = next ? `⏱ ${next}m` : '⏱ Uit';
+  const label = next ? `⏱ ${next}m` : '⏱ Uit';
+  ['session-timer-btn','session-timer-btn-side'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.textContent = label;
+  });
 }
 
 // Flush-reset: na relay flush ook berichten wissen (privacy garantie)
@@ -3613,125 +3625,91 @@ window.addEventListener('focus', () => {
 
 // ══════════════════════════════════════════════════════════════
 //  APP-INTEGRITEIT VERIFICATIE
-//  Beschermt tegen gecompromitteerde CDN (Cloudflare-aanval)
-//
-//  Werking:
-//  1. Bereken SHA-256 van geladen HTML
-//  2. Vergelijk met GitHub (de openbare broncode)
-//  3. Als mismatch → waarschuwing + app sluiten
-//  4. Sla hash op in localStorage voor change-detectie
+//  Vergelijkt raw HTML van deze pagina met GitHub broncode.
+//  Volledig opt-in via [HASH] knop — geen automatische checks.
+//  localStorage-vergelijking verwijderd (false positives bij elke deploy).
 // ══════════════════════════════════════════════════════════════
 
 const GITHUB_RAW = 'https://raw.githubusercontent.com/Apolloccrypt/paramant/main/index.html';
+const GITHUB_URL = 'https://github.com/Apolloccrypt/paramant/blob/main/index.html';
 
 async function sha256hex(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-function showIntegrityAlert(type, currentHash, expectedHash) {
-  // Verwijder alle app-inhoud — toon alleen waarschuwing
+function showIntegrityAlert(type, currentHash, githubHash) {
   const overlay = document.createElement('div');
-  overlay.style.cssText = [
-    'position:fixed;inset:0;z-index:999999',
-    'background:#0c0e10;display:flex;align-items:center;justify-content:center',
-    'font-family:monospace;padding:24px'
-  ].join(';');
-
-  const isTampered = type === 'mismatch';
-  const isChanged  = type === 'changed';
-
+  overlay.id = 'integrity-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#0c0e10;display:flex;align-items:center;justify-content:center;font-family:monospace;padding:24px';
+  const isMismatch = type === 'mismatch';
   overlay.innerHTML = `
-    <div style="max-width:520px;width:100%;background:#111214;border:2px solid ${isTampered?'#ef4444':'#f59e0b'};padding:32px;border-radius:4px">
-      <div style="font-size:22px;font-weight:900;color:${isTampered?'#ef4444':'#f59e0b'};margin-bottom:16px">
-        ${isTampered ? '⚠️ MOGELIJKE AANVAL GEDETECTEERD' : '⚠️ APP IS GEWIJZIGD'}
+    <div style="max-width:520px;width:100%;background:#111214;border:2px solid ${isMismatch?'#ef4444':'#00ff9d'};padding:32px;border-radius:4px">
+      <div style="font-size:18px;font-weight:900;color:${isMismatch?'#ef4444':'#00ff9d'};margin-bottom:16px">
+        ${isMismatch ? '⚠️ HASH MISMATCH MET GITHUB' : '✓ HASH OVEREENKOMST MET GITHUB'}
       </div>
       <div style="color:#c8ccd4;font-size:13px;line-height:1.8;margin-bottom:20px">
-        ${isTampered
-          ? `De geladen HTML <strong style="color:#ef4444">komt niet overeen</strong> met de openbare broncode op GitHub.<br>
-             Dit kan betekenen dat Cloudflare of een tussenpersoon de app heeft aangepast.<br><br>
-             <strong style="color:#e2e4e8">Gebruik PARAMANT niet via de browser totdat dit is opgehelderd.</strong><br>
-             Download de HTML direct van GitHub en open hem lokaal.`
-          : `De app-hash is veranderd ten opzichte van je vorige bezoek.<br>
-             Dit kan een legitieme update zijn — of een aanpassing door een tussenpersoon.<br><br>
-             <strong style="color:#e2e4e8">Verifieer de hash op GitHub voordat je verder gaat.</strong>`
-        }
+        ${isMismatch
+          ? 'De geladen HTML <strong style="color:#ef4444">komt niet overeen</strong> met de openbare broncode.<br>Mogelijk is de CDN gecompromitteerd. Download de HTML direct van GitHub.'
+          : 'De app is authentiek. Hash overeenkomst bevestigd met GitHub broncode.'}
       </div>
-      <div style="background:#0c0e10;padding:12px;margin-bottom:16px;font-size:11px;word-break:break-all">
-        <div style="color:#5a6070;margin-bottom:4px">Geladen hash:</div>
-        <div style="color:#f87171">${currentHash}</div>
-        ${expectedHash ? `<div style="color:#5a6070;margin-top:8px;margin-bottom:4px">${isTampered?'GitHub hash:':'Vorige hash:'}</div>
-        <div style="color:#4ade80">${expectedHash}</div>` : ''}
+      <div style="background:#0c0e10;padding:12px;margin-bottom:16px;font-size:11px;word-break:break-all;line-height:2">
+        <span style="color:#5a6070">Deze pagina: </span><span style="color:${isMismatch?'#f87171':'#4ade80'}">${currentHash}</span><br>
+        <span style="color:#5a6070">GitHub:      </span><span style="color:#4ade80">${githubHash}</span>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a href="${GITHUB_RAW}" target="_blank" rel="noopener"
+        <a href="${GITHUB_URL}" target="_blank" rel="noopener"
            style="flex:1;padding:10px;background:#2a2d35;color:#c8ccd4;text-decoration:none;text-align:center;font-size:12px;border:1px solid #3d4149">
-          📂 Bekijk broncode op GitHub
+          📂 Bekijk index.html op GitHub
         </a>
-        ${isChanged ? `<button onclick="
-          localStorage.setItem('pm-integrity-hash', '${currentHash}');
-          localStorage.setItem('pm-integrity-ts', Date.now());
-          this.closest('div[style*=fixed]').remove();
-        " style="flex:1;padding:10px;background:#1a2a1a;color:#4ade80;border:1px solid #166534;cursor:pointer;font-size:12px;font-family:monospace">
-          ✓ Vertrouw nieuwe versie
-        </button>` : ''}
+        ${isMismatch ? `
+        <a href="${GITHUB_RAW}" download="paramant-verified.html"
+           style="flex:1;padding:10px;background:#0f4c3a;color:#4ade80;text-decoration:none;text-align:center;font-size:12px;border:1px solid #166534">
+          ⬇ Download van GitHub
+        </a>
         <button onclick="window.location.href='about:blank'"
            style="flex:1;padding:10px;background:#1a0a0a;color:#ef4444;border:1px solid #7f1d1d;cursor:pointer;font-size:12px;font-family:monospace">
           ✕ Sluit app
-        </button>
+        </button>` : `
+        <button onclick="document.getElementById('integrity-overlay').remove()"
+           style="flex:1;padding:10px;background:#0f4c3a;color:#4ade80;border:1px solid #166534;cursor:pointer;font-size:12px;font-family:monospace">
+          ✓ Sluiten
+        </button>`}
       </div>
     </div>`;
   document.body.appendChild(overlay);
 }
 
-async function verifyIntegrity() {
+// Vergelijk raw HTML-tekst van huidige URL met GitHub
+// Alleen uitvoeren op aanvraag (via [HASH] knop of ?verify)
+async function verifyWithGitHub() {
+  if (!location.hostname && location.protocol === 'file:') {
+    showToast('[!] Verificatie werkt niet in file:// modus — open via paramant.app');
+    return;
+  }
+  showToast('🔍 Vergelijken met GitHub broncode…');
   try {
-    const currentHTML = document.documentElement.outerHTML;
-    const currentHash = await sha256hex(currentHTML);
-
-    // Sla hash op in UI voor handmatige verificatie
-    const hashEl = document.getElementById('integrity-hash');
-    if (hashEl) hashEl.textContent = currentHash.slice(0,16)+'…';
-
-    // 1. Change-detectie: alleen informerende toast, niet blokkerend
-    // (hash verandert bij elke legitieme deploy — alleen GitHub-mismatch blokkeert)
-    const storedHash = localStorage.getItem('pm-integrity-hash');
-    if (storedHash && storedHash !== currentHash) {
-      showToast('ℹ️ App-versie gewijzigd. Klik [HASH] om te verifiëren met GitHub.', null, '#1a1a2e');
-    }
-
-    // 2. GitHub-vergelijking (optioneel — lekt naar GitHub dat je Paramant gebruikt)
-    // Alleen uitvoeren als expliciet gevraagd via ?verify of knop
-    if (location.search.includes('verify') || sessionStorage.getItem('pm-verify-requested')) {
-      sessionStorage.removeItem('pm-verify-requested');
-      try {
-        const resp = await fetch(GITHUB_RAW + '?nocache=' + Date.now(), {cache:'no-store'});
-        if (resp.ok) {
-          const githubHTML = await resp.text();
-          const githubHash = await sha256hex(githubHTML);
-          if (currentHash !== githubHash) {
-            showIntegrityAlert('mismatch', currentHash, githubHash);
-            return;
-          } else {
-            showToast('✓ Integriteit bevestigd — hash overeenkomst met GitHub', null, '#0f4c3a');
-          }
-        }
-      } catch(e) {
-        showToast('[!] GitHub niet bereikbaar — handmatige verificatie vereist');
-      }
-    }
-
-    // Sla huidige hash op voor volgende sessie
-    localStorage.setItem('pm-integrity-hash', currentHash);
-    localStorage.setItem('pm-integrity-ts', Date.now());
-
+    // Fetch huidige pagina als raw tekst (niet de DOM-versie)
+    const [currentResp, githubResp] = await Promise.all([
+      fetch(location.href, {cache:'no-store', credentials:'omit'}),
+      fetch(GITHUB_RAW + '?t=' + Date.now(), {cache:'no-store'})
+    ]);
+    const currentText = await currentResp.text();
+    const githubText  = await githubResp.text();
+    const currentHash = await sha256hex(currentText);
+    const githubHash  = await sha256hex(githubText);
+    showIntegrityAlert(currentHash === githubHash ? 'match' : 'mismatch', currentHash, githubHash);
   } catch(e) {
-    // Integriteitscheck mislukt — niet fataal, log alleen
-    console.warn('[PARAMANT] Integriteitscheck mislukt:', e.message);
+    showToast('[!] Verificatie mislukt: ' + e.message + ' — probeer het opnieuw of verifieer handmatig via GitHub');
   }
 }
 
-// Voer uit na volledig laden (DOM + scripts klaar)
+window.verifyIntegrityManual = verifyWithGitHub;
+window.verifyWithGitHub = verifyWithGitHub;
+
+// Geen automatische check bij laden — alleen op aanvraag
+// (Automatische localStorage-vergelijking verwijderd: false positives bij elke deploy)
+
 window.addEventListener('load', () => setTimeout(verifyIntegrity, 500));
 
 // Knop om GitHub-verificatie handmatig te triggeren
